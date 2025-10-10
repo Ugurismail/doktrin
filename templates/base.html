@@ -15,9 +15,9 @@
 <body>
     <header>
         <nav>
-            <a href="{% url 'users:home' %}" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
-                <img src="{% static 'images/favicon.svg' %}" alt="Doktrin Logo" style="width: 36px; height: 36px;">
-                <h1 style="margin: 0;">Doktrin</h1>
+            <a href="{% url 'users:home' %}" class="nav-logo">
+                <img src="{% static 'images/favicon.svg' %}" alt="Doktrin Logo" class="nav-logo-img">
+                <h1 class="nav-logo-text">Doktrin</h1>
             </a>
             <ul>
                 {% if user.is_authenticated %}
@@ -39,40 +39,48 @@
                         </div>
                     </li>
                     <li>
-                        <a href="{% url 'organization:message_inbox' %}" style="position: relative; display: inline-block;">
-                            <span style="margin-right: 4px;">💬</span>
-                            <span id="message-badge" style="opacity: 0; position: absolute; top: -4px; right: -8px; background: #FF3B30; color: white; border-radius: 50%; min-width: 18px; height: 18px; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 5px; transition: opacity 0.2s ease;"></span>
+                        <a href="{% url 'organization:message_inbox' %}" class="nav-icon-link">
+                            💬
+                            <span id="message-badge" class="nav-badge"></span>
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'notifications:notification_list' %}" style="position: relative; display: inline-block;">
-                            <span style="margin-right: 4px;">🔔</span>
-                            <span id="notification-badge" style="opacity: 0; position: absolute; top: -4px; right: -8px; background: #FF3B30; color: white; border-radius: 50%; min-width: 18px; height: 18px; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 5px; transition: opacity 0.2s ease;"></span>
+                        <a href="{% url 'notifications:notification_list' %}" class="nav-icon-link">
+                            🔔
+                            <span id="notification-badge" class="nav-badge"></span>
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'users:profile' %}" title="{{ user.username }}" style="font-size: 20px;">
+                        <a href="{% url 'users:profile' %}" title="{{ user.username }}" class="nav-icon">
                             👤
                         </a>
                     </li>
                     <li>
-                        <button id="theme-toggle" style="background: none; border: none; font-size: 20px; cursor: pointer; padding: 8px;">
+                        <button id="theme-toggle" class="nav-theme-toggle">
                             <span id="theme-icon">🌙</span>
                         </button>
                     </li>
                     <li>
-                        <a href="{% url 'users:logout' %}" style="font-size: 20px; color: #DC2626;" title="Çıkış Yap">
+                        <a href="{% url 'users:logout' %}" class="nav-logout" title="Çıkış Yap">
                             ⎋
                         </a>
                     </li>
                 {% else %}
                     <li><a href="{% url 'users:home' %}">Ana Sayfa</a></li>
                     <li><a href="{% url 'users:login' %}">Giriş</a></li>
-                    <li><a href="{% url 'users:register' %}" class="btn btn-primary" style="padding: 8px 20px; font-size: 14px;">Başla</a></li>
+                    <li><a href="{% url 'users:register' %}" class="btn btn-primary btn-sm">Başla</a></li>
                 {% endif %}
             </ul>
         </nav>
     </header>
+
+    <!-- Global Loading Overlay -->
+    <div id="globalLoadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Global Toast Container -->
+    <div id="globalToastContainer" class="toast-container"></div>
 
     <main>
         {% if messages %}
@@ -96,6 +104,42 @@
     </footer>
 
     <script>
+        // Global UX Helper Functions
+        window.showToast = function(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('globalToastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+
+            container.appendChild(toast);
+
+            // Auto remove after duration
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        };
+
+        window.showLoading = function() {
+            document.getElementById('globalLoadingOverlay').style.display = 'flex';
+        };
+
+        window.hideLoading = function() {
+            document.getElementById('globalLoadingOverlay').style.display = 'none';
+        };
+
+        // Slideout animasyonu
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideOut {
+                to {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
         // Scroll pozisyonunu koruma sistemi
         (function() {
             // Sayfa yüklendiğinde scroll pozisyonunu geri yükle

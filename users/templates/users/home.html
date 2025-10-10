@@ -7,15 +7,15 @@
 <!-- Hero - Dynamic based on auth status -->
 {% if user.is_authenticated %}
 <!-- Logged In Hero - Welcome Back -->
-<section style="padding: 80px 24px; text-align: center; border-bottom: 1px solid var(--border); background: linear-gradient(135deg, var(--pastel-blue) 0%, var(--pastel-mint) 100%);">
-    <div style="max-width: 900px; margin: 0 auto;">
-        <div style="display: inline-block; padding: 8px 20px; background: var(--bg); border-radius: 20px; margin-bottom: 16px;">
-            <span style="font-size: 14px; font-weight: 500;">👋 Hoş Geldin</span>
+<section class="hero-section hero-gradient">
+    <div class="hero-container">
+        <div class="hero-badge">
+            <span class="hero-badge-text">👋 Hoş Geldin</span>
         </div>
-        <h1 style="font-size: 48px; font-weight: 700; line-height: 1.1; margin-bottom: 16px;">
+        <h1 class="hero-title">
             {{ user.username }}
         </h1>
-        <p style="font-size: 16px; color: var(--text-secondary); margin-bottom: 32px;">
+        <p class="hero-subtitle">
             {% if user.current_team %}
                 {{ user.current_team.display_name }} •
                 {% if user.current_team.leader == user %}Ekip Lideri{% else %}Ekip Üyesi{% endif %}
@@ -24,7 +24,7 @@
             {% endif %}
         </p>
 
-        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        <div class="hero-actions">
             <a href="{% url 'doctrine:doctrine_list' %}" class="btn btn-primary">📜 Doktrin</a>
             {% if user.current_team %}
                 <a href="{% url 'organization:my_team' %}" class="btn btn-secondary">👥 Ekibim</a>
@@ -37,16 +37,16 @@
 </section>
 {% else %}
 <!-- Guest Hero - Call to Action -->
-<section style="padding: 120px 24px; text-align: center; border-bottom: 1px solid var(--border);">
-    <div style="max-width: 800px; margin: 0 auto;">
-        <h1 style="font-size: 56px; font-weight: 600; line-height: 1.1; margin-bottom: 24px;">
+<section class="hero-section hero-guest">
+    <div class="hero-container">
+        <h1 class="hero-title-xl">
             Doğrudan<br>Demokrasi
         </h1>
-        <p style="font-size: 18px; color: var(--text-secondary); margin-bottom: 48px; max-width: 600px; margin-left: auto; margin-right: auto;">
+        <p class="hero-subtitle-lg">
             Şeffaf oylama, matematiksel çarpanlar, hiyerarşik temsil. Her oy sayılır.
         </p>
 
-        <div style="display: flex; gap: 16px; justify-content: center;">
+        <div class="hero-actions">
             <a href="{% url 'users:register' %}" class="btn btn-primary">Başla</a>
             <a href="{% url 'users:login' %}" class="btn btn-secondary">Giriş</a>
         </div>
@@ -55,83 +55,83 @@
 {% endif %}
 
 <!-- Live Stats - Platform Metrics -->
-<section style="padding: 80px 24px; border-bottom: 1px solid var(--border);">
-    <div style="max-width: 1200px; margin: 0 auto;">
-        <h2 style="text-align: center; margin-bottom: 48px; font-size: 32px;">📊 Canlı İstatistikler</h2>
+<section class="section-padding section-border-bottom">
+    <div class="section-container-lg">
+        <h2 class="section-title text-center mb-lg">📊 Canlı İstatistikler</h2>
 
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; margin-bottom: 64px;">
-            <div style="text-align: center; padding: 24px; background: var(--bg-secondary); border-radius: 12px;">
-                <div style="font-size: 48px; font-weight: 700; margin-bottom: 8px; color: var(--primary);">{{ stats.total_users }}</div>
-                <div style="font-size: 14px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Toplam Üye</div>
+        <div class="stats-grid mb-xl">
+            <div class="stat-card">
+                <div class="stat-value text-primary">{{ stats.total_users }}</div>
+                <div class="stat-label">Toplam Üye</div>
             </div>
-            <div style="text-align: center; padding: 24px; background: var(--bg-secondary); border-radius: 12px;">
-                <div style="font-size: 48px; font-weight: 700; margin-bottom: 8px; color: var(--accent);">{{ stats.total_articles }}</div>
-                <div style="font-size: 14px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Doktrin Maddesi</div>
+            <div class="stat-card">
+                <div class="stat-value text-accent">{{ stats.total_articles }}</div>
+                <div class="stat-label">Doktrin Maddesi</div>
             </div>
-            <div style="text-align: center; padding: 24px; background: var(--bg-secondary); border-radius: 12px;">
-                <div style="font-size: 48px; font-weight: 700; margin-bottom: 8px; color: var(--success);">{{ stats.passed_proposals }}</div>
-                <div style="font-size: 14px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Kabul Edilen Öneri</div>
+            <div class="stat-card">
+                <div class="stat-value text-success">{{ stats.passed_proposals }}</div>
+                <div class="stat-label">Kabul Edilen Öneri</div>
             </div>
-            <div style="text-align: center; padding: 24px; background: var(--bg-secondary); border-radius: 12px;">
-                <div style="font-size: 48px; font-weight: 700; margin-bottom: 8px; color: var(--warning);">{{ stats.active_proposals }}</div>
-                <div style="font-size: 14px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Aktif Oylama</div>
+            <div class="stat-card">
+                <div class="stat-value text-warning">{{ stats.active_proposals }}</div>
+                <div class="stat-label">Aktif Oylama</div>
             </div>
         </div>
 
-        <h3 style="text-align: center; margin-bottom: 32px; font-size: 20px; color: var(--text-secondary);">Organizasyon Yapısı</h3>
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px;">
-            <div style="text-align: center;">
-                <div style="font-size: 36px; font-weight: 600; margin-bottom: 8px;">{{ stats.total_teams }}</div>
-                <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Ekip</div>
-                <div style="font-size: 11px; color: var(--text-light); margin-top: 4px;">3-15 kişi</div>
+        <h3 class="subsection-title text-center mb-md">Organizasyon Yapısı</h3>
+        <div class="org-grid">
+            <div class="org-stat">
+                <div class="org-value">{{ stats.total_teams }}</div>
+                <div class="org-label">Ekip</div>
+                <div class="org-note">3-15 kişi</div>
             </div>
-            <div style="text-align: center;">
-                <div style="font-size: 36px; font-weight: 600; margin-bottom: 8px;">{{ stats.total_squads }}</div>
-                <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Takım</div>
-                <div style="font-size: 11px; color: var(--text-light); margin-top: 4px;">3+ ekip</div>
+            <div class="org-stat">
+                <div class="org-value">{{ stats.total_squads }}</div>
+                <div class="org-label">Takım</div>
+                <div class="org-note">3+ ekip</div>
             </div>
-            <div style="text-align: center;">
-                <div style="font-size: 36px; font-weight: 600; margin-bottom: 8px;">{{ stats.total_unions }}</div>
-                <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Birlik</div>
-                <div style="font-size: 11px; color: var(--text-light); margin-top: 4px;">3+ takım</div>
+            <div class="org-stat">
+                <div class="org-value">{{ stats.total_unions }}</div>
+                <div class="org-label">Birlik</div>
+                <div class="org-note">3+ takım</div>
             </div>
-            <div style="text-align: center;">
-                <div style="font-size: 36px; font-weight: 600; margin-bottom: 8px;">{{ stats.total_votes }}</div>
-                <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Toplam Oy</div>
-                <div style="font-size: 11px; color: var(--text-light); margin-top: 4px;">Kullanıldı</div>
+            <div class="org-stat">
+                <div class="org-value">{{ stats.total_votes }}</div>
+                <div class="org-label">Toplam Oy</div>
+                <div class="org-note">Kullanıldı</div>
             </div>
         </div>
     </div>
 </section>
 
 <!-- How It Works - Minimal -->
-<section style="padding: 80px 24px;">
-    <div style="max-width: 800px; margin: 0 auto;">
-        <h2 style="text-align: center; margin-bottom: 64px; font-size: 32px;">Nasıl Çalışır</h2>
+<section class="section-padding">
+    <div class="section-container-md">
+        <h2 class="section-title text-center mb-xl">Nasıl Çalışır</h2>
 
-        <div style="display: grid; gap: 48px;">
-            <div>
-                <div style="font-size: 14px; color: var(--text-light); margin-bottom: 8px;">01</div>
-                <h3 style="font-size: 20px; margin-bottom: 12px;">Örgütlen</h3>
-                <p style="color: var(--text-secondary);">Ekip oluştur veya katıl. 3 ekip = Takım, 3 takım = Birlik.</p>
+        <div class="steps-grid">
+            <div class="step-item">
+                <div class="step-number">01</div>
+                <h3 class="step-title">Örgütlen</h3>
+                <p class="step-description">Ekip oluştur veya katıl. 3 ekip = Takım, 3 takım = Birlik.</p>
             </div>
 
-            <div>
-                <div style="font-size: 14px; color: var(--text-light); margin-bottom: 8px;">02</div>
-                <h3 style="font-size: 20px; margin-bottom: 12px;">Öneri Yap</h3>
-                <p style="color: var(--text-secondary);">Takım seviyesinden doktrin maddesi öner. 2 hafta oylama.</p>
+            <div class="step-item">
+                <div class="step-number">02</div>
+                <h3 class="step-title">Öneri Yap</h3>
+                <p class="step-description">Takım seviyesinden doktrin maddesi öner. 2 hafta oylama.</p>
             </div>
 
-            <div>
-                <div style="font-size: 14px; color: var(--text-light); margin-bottom: 8px;">03</div>
-                <h3 style="font-size: 20px; margin-bottom: 12px;">Oy Kullan</h3>
-                <p style="color: var(--text-secondary);">Evet, Çekimser veya Veto. Oy birliği yapılırsa çarpan aktif olur.</p>
+            <div class="step-item">
+                <div class="step-number">03</div>
+                <h3 class="step-title">Oy Kullan</h3>
+                <p class="step-description">Evet, Çekimser veya Veto. Oy birliği yapılırsa çarpan aktif olur.</p>
             </div>
 
-            <div>
-                <div style="font-size: 14px; color: var(--text-light); margin-bottom: 8px;">04</div>
-                <h3 style="font-size: 20px; margin-bottom: 12px;">Lider Seç</h3>
-                <p style="color: var(--text-secondary);">Her seviyede %100 oy birliğiyle lider seçimi.</p>
+            <div class="step-item">
+                <div class="step-number">04</div>
+                <h3 class="step-title">Lider Seç</h3>
+                <p class="step-description">Her seviyede %100 oy birliğiyle lider seçimi.</p>
             </div>
         </div>
     </div>
@@ -139,9 +139,9 @@
 
 {% if not user.is_authenticated %}
 <!-- CTA - Minimal -->
-<section style="padding: 80px 24px; border-top: 1px solid var(--border); text-align: center;">
-    <h2 style="font-size: 32px; margin-bottom: 16px;">Başla</h2>
-    <p style="color: var(--text-secondary); margin-bottom: 32px;">Bugün kayıt ol, yarın örgütlen.</p>
+<section class="section-padding section-border-top text-center">
+    <h2 class="section-title mb-sm">Başla</h2>
+    <p class="text-secondary mb-md">Bugün kayıt ol, yarın örgütlen.</p>
     <a href="{% url 'users:register' %}" class="btn btn-primary">Kayıt Ol</a>
 </section>
 {% endif %}
