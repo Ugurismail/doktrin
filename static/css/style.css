@@ -2597,3 +2597,81 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         width: 100%;
     }
 }
+
+/* =====================================
+   FORM COMPONENTS (Auth, Create, etc.)
+   ===================================== */
+
+/* Form Container */
+.form-container {
+    max-width: 600px;
+    padding-top: var(--spacing-4xl);
+}
+
+.form-container-sm {
+    max-width: 500px;
+}
+
+/* Form Header */
+.form-header {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.form-header-title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.form-header-subtitle {
+    color: var(--text-secondary);
+    font-size: 16px;
+}
+
+/* Form Grid */
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+/* Form Footer */
+.form-footer {
+    text-align: center;
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--gray);
+}
+
+.form-footer-text {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.form-footer-link {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.form-footer-link:hover {
+    text-decoration: underline;
+}
+
+/* Responsive for Forms */
+@media (max-width: 480px) {
+    .form-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .form-header-title {
+        font-size: 28px;
+    }
+
+    .form-container,
+    .form-container-sm {
+        padding-top: var(--spacing-2xl);
+    }
+}

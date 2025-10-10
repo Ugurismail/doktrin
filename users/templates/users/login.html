@@ -4,12 +4,12 @@
 
 {% block content %}
 
-<div class="container" style="max-width: 500px; padding-top: var(--spacing-4xl);">
-    <div style="text-align: center; margin-bottom: var(--spacing-2xl);">
-        <h1 style="font-size: 36px; font-weight: 700; letter-spacing: -1.5px; margin-bottom: var(--spacing-sm);">
+<div class="container form-container form-container-sm">
+    <div class="form-header">
+        <h1 class="form-header-title">
             Tekrar Hoş Geldiniz
         </h1>
-        <p style="color: var(--text-secondary); font-size: 16px;">
+        <p class="form-header-subtitle">
             Devam etmek için giriş yapın
         </p>
     </div>
@@ -28,15 +28,15 @@
                 <input type="password" id="password" name="password" required>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: var(--spacing-md);">
+            <button type="submit" class="btn btn-primary btn-full-width mt-md">
                 Giriş Yap
             </button>
         </form>
 
-        <div style="text-align: center; margin-top: var(--spacing-xl); padding-top: var(--spacing-lg); border-top: 1px solid var(--gray);">
-            <p style="color: var(--text-secondary); font-size: 14px;">
+        <div class="form-footer">
+            <p class="form-footer-text">
                 Hesabınız yok mu?
-                <a href="{% url 'users:register' %}" style="color: var(--primary); font-weight: 600; text-decoration: none;">
+                <a href="{% url 'users:register' %}" class="form-footer-link">
                     Kayıt Olun
                 </a>
             </p>

@@ -5,12 +5,12 @@
 
 {% block content %}
 
-<div class="container" style="max-width: 600px; padding-top: var(--spacing-4xl);">
-    <div style="text-align: center; margin-bottom: var(--spacing-2xl);">
-        <h1 style="font-size: 36px; font-weight: 700; letter-spacing: -1.5px; margin-bottom: var(--spacing-sm);">
+<div class="container form-container">
+    <div class="form-header">
+        <h1 class="form-header-title">
             Hesap Oluştur
         </h1>
-        <p style="color: var(--text-secondary); font-size: 16px;">
+        <p class="form-header-subtitle">
             Doğrudan demokrasinin bir parçası olun
         </p>
     </div>
@@ -29,7 +29,7 @@
                 <input type="email" id="email" name="email" required>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+            <div class="form-grid-2">
                 <div class="form-group">
                     <label for="password">Şifre</label>
                     <input type="password" id="password" name="password" required>
@@ -41,7 +41,7 @@
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+            <div class="form-grid-2">
                 <div class="form-group">
                     <label for="province">İl</label>
                     <select id="province" name="province" required>
@@ -57,15 +57,15 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: var(--spacing-md);">
+            <button type="submit" class="btn btn-primary btn-full-width mt-md">
                 Kayıt Ol
             </button>
         </form>
 
-        <div style="text-align: center; margin-top: var(--spacing-xl); padding-top: var(--spacing-lg); border-top: 1px solid var(--gray);">
-            <p style="color: var(--text-secondary); font-size: 14px;">
+        <div class="form-footer">
+            <p class="form-footer-text">
                 Zaten hesabınız var mı?
-                <a href="{% url 'users:login' %}" style="color: var(--primary); font-weight: 600; text-decoration: none;">
+                <a href="{% url 'users:login' %}" class="form-footer-link">
                     Giriş Yapın
                 </a>
             </p>
