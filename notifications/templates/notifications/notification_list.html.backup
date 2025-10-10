@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Bildirimler - Doktrin{% endblock %}
+
+{% block content %}
+
+<div class="container" style="max-width: 1000px; padding: var(--spacing-lg) var(--spacing-md);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+        <h1 style="font-size: 28px; font-weight: 700; margin: 0;">Bildirimler</h1>
+        {% if notifications %}
+        <form method="post" action="{% url 'notifications:mark_all_as_read' %}" style="margin: 0;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary" style="font-size: 14px; padding: 8px 16px;">
+                Tümünü Okundu İşaretle
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    {% if notifications %}
+    <div style="background: white; border-radius: 16px; box-shadow: var(--shadow-soft); overflow: hidden;">
+        {% for notification in notifications %}
+        <div style="padding: var(--spacing-md); border-bottom: 1px solid #f0f0f0; {% if not notification.is_read %}background: #fafafa;{% endif %} display: flex; align-items: start; gap: var(--spacing-md);">
+            <!-- Notification Icon -->
+            <div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+                {% if notification.notification_type == 'PROPOSAL_PASSED' %}background: var(--pastel-mint);
+                {% elif notification.notification_type == 'PROPOSAL_REJECTED' %}background: var(--pastel-coral);
+                {% elif notification.notification_type == 'NEW_PROPOSAL' %}background: var(--pastel-blue);
+                {% elif notification.notification_type == 'COMMENT_REPLY' %}background: var(--pastel-lavender);
+                {% elif notification.notification_type == 'LEADER_CHANGE' %}background: var(--pastel-peach);
+                {% elif notification.notification_type == 'FORMATION_PROPOSAL' %}background: var(--pastel-sage);
+                {% elif notification.notification_type == 'FORMATION_APPROVED' %}background: var(--pastel-mint);
+                {% else %}background: #e0e0e0;{% endif %}">
+                <span style="font-size: 18px;">
+                    {% if notification.notification_type == 'PROPOSAL_PASSED' %}✓
+                    {% elif notification.notification_type == 'PROPOSAL_REJECTED' %}✗
+                    {% elif notification.notification_type == 'NEW_PROPOSAL' %}📋
+                    {% elif notification.notification_type == 'COMMENT_REPLY' %}💬
+                    {% elif notification.notification_type == 'LEADER_CHANGE' %}👑
+                    {% elif notification.notification_type == 'FORMATION_PROPOSAL' %}🏛
+                    {% elif notification.notification_type == 'FORMATION_APPROVED' %}🎉
+                    {% else %}📢{% endif %}
+                </span>
+            </div>
+
+            <!-- Notification Content -->
+            <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 15px; line-height: 1.6; margin-bottom: 4px; {% if not notification.is_read %}font-weight: 600;{% endif %}">
+                    {{ notification.message }}
+                </div>
+                <div style="font-size: 13px; color: var(--text-secondary);">
+                    {{ notification.created_at|timesince }} önce
+                </div>
+            </div>
+
+            <!-- Mark as Read Button -->
+            {% if not notification.is_read %}
+            <form method="post" action="{% url 'notifications:mark_as_read' notification.id %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" style="background: none; border: none; color: var(--primary); font-size: 13px; cursor: pointer; padding: 4px 8px; text-decoration: underline;">
+                    Okundu
+                </button>
+            </form>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: var(--spacing-xl);">
+        <div style="font-size: 48px; margin-bottom: var(--spacing-md);">🔔</div>
+        <p style="font-size: 16px; color: var(--text-secondary); margin: 0;">
+            Henüz bildiriminiz yok.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

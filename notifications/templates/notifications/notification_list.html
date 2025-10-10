@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Bildirimler{% endblock %}
+
+{% block content %}
+
+<div style="max-width: 800px; margin: 0 auto; padding: var(--space-lg) var(--space-md);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg);">
+        <h1 style="font-size: 32px; font-weight: 600;">Bildirimler</h1>
+        {% if notifications %}
+        <form method="post" action="{% url 'notifications:mark_all_as_read' %}" style="margin: 0;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">Tümünü Okundu İşaretle</button>
+        </form>
+        {% endif %}
+    </div>
+
+    {% if notifications %}
+    <div style="display: grid; gap: var(--space-sm);">
+        {% for notification in notifications %}
+        <a href="{% if notification.notification_type == 'NEW_PROPOSAL' or notification.notification_type == 'PROPOSAL_PASSED' or notification.notification_type == 'PROPOSAL_REJECTED' or notification.notification_type == 'PROPOSAL_RESULT' %}{% url 'doctrine:proposal_detail' notification.related_object_id %}{% elif notification.notification_type == 'ANNOUNCEMENT' %}{% url 'organization:view_announcements' %}{% elif notification.notification_type == 'MENTION' and notification.related_object_id %}{% url 'predictions:prediction_detail' notification.related_object_id %}{% else %}#{% endif %}"
+           onclick="markAsRead({{ notification.id }}); return true;"
+           style="display: block; background: {% if not notification.is_read %}var(--bg-secondary){% else %}var(--bg){% endif %}; border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-md); text-decoration: none; color: var(--text); transition: all 0.2s;">
+
+            <div style="display: flex; gap: var(--space-md); align-items: start;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: var(--bg-secondary); border: 1px solid var(--border);">
+                    <span style="font-size: 18px;">
+                        {% if notification.notification_type == 'PROPOSAL_PASSED' %}✓
+                        {% elif notification.notification_type == 'PROPOSAL_REJECTED' %}✗
+                        {% elif notification.notification_type == 'PROPOSAL_RESULT' %}✅
+                        {% elif notification.notification_type == 'NEW_PROPOSAL' %}📋
+                        {% elif notification.notification_type == 'COMMENT_REPLY' %}💬
+                        {% elif notification.notification_type == 'LEADER_CHANGE' %}👑
+                        {% elif notification.notification_type == 'FORMATION_PROPOSAL' %}🏛
+                        {% elif notification.notification_type == 'FORMATION_APPROVED' %}🎉
+                        {% elif notification.notification_type == 'ANNOUNCEMENT' %}📢
+                        {% else %}📢{% endif %}
+                    </span>
+                </div>
+
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 15px; line-height: 1.5; margin-bottom: 4px; {% if not notification.is_read %}font-weight: 600;{% endif %}">
+                        {{ notification.message }}
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">
+                        {{ notification.created_at|timesince }} önce
+                    </div>
+                </div>
+
+                {% if not notification.is_read %}
+                <div style="width: 8px; height: 8px; background: var(--accent); border-radius: 50%; flex-shrink: 0; margin-top: 6px;"></div>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: var(--space-xl); border: 1px solid var(--border); border-radius: var(--radius);">
+        <div style="font-size: 48px; margin-bottom: var(--space-md);">🔔</div>
+        <p style="font-size: 16px; color: var(--text-secondary);">Henüz bildiriminiz yok</p>
+    </div>
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if notifications.has_other_pages %}
+    <div style="display: flex; justify-content: center; align-items: center; gap: var(--space-sm); margin-top: var(--space-xl);">
+        {% if notifications.has_previous %}
+            <a href="?page=1" class="btn btn-secondary" style="padding: 8px 16px;">İlk</a>
+            <a href="?page={{ notifications.previous_page_number }}" class="btn btn-secondary" style="padding: 8px 16px;">←</a>
+        {% endif %}
+
+        <span style="padding: 8px 16px; color: var(--text-secondary);">
+            Sayfa {{ notifications.number }} / {{ notifications.paginator.num_pages }}
+        </span>
+
+        {% if notifications.has_next %}
+            <a href="?page={{ notifications.next_page_number }}" class="btn btn-secondary" style="padding: 8px 16px;">→</a>
+            <a href="?page={{ notifications.paginator.num_pages }}" class="btn btn-secondary" style="padding: 8px 16px;">Son</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function markAsRead(notificationId) {
+    fetch(`/notifications/${notificationId}/read/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    }).then(response => {
+        if (response.ok) {
+            // Badge'i güncelle
+            updateBadge();
+        }
+    });
+}
+
+function updateBadge() {
+    fetch('/notifications/unread-count/')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('notification-badge');
+            if (badge) {
+                if (data.count > 0) {
+                    badge.textContent = data.count > 9 ? '9+' : data.count;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        });
+}
+</script>
+
+{% endblock %}

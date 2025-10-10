@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Ekip Yönetimi{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1200px; padding: var(--spacing-xl);">
+    <div style="margin-bottom: var(--spacing-lg);">
+        <a href="{% url 'organization:my_team' %}" style="color: var(--primary); text-decoration: none; font-weight: 500;">
+            ← Ekibime Geri Dön
+        </a>
+    </div>
+
+    <div class="card">
+        <h1 style="font-size: 36px; font-weight: 700; margin-bottom: var(--spacing-md);">
+            🛠️ Ekip Yönetim Paneli
+        </h1>
+
+        <div style="padding: 20px; background: var(--pastel-peach); border-radius: 12px; margin-bottom: var(--spacing-xl);">
+            <h2 style="font-size: 24px; margin-bottom: 8px;">{{ team.display_name }}</h2>
+            <p style="color: var(--text-light); margin: 0;">{{ team.official_name }} · {{ team.province }}</p>
+        </div>
+
+        <!-- Statistics -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: var(--spacing-xl);">
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 48px; font-weight: 800; color: var(--primary);">{{ team_members.count }}</div>
+                <div style="font-size: 14px; color: var(--text-light); margin-top: 8px;">Ekip Üyesi</div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 48px; font-weight: 800; color: var(--success);">{{ team_votes }}</div>
+                <div style="font-size: 14px; color: var(--text-light); margin-top: 8px;">Toplam Oy</div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 48px; font-weight: 800; color: var(--info);">{{ team_comments }}</div>
+                <div style="font-size: 14px; color: var(--text-light); margin-top: 8px;">Toplam Yorum</div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 48px; font-weight: 800; color: var(--warning);">{{ team_proposals }}</div>
+                <div style="font-size: 14px; color: var(--text-light); margin-top: 8px;">Takım Önerileri</div>
+            </div>
+        </div>
+
+        <!-- Team Members -->
+        <h2 style="font-size: 24px; margin-bottom: var(--spacing-md);">Ekip Üyeleri ({{ team_members.count }}/15)</h2>
+
+        <div style="display: grid; gap: 12px;">
+            {% for member in team_members %}
+            <div style="padding: 16px; background: var(--bg-secondary); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong>{{ member.username }}</strong>
+                    {% if member == team.leader %}
+                    <span style="margin-left: 8px; padding: 4px 8px; background: var(--primary); color: white; border-radius: 4px; font-size: 12px;">👑 Lider</span>
+                    {% endif %}
+                </div>
+                <div style="font-size: 14px; color: var(--text-light);">
+                    {{ member.province }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

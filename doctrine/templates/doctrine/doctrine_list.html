@@ -1,0 +1,873 @@
+{% extends 'base.html' %}
+
+{% block title %}Doktrin{% endblock %}
+
+{% block content %}
+
+<style>
+/* Premium Doctrine Page Styles */
+.doctrine-hero {
+    background: linear-gradient(135deg, var(--primary) 0%, #0052CC 100%);
+    padding: 80px 40px;
+    text-align: center;
+    margin: calc(var(--spacing-xl) * -1) calc(var(--spacing-xl) * -1) var(--spacing-2xl);
+    border-radius: 0 0 32px 32px;
+    position: relative;
+    overflow: hidden;
+}
+
+[data-theme="dark"] .doctrine-hero {
+    background: linear-gradient(135deg, #1a3a5c 0%, #0d2847 100%);
+}
+
+.doctrine-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h100v100H0z" fill="none"/><path d="M50 10l5 15h16l-13 9 5 15-13-9-13 9 5-15-13-9h16z" fill="rgba(255,255,255,0.05)"/></svg>');
+    opacity: 0.3;
+}
+
+.doctrine-hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.doctrine-hero h1 {
+    font-family: 'EB Garamond', serif;
+    font-size: 72px;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 16px;
+    letter-spacing: -2px;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.2);
+}
+
+.doctrine-hero-subtitle {
+    font-size: 20px;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 32px;
+    font-weight: 400;
+}
+
+.doctrine-hero-stats {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.doctrine-stat {
+    text-align: center;
+}
+
+.doctrine-stat-number {
+    font-size: 48px;
+    font-weight: 800;
+    color: white;
+    display: block;
+    line-height: 1;
+}
+
+.doctrine-stat-label {
+    font-size: 14px;
+    color: rgba(255,255,255,0.8);
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Tabs */
+.doctrine-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: var(--spacing-xl);
+    background: var(--bg-secondary);
+    padding: 8px;
+    border-radius: 16px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.doctrine-tab {
+    flex: 1;
+    padding: 16px 24px;
+    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+[data-theme="light"] .doctrine-tab {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.doctrine-tab:hover {
+    background: var(--bg);
+}
+
+.doctrine-tabs .doctrine-tab.active,
+.doctrine-tabs button.active {
+    background: #2D3748 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="light"] .doctrine-tabs .doctrine-tab.active,
+[data-theme="light"] .doctrine-tabs button.active {
+    background: var(--primary) !important;
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+}
+
+.doctrine-tab-content {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.doctrine-tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Article Cards */
+.articles-grid {
+    display: grid;
+    gap: 32px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.article-card-premium {
+    background: var(--bg);
+    margin: 0px 100px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.article-card-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--primary), var(--accent));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.article-card-premium:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.article-card-premium:hover::before {
+    opacity: 1;
+}
+
+.article-number {
+    display: inline-block;
+    background: var(--pastel-blue);
+    color: var(--primary);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    letter-spacing: 0.5px;
+}
+
+.article-text {
+    font-family: 'EB Garamond', serif;
+    font-size: 20px;
+    line-height: 1.9;
+    color: var(--text);
+    margin-bottom: 20px;
+}
+
+.article-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.article-meta-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.article-action-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.article-action-link:hover {
+    color: var(--accent);
+    transform: translateX(4px);
+}
+
+/* Proposals Grid */
+.proposals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 32px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.proposal-card-premium {
+    background: linear-gradient(135deg, #FFF9E6 0%, #FFF3CC 100%);
+    border: 2px solid #F59E0B;
+    border-radius: 16px;
+    padding: 40px;
+    transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .proposal-card-premium {
+    background: linear-gradient(135deg, #2d2416 0%, #3d3020 100%);
+    border-color: #D97706;
+}
+
+.proposal-card-premium:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(245, 158, 11, 0.2);
+}
+
+.proposal-badge {
+    display: inline-block;
+    background: #F59E0B;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.proposal-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+}
+
+[data-theme="dark"] .proposal-title {
+    color: #F5F5F5;
+}
+
+.proposal-subtitle {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+.proposal-action-btn {
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+    background: #F59E0B;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: block;
+}
+
+.proposal-action-btn:hover {
+    background: #D97706;
+    transform: scale(1.02);
+}
+
+/* Search */
+.search-box {
+    max-width: 600px;
+    margin: 0 auto var(--spacing-xl);
+}
+
+.search-input {
+    width: 100%;
+    padding: 16px 24px;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    font-size: 16px;
+    background: var(--bg);
+    color: var(--text);
+    transition: all 0.3s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.1);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 80px 40px;
+}
+
+.empty-icon {
+    font-size: 80px;
+    opacity: 0.3;
+    margin-bottom: 20px;
+}
+
+.empty-text {
+    font-size: 18px;
+    color: var(--text-secondary);
+}
+
+/* Archive Tab Styles */
+.archive-grid-premium {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 32px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.archive-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 32px;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.archive-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.archive-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 12px;
+}
+
+.archive-card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+[data-theme="dark"] .archive-card-title {
+    color: #E5E5E5;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.status-passed {
+    background: var(--pastel-mint);
+    color: #059669;
+}
+
+.status-rejected {
+    background: var(--pastel-coral);
+    color: #DC2626;
+}
+
+/* Dark mode title fixes */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3 {
+    color: #F5F5F5;
+}
+
+/* Pagination */
+.pagination-premium {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 40px;
+    align-items: center;
+}
+
+.pagination-premium a,
+.pagination-premium span {
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.pagination-premium a {
+    background: var(--bg-secondary);
+    color: var(--text);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.pagination-premium a:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.pagination-premium .current {
+    color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+    .doctrine-hero h1 {
+        font-size: 48px;
+    }
+
+    .doctrine-tabs {
+        flex-direction: column;
+    }
+
+    .proposals-grid,
+    .archive-grid-premium {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div style="max-width: 100%; margin: 0 auto; padding: 0 8px var(--spacing-2xl);">
+    <!-- Hero Section -->
+    <div class="doctrine-hero">
+        <div class="doctrine-hero-content">
+            <h1>⚖️ DOKTRİN</h1>
+            <p class="doctrine-hero-subtitle">
+                Halkın kuralları, halk tarafından yazılır
+            </p>
+            {% if user.is_authenticated and user.current_team and user.current_team.parent_squad %}
+            <a href="{% url 'doctrine:create_proposal' %}" class="btn btn-primary" style="padding: 16px 32px; font-size: 16px; border-radius: 12px;">
+                ✨ Yeni Öneri Oluştur
+            </a>
+            {% endif %}
+
+            <div class="doctrine-hero-stats">
+                <div class="doctrine-stat">
+                    <span class="doctrine-stat-number">{{ foundation_laws.count }}</span>
+                    <span class="doctrine-stat-label">İlke</span>
+                </div>
+                <div class="doctrine-stat">
+                    <span class="doctrine-stat-number">{{ normal_laws.paginator.count }}</span>
+                    <span class="doctrine-stat-label">Yasa</span>
+                </div>
+                <div class="doctrine-stat">
+                    <span class="doctrine-stat-number">{{ active_proposals.count }}</span>
+                    <span class="doctrine-stat-label">Aktif Oylama</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="doctrine-tabs">
+        <button class="doctrine-tab active" onclick="switchTab('laws')">
+            📜 Yasalar
+        </button>
+        <button class="doctrine-tab" onclick="switchTab('foundation')">
+            ⭐ İlkeler
+        </button>
+        <button class="doctrine-tab" onclick="switchTab('proposals')">
+            🗳️ Aktif Oylamalar <span style="background: #F59E0B; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin-left: 8px;">{{ active_proposals.count }}</span>
+        </button>
+        <button class="doctrine-tab" onclick="switchTab('archive')">
+            📦 Arşiv
+        </button>
+    </div>
+
+    <!-- Laws Tab -->
+    <div id="laws-tab" class="doctrine-tab-content active">
+        <div class="search-box">
+            <form method="get" action="{% url 'doctrine:doctrine_list' %}" id="searchForm">
+                <div style="position: relative; display: flex; align-items: center;">
+                    <input
+                        type="text"
+                        name="search"
+                        class="search-input"
+                        placeholder="🔍 Doktrin'de ara... (madde numarası, içerik, gerekçe)"
+                        value="{{ search_query }}"
+                        style="width: 100%;"
+                    >
+                    {% if search_query or date_from or date_to or created_by %}
+                    <a href="{% url 'doctrine:doctrine_list' %}" style="position: absolute; right: 16px; color: var(--text-light); text-decoration: none; font-size: 20px; cursor: pointer; hover: color: var(--text);" title="Filtreleri temizle">×</a>
+                    {% endif %}
+                </div>
+
+                <!-- Advanced Filters Toggle -->
+                <div style="margin-top: 12px;">
+                    <button type="button" onclick="toggleAdvancedFilters()" style="background: transparent; border: none; color: var(--primary); font-size: 14px; cursor: pointer; padding: 0; text-decoration: underline;">
+                        🔧 Gelişmiş Filtreler <span id="advancedFilterIcon">▼</span>
+                    </button>
+                </div>
+
+                <!-- Advanced Filters Section -->
+                <div id="advancedFilters" style="display: {% if date_from or date_to or created_by or proposal_type_filter or proposal_status_filter %}block{% else %}none{% endif %}; margin-top: 16px; padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                        <!-- Date From -->
+                        <div>
+                            <label style="display: block; font-size: 13px; color: var(--text-light); margin-bottom: 6px;">Başlangıç Tarihi</label>
+                            <input type="date" name="date_from" value="{{ date_from }}" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
+                        </div>
+
+                        <!-- Date To -->
+                        <div>
+                            <label style="display: block; font-size: 13px; color: var(--text-light); margin-bottom: 6px;">Bitiş Tarihi</label>
+                            <input type="date" name="date_to" value="{{ date_to }}" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
+                        </div>
+
+                        <!-- Created By -->
+                        <div>
+                            <label style="display: block; font-size: 13px; color: var(--text-light); margin-bottom: 6px;">Oluşturan Kullanıcı</label>
+                            <input type="text" name="created_by" value="{{ created_by }}" placeholder="Kullanıcı adı" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
+                        </div>
+
+                        <!-- Proposal Type -->
+                        <div>
+                            <label style="display: block; font-size: 13px; color: var(--text-light); margin-bottom: 6px;">Öneri Türü</label>
+                            <select name="proposal_type" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
+                                <option value="">Tümü</option>
+                                <option value="ADD" {% if proposal_type_filter == 'ADD' %}selected{% endif %}>Madde Ekleme</option>
+                                <option value="MODIFY" {% if proposal_type_filter == 'MODIFY' %}selected{% endif %}>Madde Değişikliği</option>
+                                <option value="REMOVE" {% if proposal_type_filter == 'REMOVE' %}selected{% endif %}>Madde Kaldırma</option>
+                                <option value="FOUNDER_REVISION" {% if proposal_type_filter == 'FOUNDER_REVISION' %}selected{% endif %}>Kurucu Düzenleme</option>
+                            </select>
+                        </div>
+
+                        <!-- Proposal Status -->
+                        <div>
+                            <label style="display: block; font-size: 13px; color: var(--text-light); margin-bottom: 6px;">Öneri Durumu</label>
+                            <select name="proposal_status" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
+                                <option value="">Tümü</option>
+                                <option value="PASSED" {% if proposal_status_filter == 'PASSED' %}selected{% endif %}>Kabul Edildi</option>
+                                <option value="REJECTED" {% if proposal_status_filter == 'REJECTED' %}selected{% endif %}>Reddedildi</option>
+                                <option value="ARCHIVED" {% if proposal_status_filter == 'ARCHIVED' %}selected{% endif %}>Arşivlendi</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Apply Button -->
+                    <div style="margin-top: 16px; display: flex; gap: 8px;">
+                        <button type="submit" class="btn btn-primary" style="padding: 10px 24px;">
+                            Filtrele
+                        </button>
+                        <a href="{% url 'doctrine:doctrine_list' %}" class="btn btn-secondary" style="padding: 10px 24px;">
+                            Temizle
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <script>
+        function toggleAdvancedFilters() {
+            const filters = document.getElementById('advancedFilters');
+            const icon = document.getElementById('advancedFilterIcon');
+            if (filters.style.display === 'none') {
+                filters.style.display = 'block';
+                icon.textContent = '▲';
+            } else {
+                filters.style.display = 'none';
+                icon.textContent = '▼';
+            }
+        }
+        </script>
+
+        <!-- Tag Filters -->
+        {% if all_tags %}
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 16px 0; padding: 16px; background: var(--bg-secondary); border-radius: 12px;">
+            <span style="font-size: 14px; color: var(--text-light); margin-right: 8px;">🏷️ Filtrele:</span>
+            <a href="{% url 'doctrine:doctrine_list' %}{% if search_query %}?search={{ search_query }}{% endif %}"
+               style="padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; text-decoration: none; transition: all 0.2s; display: inline-block; {% if not selected_tag %}background: #6B7280; color: white; border: 2px solid #6B7280;{% else %}background: transparent; color: var(--text); border: 2px solid var(--border);{% endif %}">
+                Tümü
+            </a>
+            {% for tag in all_tags %}
+            <a href="?tag={{ tag.slug }}{% if search_query %}&search={{ search_query }}{% endif %}"
+               style="padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; text-decoration: none; transition: all 0.2s; display: inline-block; {% if selected_tag.id == tag.id %}background: {{ tag.color }}; color: white; border: 2px solid {{ tag.color }};{% else %}background: transparent; color: var(--text); border: 2px solid {{ tag.color }};{% endif %}">
+                {{ tag.name }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if search_query or selected_tag %}
+        <div style="background: var(--bg-secondary); padding: 12px 20px; border-radius: 8px; margin: 16px 0; border-left: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <span style="font-size: 14px; color: var(--text);">
+                    {% if search_query and selected_tag %}
+                        <strong>Arama:</strong> "{{ search_query }}" <strong>·</strong> <strong>Etiket:</strong> {{ selected_tag.name }}
+                    {% elif search_query %}
+                        <strong>Arama:</strong> "{{ search_query }}"
+                    {% elif selected_tag %}
+                        <strong>Etiket:</strong> {{ selected_tag.name }}
+                    {% endif %}
+                    <span style="color: var(--text-light);">
+                        ({{ foundation_laws.count }} kuruluş ilkesi, {{ normal_laws.paginator.count }} yasa bulundu)
+                    </span>
+                </span>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if normal_laws %}
+        <div id="lawsContainer" class="articles-grid">
+            {% for article in normal_laws %}
+            <div class="article-card-premium">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <span class="article-number">MADDE {{ article.article_number }}</span>
+                    {% if article.tags.all %}
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        {% for tag in article.tags.all %}
+                        <a href="?tag={{ tag.slug }}" style="padding: 4px 10px; border-radius: 12px; font-size: 11px; text-decoration: none; background: {{ tag.color }}; color: white;" title="{{ tag.description }}">
+                            {{ tag.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <p class="article-text">{{ article.content }}</p>
+                <div class="article-footer">
+                    <span class="article-meta-text">
+                        {{ article.created_by.username }} · {{ article.created_date|date:"d.m.Y" }}
+                    </span>
+                    <a href="{% url 'doctrine:article_detail' article.id %}" class="article-action-link">
+                        Yorumlar →
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if normal_laws.has_other_pages %}
+        <div class="pagination-premium">
+            {% if normal_laws.has_previous %}
+            <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">« İlk</a>
+            <a href="?page={{ normal_laws.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">‹ Önceki</a>
+            {% endif %}
+
+            <span class="current">Sayfa {{ normal_laws.number }} / {{ normal_laws.paginator.num_pages }}</span>
+
+            {% if normal_laws.has_next %}
+            <a href="?page={{ normal_laws.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Sonraki ›</a>
+            <a href="?page={{ normal_laws.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">Son »</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">{% if search_query %}🔍{% else %}⚖️{% endif %}</div>
+            <p class="empty-text">{% if search_query %}Arama kriterlerine uygun yasa bulunamadı.{% else %}Henüz kabul edilmiş yasa bulunmamaktadır.{% endif %}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Foundation Tab -->
+    <div id="foundation-tab" class="doctrine-tab-content">
+        {% if foundation_laws %}
+        <div class="articles-grid">
+            {% for article in foundation_laws %}
+            <div class="article-card-premium">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <span class="article-number" style="background: var(--pastel-peach); color: #DC2626;">İLKE {{ article.article_number }}</span>
+                    {% if article.tags.all %}
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        {% for tag in article.tags.all %}
+                        <a href="?tag={{ tag.slug }}" style="padding: 4px 10px; border-radius: 12px; font-size: 11px; text-decoration: none; background: {{ tag.color }}; color: white;" title="{{ tag.description }}">
+                            {{ tag.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <p class="article-text">{{ article.content }}</p>
+                <div class="article-footer">
+                    <span class="article-meta-text">
+                        {{ article.created_by.username }} · {{ article.created_date|date:"d.m.Y" }}
+                    </span>
+                    <a href="{% url 'doctrine:article_detail' article.id %}" class="article-action-link">
+                        Detay ve Gerekçe →
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">⭐</div>
+            <p class="empty-text">Henüz kuruluş ilkesi eklenmemiş.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Proposals Tab -->
+    <div id="proposals-tab" class="doctrine-tab-content">
+        {% if active_proposals %}
+        <div class="proposals-grid">
+            {% for proposal in active_proposals %}
+            <div class="proposal-card-premium">
+                <span class="proposal-badge">AKTİF OYLAMA</span>
+                <h3 class="proposal-title">{{ proposal.get_proposal_type_display }}</h3>
+
+                {% if proposal.related_article and proposal.proposal_type == 'MODIFY' %}
+                <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid var(--border);">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                        <span style="font-size: 14px;">📊</span>
+                        <p style="margin: 0; font-size: 12px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px;">
+                            Madde {{ proposal.related_article.article_number }} Değişikliği
+                        </p>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div style="background: #FEF3C7; padding: 12px; border-radius: 6px; border-left: 3px solid #F59E0B;">
+                            <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 600; color: #92400E; text-transform: uppercase;">Mevcut</p>
+                            <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #78350F;">
+                                {{ proposal.original_article_content|default:proposal.related_article.content|truncatewords:15 }}
+                            </p>
+                        </div>
+                        <div style="background: #DBEAFE; padding: 12px; border-radius: 6px; border-left: 3px solid #3B82F6;">
+                            <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 600; color: #1E40AF; text-transform: uppercase;">Önerilen</p>
+                            <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #1E3A8A;">
+                                {{ proposal.proposed_content|truncatewords:15 }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% elif proposal.related_article %}
+                <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px; margin: 16px 0; border-left: 4px solid var(--primary);">
+                    <p style="margin: 0 0 8px 0; font-size: 13px; font-weight: 600; color: var(--text-light); text-transform: uppercase;">
+                        İlgili Madde {{ proposal.related_article.article_number }}:
+                    </p>
+                    <p style="margin: 0; font-size: 15px; line-height: 1.6; color: var(--text);">
+                        {{ proposal.related_article.content|truncatewords:20 }}
+                    </p>
+                </div>
+                {% endif %}
+
+                <p class="proposal-subtitle">{{ proposal.get_proposed_by_level_display }}</p>
+                <a href="{% url 'doctrine:proposal_detail' proposal.id %}" class="proposal-action-btn">
+                    Oy Ver →
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🗳️</div>
+            <p class="empty-text">Şu anda aktif oylama bulunmuyor.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Archive Tab -->
+    <div id="archive-tab" class="doctrine-tab-content">
+        {% if archived_proposals %}
+        <div class="archive-grid-premium">
+            {% for proposal in archived_proposals %}
+            <div class="archive-card">
+                <div class="archive-header">
+                    <h3 class="archive-card-title">{{ proposal.get_proposal_type_display }}</h3>
+                    {% if proposal.status == 'PASSED' %}
+                    <span class="status-badge status-passed">KABUL</span>
+                    {% else %}
+                    <span class="status-badge status-rejected">RED</span>
+                    {% endif %}
+                </div>
+
+                {% if proposal.related_article and proposal.proposal_type == 'MODIFY' %}
+                <div style="background: var(--bg-secondary); padding: 12px; border-radius: 6px; margin: 12px 0; border: 1px solid var(--border);">
+                    <div style="display: flex; gap: 8px;">
+                        <div style="flex: 1; background: #FEF3C7; padding: 10px; border-radius: 4px; border-left: 2px solid #F59E0B;">
+                            <p style="margin: 0 0 4px 0; font-size: 10px; font-weight: 600; color: #92400E; text-transform: uppercase;">Mevcut</p>
+                            <p style="margin: 0; font-size: 12px; line-height: 1.4; color: #78350F;">{{ proposal.original_article_content|default:proposal.related_article.content|truncatewords:8 }}</p>
+                        </div>
+                        <div style="flex: 1; background: #DBEAFE; padding: 10px; border-radius: 4px; border-left: 2px solid #3B82F6;">
+                            <p style="margin: 0 0 4px 0; font-size: 10px; font-weight: 600; color: #1E40AF; text-transform: uppercase;">Önerilen</p>
+                            <p style="margin: 0; font-size: 12px; line-height: 1.4; color: #1E3A8A;">{{ proposal.proposed_content|truncatewords:8 }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                    {{ proposal.end_date|date:"d.m.Y" }}
+                </p>
+                <a href="{% url 'doctrine:proposal_detail' proposal.id %}" class="article-action-link">
+                    Detay →
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if archived_proposals.has_other_pages %}
+        <div class="pagination-premium">
+            {% if archived_proposals.has_previous %}
+            <a href="?archive_page={{ archived_proposals.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">‹</a>
+            {% endif %}
+
+            <span class="current">{{ archived_proposals.number }} / {{ archived_proposals.paginator.num_pages }}</span>
+
+            {% if archived_proposals.has_next %}
+            <a href="?archive_page={{ archived_proposals.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">›</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📦</div>
+            <p class="empty-text">Arşivde henüz öneri bulunmuyor.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function switchTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.doctrine-tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Remove active from all buttons
+    document.querySelectorAll('.doctrine-tab').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Show selected tab
+    document.getElementById(tabName + '-tab').classList.add('active');
+
+    // Activate button
+    event.target.classList.add('active');
+}
+
+</script>
+
+{% endblock %}

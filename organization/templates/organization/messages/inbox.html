@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Gelen Kutusu - Doktrin{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1400px; padding-left: 40px; padding-right: 40px;">
+    <h1 style="font-size: 36px; font-weight: 700; margin-bottom: 32px;">Mesajlar</h1>
+
+    <!-- Tabs -->
+    <div style="display: flex; gap: 16px; margin-bottom: 32px; border-bottom: 2px solid var(--border);">
+        <a href="{% url 'organization:message_inbox' %}"
+           style="padding: 12px 24px; font-size: 16px; font-weight: 600; text-decoration: none; color: var(--primary); border-bottom: 3px solid var(--primary); margin-bottom: -2px;">
+            📥 Gelen Kutusu
+            {% if unread_count > 0 %}
+                <span style="background: #FF3B30; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 8px;">{{ unread_count }}</span>
+            {% endif %}
+        </a>
+        <a href="{% url 'organization:message_sent' %}"
+           style="padding: 12px 24px; font-size: 16px; font-weight: 600; text-decoration: none; color: var(--text-light);">
+            📤 Gönderilen
+        </a>
+        <a href="{% url 'organization:message_compose' %}"
+           style="padding: 12px 24px; font-size: 16px; font-weight: 600; text-decoration: none; color: var(--text-light);">
+            ✍️ Yeni Mesaj
+        </a>
+    </div>
+
+    <!-- Conversations List -->
+    <div class="card">
+        {% if conversations %}
+            <div style="display: flex; flex-direction: column; gap: 0;">
+                {% for conv in conversations %}
+                <a href="{% url 'organization:message_detail' conv.last_message.id %}"
+                   style="padding: 20px 32px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit; transition: background 0.2s; {% if conv.unread_count > 0 %}background: var(--bg-secondary);{% endif %}"
+                   onmouseover="this.style.background='var(--bg-secondary)'"
+                   onmouseout="this.style.background='{% if conv.unread_count > 0 %}var(--bg-secondary){% else %}var(--bg){% endif %}'">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                            {% if conv.unread_count > 0 %}
+                                <span style="background: var(--primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700;">{{ conv.unread_count }}</span>
+                            {% endif %}
+                            <span style="font-size: 17px; {% if conv.unread_count > 0 %}font-weight: 700;{% else %}font-weight: 500;{% endif %} color: var(--text);">{{ conv.other_person.username }}</span>
+                        </div>
+                        <div style="font-size: 14px; color: var(--text-light); {% if conv.unread_count > 0 %}font-weight: 600;{% endif %}">{{ conv.last_message.content|truncatewords:20 }}</div>
+                    </div>
+                    <div style="text-align: right; color: var(--text-light); font-size: 13px;">
+                        {{ conv.last_message.created_at|date:"d M Y, H:i" }}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 80px 20px; color: var(--text-light);">
+                <p style="font-size: 18px;">Henüz mesajlaşmanız yok.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

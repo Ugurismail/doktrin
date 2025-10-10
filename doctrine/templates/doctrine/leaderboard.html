@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Lider Tablosu - Doktrin{% endblock %}
+
+{% block content %}
+
+<div style="max-width: 1200px; margin: 0 auto; padding: var(--space-lg) var(--space-md);">
+    <h1 style="font-size: 36px; font-weight: 700; margin-bottom: var(--space-xl);">🏆 Lider Tablosu</h1>
+
+    <!-- En Aktif Katkıcılar -->
+    <div class="card" style="margin-bottom: var(--space-xl);">
+        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: var(--space-lg);">⭐ En Aktif Katkıcılar</h2>
+        {% if top_contributors %}
+            <div style="display: grid; gap: var(--space-sm);">
+                {% for user in top_contributors %}
+                <a href="{% url 'users:user_profile' user.username %}" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-md); background: var(--bg-secondary); border-radius: var(--radius); text-decoration: none; color: var(--text); transition: all 0.2s;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg-secondary)'">
+                    <div style="display: flex; align-items: center; gap: var(--space-md);">
+                        <div style="font-size: 18px; font-weight: 700; color: var(--text-secondary); min-width: 30px;">#{{ forloop.counter }}</div>
+                        <div>
+                            <div style="font-size: 16px; font-weight: 600;">{{ user.username }}</div>
+                            {% if user.current_team %}
+                            <div style="font-size: 13px; color: var(--text-secondary);">{{ user.current_team.display_name }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div style="font-size: 14px; color: var(--text-secondary);">
+                        {{ user.vote_count }} oy • {{ user.comment_count }} yorum
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="text-align: center; color: var(--text-secondary); padding: var(--space-lg);">Henüz katkıcı yok</p>
+        {% endif %}
+    </div>
+
+    <!-- Liderler -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: var(--space-lg);">
+        <!-- Birlik Liderleri -->
+        <div class="card">
+            <h3 style="font-size: 20px; font-weight: 700; margin-bottom: var(--space-md);">👑 Birlik Liderleri</h3>
+            {% if union_leaders %}
+                <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+                    {% for leader in union_leaders %}
+                    <a href="{% url 'users:user_profile' leader.username %}" style="padding: var(--space-sm); background: var(--bg-secondary); border-radius: var(--radius); text-decoration: none; color: var(--text); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600;">{{ leader.username }}</span>
+                        <span style="font-size: 13px; color: var(--text-secondary);">{{ leader.vote_count }} oy</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="text-align: center; color: var(--text-secondary); padding: var(--space-md); font-size: 14px;">Henüz lider yok</p>
+            {% endif %}
+        </div>
+
+        <!-- Takım Liderleri -->
+        <div class="card">
+            <h3 style="font-size: 20px; font-weight: 700; margin-bottom: var(--space-md);">👥 Takım Liderleri</h3>
+            {% if squad_leaders %}
+                <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+                    {% for leader in squad_leaders %}
+                    <a href="{% url 'users:user_profile' leader.username %}" style="padding: var(--space-sm); background: var(--bg-secondary); border-radius: var(--radius); text-decoration: none; color: var(--text); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600;">{{ leader.username }}</span>
+                        <span style="font-size: 13px; color: var(--text-secondary);">{{ leader.vote_count }} oy</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="text-align: center; color: var(--text-secondary); padding: var(--space-md); font-size: 14px;">Henüz lider yok</p>
+            {% endif %}
+        </div>
+
+        <!-- Ekip Liderleri -->
+        <div class="card">
+            <h3 style="font-size: 20px; font-weight: 700; margin-bottom: var(--space-md);">📋 Ekip Liderleri</h3>
+            {% if team_leaders %}
+                <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+                    {% for leader in team_leaders %}
+                    <a href="{% url 'users:user_profile' leader.username %}" style="padding: var(--space-sm); background: var(--bg-secondary); border-radius: var(--radius); text-decoration: none; color: var(--text); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600;">{{ leader.username }}</span>
+                        <span style="font-size: 13px; color: var(--text-secondary);">{{ leader.vote_count }} oy</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="text-align: center; color: var(--text-secondary); padding: var(--space-md); font-size: 14px;">Henüz lider yok</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

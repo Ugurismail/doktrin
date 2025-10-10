@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ other_person.username }} ile Mesajlaşma - Doktrin{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; padding-left: 40px; padding-right: 40px;">
+    <a href="{% if is_sender %}{% url 'organization:message_sent' %}{% else %}{% url 'organization:message_inbox' %}{% endif %}" class="proposal-back-link">
+        ← Geri Dön
+    </a>
+
+    <!-- Başlık -->
+    <div style="margin-top: 24px; margin-bottom: 32px;">
+        <h1 style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">{{ other_person.username }} ile Mesajlaşma</h1>
+        <p style="color: var(--text-light); font-size: 15px;">{{ conversation.count }} mesaj</p>
+    </div>
+
+    <!-- Mesaj Geçmişi (Thread) -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+        {% for msg in conversation %}
+        <div style="display: flex; {% if msg.sender == user %}justify-content: flex-end;{% else %}justify-content: flex-start;{% endif %}">
+            <div style="max-width: 70%; background: {% if msg.sender == user %}#0066FF{% else %}var(--bg-secondary){% endif %};
+                        padding: 16px 20px; border-radius: 16px;
+                        {% if msg.sender == user %}border-bottom-right-radius: 4px;{% else %}border-bottom-left-radius: 4px; border: 1px solid var(--border);{% endif %}
+                        {% if msg.id == message.id %}box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.2);{% endif %}">
+
+                <!-- Konu (sadece ilk mesaj veya konu değişmişse) -->
+                {% if forloop.first or msg.subject != forloop.parentloop.previous.subject %}
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px; opacity: 0.8; border-bottom: 1px solid {% if msg.sender == user %}rgba(255,255,255,0.3){% else %}var(--border){% endif %}; padding-bottom: 8px; color: {% if msg.sender == user %}#FFFFFF{% else %}var(--text){% endif %};">
+                    {{ msg.subject }}
+                </div>
+                {% endif %}
+
+                <!-- Mesaj içeriği -->
+                <div style="font-size: 15px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 8px; color: {% if msg.sender == user %}#FFFFFF{% else %}var(--text){% endif %};">{{ msg.content }}</div>
+
+                <!-- Tarih -->
+                <div style="font-size: 11px; opacity: 0.7; text-align: right; color: {% if msg.sender == user %}#FFFFFF{% else %}var(--text){% endif %};">
+                    {{ msg.created_at|date:"d M Y, H:i" }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Inline Mesaj Formu -->
+    <div style="margin-top: 32px; position: sticky; bottom: 0; background: var(--bg); padding: 20px 0; border-top: 2px solid var(--border);">
+        <form method="post" style="display: flex; gap: 12px; align-items: flex-end;">
+            {% csrf_token %}
+            <textarea
+                name="content"
+                required
+                placeholder="{{ other_person.username }} kişisine mesaj yazın..."
+                style="flex: 1; min-height: 60px; max-height: 200px; padding: 14px 16px; border: 2px solid var(--border); border-radius: 12px; font-size: 15px; font-family: inherit; line-height: 1.5; background: var(--bg-secondary); color: var(--text); resize: vertical;"
+                onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); this.form.submit(); }"
+            ></textarea>
+            <button
+                type="submit"
+                class="btn btn-primary"
+                style="padding: 14px 24px; font-size: 16px; height: 60px; border-radius: 12px; white-space: nowrap;">
+                📨 Gönder
+            </button>
+        </form>
+        <p style="margin-top: 8px; font-size: 12px; color: var(--text-light); text-align: center;">
+            Enter ile gönder, Shift+Enter ile yeni satır
+        </p>
+    </div>
+</div>
+
+<style>
+/* Scroll animasyonu için */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container > div > div {
+    animation: slideIn 0.3s ease;
+}
+</style>
+
+<script>
+// Sayfa yüklendiğinde en alta scroll et
+document.addEventListener('DOMContentLoaded', function() {
+    // Hemen en alta scroll (instant - animasyonsuz)
+    window.scrollTo(0, document.body.scrollHeight);
+
+    // Textarea'ya focus
+    const textarea = document.querySelector('textarea[name="content"]');
+    if (textarea) {
+        setTimeout(() => textarea.focus(), 100);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Taslaklar{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div style="margin-bottom: 48px; padding-bottom: 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 style="margin-bottom: 8px;">📝 Taslaklar</h1>
+            <p style="color: var(--text-secondary); font-size: 14px;">Kaydettiğiniz öneri taslakları</p>
+        </div>
+    </div>
+
+    {% if drafts %}
+    <div style="display: grid; gap: 16px;">
+        {% for draft in drafts %}
+        <div class="card" style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                <div style="flex: 1;">
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">
+                        {% if draft.draft_title %}
+                            {{ draft.draft_title }}
+                        {% else %}
+                            {{ draft.get_proposal_type_display }}
+                            {% if draft.related_article %}
+                                - Madde {{ draft.related_article.article_number }}
+                            {% endif %}
+                        {% endif %}
+                    </h3>
+                    <div style="display: flex; gap: 12px; font-size: 13px; color: var(--text-secondary);">
+                        <span>{{ draft.get_proposal_type_display }}</span>
+                        {% if draft.related_article %}
+                        <span>•</span>
+                        <span>{{ draft.related_article.get_article_type_display }} {{ draft.related_article.article_number }}</span>
+                        {% endif %}
+                        <span>•</span>
+                        <span>{{ draft.updated_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <a href="{% url 'doctrine:load_proposal_draft' draft.id %}" class="btn btn-primary" style="font-size: 13px; padding: 6px 12px;">
+                        Devam Et
+                    </a>
+                    <a href="{% url 'doctrine:delete_draft' draft.id %}"
+                       onclick="return confirm('Bu taslağı silmek istediğinizden emin misiniz?')"
+                       class="btn btn-secondary"
+                       style="font-size: 13px; padding: 6px 12px; background: var(--error); color: white;">
+                        Sil
+                    </a>
+                </div>
+            </div>
+
+            {% if draft.proposed_content %}
+            <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 8px;">
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">İçerik:</div>
+                <div style="font-size: 14px; color: var(--text-primary); white-space: pre-wrap; max-height: 100px; overflow: hidden;">{{ draft.proposed_content|truncatewords:50 }}</div>
+            </div>
+            {% endif %}
+
+            {% if draft.justification %}
+            <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Gerekçe:</div>
+                <div style="font-size: 14px; color: var(--text-primary); white-space: pre-wrap; max-height: 60px; overflow: hidden;">{{ draft.justification|truncatewords:30 }}</div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 80px 0;">
+        <h2 style="font-size: 24px; margin-bottom: 16px;">📝 Henüz Taslak Yok</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 32px;">Öneri oluştururken "Taslak Olarak Kaydet" butonunu kullanarak taslak kaydedebilirsiniz.</p>
+        <a href="{% url 'doctrine:doctrine_list' %}" class="btn btn-primary">Doktrin'e Git</a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

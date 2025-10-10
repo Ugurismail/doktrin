@@ -1,0 +1,491 @@
+{% extends 'base.html' %}
+
+{% block title %}Tahminler{% endblock %}
+
+{% block content %}
+
+<style>
+/* Premium Predictions Page Styles */
+.predictions-hero {
+    background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+    padding: 80px 40px;
+    text-align: center;
+    margin: calc(var(--spacing-xl) * -1) calc(var(--spacing-xl) * -1) var(--spacing-2xl);
+    border-radius: 0 0 32px 32px;
+    position: relative;
+    overflow: hidden;
+}
+
+[data-theme="dark"] .predictions-hero {
+    background: linear-gradient(135deg, #5B21B6 0%, #4338CA 100%);
+}
+
+.predictions-hero::before {
+    content: '🔮';
+    font-size: 400px;
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    opacity: 0.1;
+}
+
+.predictions-hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.predictions-hero h1 {
+    font-family: 'EB Garamond', serif;
+    font-size: 72px;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 16px;
+    letter-spacing: -2px;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.2);
+}
+
+.predictions-hero-subtitle {
+    font-size: 20px;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 32px;
+    font-weight: 400;
+}
+
+.predictions-stats {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.prediction-stat {
+    text-align: center;
+}
+
+.prediction-stat-number {
+    font-size: 48px;
+    font-weight: 800;
+    color: white;
+    display: block;
+    line-height: 1;
+}
+
+.prediction-stat-label {
+    font-size: 14px;
+    color: rgba(255,255,255,0.8);
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Tabs */
+.predictions-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: var(--spacing-xl);
+    background: var(--bg-secondary);
+    padding: 8px;
+    border-radius: 16px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.prediction-tab {
+    flex: 1;
+    padding: 16px 24px;
+    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+[data-theme="light"] .prediction-tab {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.prediction-tab:hover {
+    background: var(--bg);
+}
+
+.predictions-tabs .prediction-tab.active,
+.predictions-tabs button.active {
+    background: #2D3748 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="light"] .predictions-tabs .prediction-tab.active,
+[data-theme="light"] .predictions-tabs button.active {
+    background: linear-gradient(135deg, #8B5CF6, #6366F1) !important;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.prediction-tab-content {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.prediction-tab-content.active {
+    display: block;
+}
+
+/* Prediction Cards */
+.predictions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.prediction-card-premium {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    position: relative;
+    overflow: hidden;
+}
+
+.prediction-card-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #8B5CF6, #6366F1, #8B5CF6);
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.prediction-card-premium:hover::before {
+    opacity: 1;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.prediction-card-premium:hover {
+    border-color: #8B5CF6;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(139, 92, 246, 0.15);
+}
+
+.prediction-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-active {
+    background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+    color: #059669;
+}
+
+.status-expired {
+    background: linear-gradient(135deg, #FEE2E2, #FECACA);
+    color: #DC2626;
+}
+
+.status-verified {
+    background: linear-gradient(135deg, #E0E7FF, #C7D2FE);
+    color: #4338CA;
+}
+
+.prediction-title-premium {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.3;
+}
+
+.prediction-description-premium {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.prediction-footer-premium {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.prediction-meta-premium {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.prediction-meta-premium span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.prediction-followers {
+    background: var(--pastel-blue);
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.prediction-votes {
+    display: flex;
+    gap: 16px;
+}
+
+.vote-count {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.vote-count.correct {
+    color: #059669;
+}
+
+.vote-count.incorrect {
+    color: #DC2626;
+}
+
+/* Empty State */
+.predictions-empty-state {
+    text-align: center;
+    padding: 100px 40px;
+}
+
+.predictions-empty-icon {
+    font-size: 100px;
+    margin-bottom: 24px;
+    opacity: 0.3;
+}
+
+.predictions-empty-text {
+    font-size: 20px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+    .predictions-hero h1 {
+        font-size: 48px;
+    }
+
+    .predictions-tabs {
+        flex-direction: column;
+    }
+
+    .predictions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div style="max-width: 1400px; margin: 0 auto; padding: 0 var(--spacing-lg) var(--spacing-2xl);">
+    <!-- Hero Section -->
+    <div class="predictions-hero">
+        <div class="predictions-hero-content">
+            <h1>🔮 TAHMİNLER</h1>
+            <p class="predictions-hero-subtitle">
+                Geleceği tahmin et, doğruluğunu kanıtla
+            </p>
+            <a href="{% url 'predictions:create_prediction' %}" class="btn btn-primary" style="padding: 16px 32px; font-size: 16px; border-radius: 12px; background: white; color: #8B5CF6;">
+                ✨ Yeni Tahmin Oluştur
+            </a>
+
+            <div class="predictions-stats">
+                <div class="prediction-stat">
+                    <span class="prediction-stat-number">{{ active_predictions|length }}</span>
+                    <span class="prediction-stat-label">Aktif</span>
+                </div>
+                <div class="prediction-stat">
+                    <span class="prediction-stat-number">{{ expired_predictions|length }}</span>
+                    <span class="prediction-stat-label">Doğrulanıyor</span>
+                </div>
+                <div class="prediction-stat">
+                    <span class="prediction-stat-number">{{ verified_predictions|length }}</span>
+                    <span class="prediction-stat-label">Tamamlandı</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="predictions-tabs">
+        <button class="prediction-tab active" onclick="switchPredictionTab('active')">
+            ⏳ Aktif Tahminler
+        </button>
+        <button class="prediction-tab" onclick="switchPredictionTab('expired')">
+            ⏱️ Doğrulanıyor
+        </button>
+        <button class="prediction-tab" onclick="switchPredictionTab('verified')">
+            ✅ Tamamlandı
+        </button>
+    </div>
+
+    <!-- Active Predictions Tab -->
+    <div id="active-tab" class="prediction-tab-content active">
+        {% if active_predictions %}
+        <div class="predictions-grid">
+            {% for prediction in active_predictions %}
+            <a href="{% url 'predictions:prediction_detail' prediction.id %}" class="prediction-card-premium">
+                <span class="prediction-status-badge status-active">
+                    <span>⏳</span>
+                    <span>AKTİF</span>
+                </span>
+                <h3 class="prediction-title-premium">{{ prediction.title }}</h3>
+                <p class="prediction-description-premium">{{ prediction.description|truncatewords:25 }}</p>
+                <div class="prediction-footer-premium">
+                    <div class="prediction-meta-premium">
+                        <span>👤 {{ prediction.created_by.username }}</span>
+                        <span>•</span>
+                        <span>📅 {{ prediction.deadline|date:"d M Y" }}</span>
+                    </div>
+                    <span class="prediction-followers">
+                        {{ prediction.follower_count }} takipçi
+                    </span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="predictions-empty-state">
+            <div class="predictions-empty-icon">⏳</div>
+            <p class="predictions-empty-text">Henüz aktif tahmin bulunmuyor</p>
+            <a href="{% url 'predictions:create_prediction' %}" class="btn btn-primary" style="padding: 14px 28px; font-size: 16px; border-radius: 12px;">
+                İlk Tahmini Oluştur
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Expired Predictions Tab -->
+    <div id="expired-tab" class="prediction-tab-content">
+        {% if expired_predictions %}
+        <div class="predictions-grid">
+            {% for prediction in expired_predictions %}
+            <a href="{% url 'predictions:prediction_detail' prediction.id %}" class="prediction-card-premium">
+                <span class="prediction-status-badge status-expired">
+                    <span>⏱️</span>
+                    <span>DOĞRULANIYOR</span>
+                </span>
+                <h3 class="prediction-title-premium">{{ prediction.title }}</h3>
+                <p class="prediction-description-premium">{{ prediction.description|truncatewords:25 }}</p>
+                <div class="prediction-footer-premium">
+                    <div class="prediction-meta-premium">
+                        <span>👤 {{ prediction.created_by.username }}</span>
+                        <span>•</span>
+                        <span>📅 {{ prediction.deadline|date:"d M Y" }}</span>
+                    </div>
+                    <div class="prediction-votes">
+                        <span class="vote-count correct">✓ {{ prediction.vote_yes_count }}</span>
+                        <span class="vote-count incorrect">✗ {{ prediction.vote_no_count }}</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="predictions-empty-state">
+            <div class="predictions-empty-icon">⏱️</div>
+            <p class="predictions-empty-text">Doğrulanmayı bekleyen tahmin bulunmuyor</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Verified Predictions Tab -->
+    <div id="verified-tab" class="prediction-tab-content">
+        {% if verified_predictions %}
+        <div class="predictions-grid">
+            {% for prediction in verified_predictions %}
+            <a href="{% url 'predictions:prediction_detail' prediction.id %}" class="prediction-card-premium">
+                <span class="prediction-status-badge status-verified">
+                    <span>✅</span>
+                    <span>TAMAMLANDI</span>
+                </span>
+                <h3 class="prediction-title-premium">{{ prediction.title }}</h3>
+                <p class="prediction-description-premium">{{ prediction.description|truncatewords:25 }}</p>
+                <div class="prediction-footer-premium">
+                    <div class="prediction-meta-premium">
+                        <span>👤 {{ prediction.created_by.username }}</span>
+                        <span>•</span>
+                        <span>
+                            {% if prediction.result == 'CORRECT' %}
+                            <span style="color: #059669; font-weight: 700;">✓ TUTTU</span>
+                            {% else %}
+                            <span style="color: #DC2626; font-weight: 700;">✗ TUTMADI</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="prediction-votes">
+                        <span class="vote-count correct">✓ {{ prediction.vote_yes_count }}</span>
+                        <span class="vote-count incorrect">✗ {{ prediction.vote_no_count }}</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="predictions-empty-state">
+            <div class="predictions-empty-icon">✅</div>
+            <p class="predictions-empty-text">Henüz tamamlanmış tahmin bulunmuyor</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function switchPredictionTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.prediction-tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Remove active from all buttons
+    document.querySelectorAll('.prediction-tab').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Show selected tab
+    document.getElementById(tabName + '-tab').classList.add('active');
+
+    // Activate button
+    event.target.classList.add('active');
+}
+</script>
+
+{% endblock %}

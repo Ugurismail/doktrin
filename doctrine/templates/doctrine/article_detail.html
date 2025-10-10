@@ -1,0 +1,326 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ article.get_article_type_display }} {{ article.article_number }} - Doktrin{% endblock %}
+
+{% block content %}
+
+<div class="container proposal-container" style="max-width: 1400px; padding-left: 40px; padding-right: 40px;">
+    <!-- Back Button -->
+    <a href="{% url 'doctrine:doctrine_list' %}" class="proposal-back-link">
+        ← Doktrine Geri Dön
+    </a>
+
+    <!-- Single Column Layout -->
+    <div style="margin-top: 12px;">
+        <!-- Article Card -->
+        <div class="card">
+            <div class="proposal-header">
+                <div>
+                    <h1 class="proposal-title">
+                        {{ article.get_article_type_display }} {{ article.article_number }}
+                    </h1>
+                    <div class="proposal-meta">
+                        <span class="proposal-meta-item">
+                            {{ article.created_by.username }}
+                        </span>
+                        <span class="proposal-meta-separator">•</span>
+                        <span class="proposal-meta-item">
+                            {{ article.created_date|date:"d M Y" }}
+                        </span>
+                    </div>
+                </div>
+
+                {% if article.article_type == 'FOUNDATION_LAW' %}
+                    <span class="proposal-badge-active" style="background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); color: #D97706;">
+                        İlke
+                    </span>
+                {% else %}
+                    <span class="proposal-badge-passed">
+                        Yasa
+                    </span>
+                {% endif %}
+            </div>
+
+            <div class="proposal-content-section">
+                <h3 class="proposal-content-title">İçerik</h3>
+
+                <!-- Tags Display -->
+                {% if article.tags.all %}
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;">
+                    {% for tag in article.tags.all %}
+                    <a href="{% url 'doctrine:doctrine_list' %}?tag={{ tag.slug }}"
+                       style="padding: 6px 16px; border-radius: 16px; font-size: 13px; text-decoration: none; background: {{ tag.color }}; color: white; font-weight: 500;"
+                       title="{{ tag.description }}">
+                        🏷️ {{ tag.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <p class="proposal-content-text" style="text-align: justify; font-size: 18px; line-height: 1.8;">
+                    {{ article.content }}
+                </p>
+            </div>
+
+            <!-- Collapsible Justification Section -->
+            {% if justification_text or can_edit_justification %}
+            <div style="margin-top: 32px; padding-top: 32px; border-top: 2px solid var(--border);">
+                <button
+                    onclick="toggleJustification()"
+                    class="btn btn-secondary"
+                    style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; font-size: 16px; font-weight: 600;"
+                    id="justificationToggleBtn"
+                >
+                    <span>📄 Gerekçe</span>
+                    <span id="justificationIcon" style="font-size: 20px; transition: transform 0.3s;">▼</span>
+                </button>
+
+                <div id="justificationContent" style="display: none; margin-top: 24px; padding: 24px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border);">
+                    {% if can_edit_justification %}
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+                        <button
+                            class="btn btn-primary"
+                            style="padding: 8px 16px; font-size: 14px;"
+                            onclick="toggleEditJustification()"
+                            id="editJustificationBtn"
+                        >
+                            Düzenle
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    <!-- View Mode -->
+                    <div id="justificationView">
+                        {% if justification_text %}
+                            <p style="font-size: 17px; line-height: 1.9; color: var(--text); font-style: italic; white-space: pre-wrap; text-align: justify;">{{ justification_text }}</p>
+                        {% else %}
+                            <div style="text-align: center; padding: 40px 20px; color: var(--text-light); font-size: 14px;">
+                                {% if article.article_type == 'FOUNDATION_LAW' %}
+                                    {% if can_edit_justification %}
+                                        <p>Gerekçe eklemek için "Düzenle" butonuna tıklayın.</p>
+                                    {% else %}
+                                        <p>Henüz gerekçe eklenmemiş.</p>
+                                    {% endif %}
+                                {% else %}
+                                    <p>Bu madde için gerekçe bulunmamaktadır.</p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Edit Mode -->
+                    {% if can_edit_justification %}
+                    <div id="justificationEdit" style="display: none;">
+                        <form method="post">
+                            {% csrf_token %}
+                            <textarea
+                                name="justification"
+                                placeholder="Gerekçenizi buraya yazın..."
+                                style="width: 100%; min-height: 300px; padding: 16px; border: 2px solid var(--border); border-radius: 12px; font-size: 16px; font-family: inherit; line-height: 1.6; background: var(--bg); color: var(--text); resize: vertical;"
+                            >{{ justification_text }}</textarea>
+                            <div style="display: flex; gap: 8px; margin-top: 12px;">
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                                    Kaydet
+                                </button>
+                                <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="toggleEditJustification()">
+                                    İptal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Version History Section -->
+        {% if versions %}
+        <div class="card" style="margin-top: 32px;">
+            <button
+                onclick="toggleVersionHistory()"
+                class="btn btn-secondary"
+                style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; font-size: 16px; font-weight: 600;"
+                id="versionToggleBtn"
+            >
+                <span>📚 Versiyon Geçmişi ({{ versions|length }})</span>
+                <span id="versionIcon" style="font-size: 20px; transition: transform 0.3s;">▼</span>
+            </button>
+
+            <div id="versionHistoryContent" style="display: none; margin-top: 24px;">
+                <!-- Version Search -->
+                <form method="get" style="margin-bottom: 20px;">
+                    <div style="position: relative;">
+                        <input
+                            type="text"
+                            name="version_search"
+                            value="{{ version_search }}"
+                            placeholder="🔍 Versiyon geçmişinde ara..."
+                            style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;"
+                        >
+                        {% if version_search %}
+                        <a href="{% url 'doctrine:article_detail' article.id %}" style="position: absolute; right: 12px; top: 12px; color: var(--text-light); text-decoration: none; font-size: 18px;">×</a>
+                        {% endif %}
+                    </div>
+                </form>
+
+                {% if version_search %}
+                <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 16px; border-left: 4px solid var(--primary);">
+                    <span style="font-size: 14px;">
+                        <strong>Arama:</strong> "{{ version_search }}"
+                        <span style="color: var(--text-light);">({{ versions|length }} sonuç bulundu)</span>
+                    </span>
+                </div>
+                {% endif %}
+
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    {% for version in versions %}
+                    <div style="padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                            <div>
+                                <span style="font-size: 14px; font-weight: 700; color: var(--accent);">v{{ version.version_number }}</span>
+                                <span style="margin: 0 8px; color: var(--text-secondary);">•</span>
+                                <span style="font-size: 14px; color: var(--text-secondary);">{{ version.created_at|date:"d M Y, H:i" }}</span>
+                            </div>
+                            {% if version.changed_by_proposal %}
+                            <a href="{% url 'doctrine:proposal_detail' version.changed_by_proposal.id %}" style="font-size: 13px; color: var(--accent); text-decoration: none;">
+                                Öneriye Git →
+                            </a>
+                            {% endif %}
+                        </div>
+                        <p style="font-size: 15px; line-height: 1.7; color: var(--text); margin: 0; white-space: pre-wrap;">{{ version.content }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Comments Section -->
+        <div class="card" style="margin-top: 32px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                <h2 style="font-size: 28px; font-weight: 700; margin: 0;">Tartışma</h2>
+                <span style="font-size: 16px; color: var(--text-light);">{{ discussions.paginator.count }} yorum</span>
+            </div>
+
+            <!-- Comment Form -->
+            <div style="margin-bottom: 40px;">
+                <form method="post">
+                    {% csrf_token %}
+                    <textarea
+                        name="comment"
+                        placeholder="Görüşlerinizi paylaşın..."
+                        required
+                        style="width: 100%; min-height: 140px; padding: 20px; border: 2px solid var(--border); border-radius: 12px; font-size: 16px; font-family: inherit; background: var(--bg-secondary); color: var(--text); resize: vertical; transition: all 0.3s;"
+                        onfocus="this.style.borderColor='var(--primary)'"
+                        onblur="this.style.borderColor='var(--border)'"
+                    ></textarea>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 16px; padding: 14px 28px; font-size: 16px;">
+                        Yorum Gönder
+                    </button>
+                </form>
+            </div>
+
+            <!-- Comments List -->
+            {% if discussions %}
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    {% for discussion in discussions %}
+                    <div style="padding: 24px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border);">
+                        <!-- Yorum metni önce, büyük -->
+                        <p style="font-size: 18px; line-height: 1.8; color: var(--text); margin: 0 0 16px 0; font-weight: 400;">{{ discussion.comment_text }}</p>
+
+                        <!-- Meta bilgiler küçük, altta -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <div>
+                                <span style="font-weight: 600; color: var(--text-light); font-size: 13px;">{{ discussion.user.username }}</span>
+                                <span style="margin-left: 8px; font-size: 12px; color: var(--text-light);">{{ discussion.created_at|date:"d M Y, H:i" }}</span>
+                            </div>
+                        </div>
+
+                        {% include "doctrine/_discussion_vote_buttons.html" %}
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 80px 20px; color: var(--text-light);">
+                    <p style="font-size: 18px;">Henüz yorum yok. İlk yorumu siz yapın!</p>
+                </div>
+            {% endif %}
+
+            <!-- Pagination -->
+            {% if discussions.has_other_pages %}
+            <div class="pagination" style="margin-top: 48px;">
+                {% if discussions.has_previous %}
+                    <a href="?page=1">İlk</a>
+                    <a href="?page={{ discussions.previous_page_number }}">←</a>
+                {% else %}
+                    <span class="disabled">İlk</span>
+                    <span class="disabled">←</span>
+                {% endif %}
+
+                <span class="page-info">
+                    Sayfa {{ discussions.number }} / {{ discussions.paginator.num_pages }}
+                </span>
+
+                {% if discussions.has_next %}
+                    <a href="?page={{ discussions.next_page_number }}">→</a>
+                    <a href="?page={{ discussions.paginator.num_pages }}">Son</a>
+                {% else %}
+                    <span class="disabled">→</span>
+                    <span class="disabled">Son</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleJustification() {
+    const content = document.getElementById('justificationContent');
+    const icon = document.getElementById('justificationIcon');
+
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.style.transform = 'rotate(180deg)';
+        icon.textContent = '▲';
+    } else {
+        content.style.display = 'none';
+        icon.style.transform = 'rotate(0deg)';
+        icon.textContent = '▼';
+    }
+}
+
+function toggleEditJustification() {
+    const viewMode = document.getElementById('justificationView');
+    const editMode = document.getElementById('justificationEdit');
+    const editBtn = document.getElementById('editJustificationBtn');
+
+    if (viewMode.style.display === 'none') {
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+        if (editBtn) editBtn.textContent = 'Düzenle';
+    } else {
+        viewMode.style.display = 'none';
+        editMode.style.display = 'block';
+        if (editBtn) editBtn.textContent = 'İptal';
+    }
+}
+
+function toggleVersionHistory() {
+    const content = document.getElementById('versionHistoryContent');
+    const icon = document.getElementById('versionIcon');
+
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.style.transform = 'rotate(180deg)';
+        icon.textContent = '▲';
+    } else {
+        content.style.display = 'none';
+        icon.style.transform = 'rotate(0deg)';
+        icon.textContent = '▼';
+    }
+}
+</script>
+
+{% endblock %}

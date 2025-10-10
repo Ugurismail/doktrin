@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Birlik Önerisi Oluştur - Doktrin{% endblock %}
+
+{% block content %}
+
+<div class="container" style="max-width: 900px; padding-top: var(--spacing-xl);">
+    <div style="margin-bottom: var(--spacing-lg);">
+        <a href="{% url 'organization:my_squad' %}" style="color: var(--primary); text-decoration: none; font-weight: 500;">
+            ← Geri Dön
+        </a>
+    </div>
+
+    <div class="card">
+        <h1 style="font-size: 36px; font-weight: 700; letter-spacing: -1.5px; margin-bottom: var(--spacing-md);">
+            Birlik Oluşturma Önerisi
+        </h1>
+
+        <div style="padding: var(--spacing-lg); background: var(--pastel-peach); border-radius: 12px; margin-bottom: var(--spacing-xl);">
+            <p style="line-height: 1.8; margin: 0;">
+                <strong>Birlik oluşturmak için:</strong><br>
+                • En az 3 takım lideri oy birliği ile anlaşmalıdır<br>
+                • Toplam en az 135 kişi gereklidir<br>
+                • Tüm takımlar aynı ilde olmalıdır
+            </p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="union_name">Birlik Adı</label>
+                <input type="text" id="union_name" name="union_name" required placeholder="Örn: İstanbul 1. Birlik">
+            </div>
+
+            <div class="form-group">
+                <label for="leader_id">Birlik Lideri</label>
+                <select id="leader_id" name="leader_id" required>
+                    <option value="">Lider Seçin</option>
+                    {% for user in potential_leaders %}
+                    <option value="{{ user.id }}">
+                        {{ user.username }}
+                        {% if user.current_team and user.current_team.parent_squad %}
+                        ({{ user.current_team.parent_squad.name }})
+                        {% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Birliğe Dahil Olacak Takımlar (kendi takımınız otomatik dahil)</label>
+
+                <div style="padding: var(--spacing-lg); background: var(--pastel-blue); border-radius: 12px; margin-bottom: var(--spacing-md);">
+                    <input type="checkbox" checked disabled style="margin-right: var(--spacing-sm);">
+                    <strong>{{ user_squad.name }}</strong> ({{ user_squad.member_count }} üye, {{ user_squad.team_count }} ekip)
+                </div>
+                <input type="hidden" name="squad_ids" value="{{ user_squad.id }}">
+
+                <div style="display: grid; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
+                    {% for squad in available_squads %}
+                    <label style="padding: var(--spacing-md); background: var(--background-secondary); border-radius: 8px; cursor: pointer; display: flex; align-items: center;">
+                        <input type="checkbox" name="squad_ids" value="{{ squad.id }}" style="margin-right: var(--spacing-md);">
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">{{ squad.name }}</div>
+                            <div style="font-size: 14px; color: var(--text-secondary);">
+                                {{ squad.member_count }} üye, {{ squad.team_count }} ekip
+                                {% if squad.leader %} · Lider: {{ squad.leader.username }}{% endif %}
+                            </div>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+
+                {% if not available_squads %}
+                <p style="color: var(--text-secondary); text-align: center; padding: var(--spacing-2xl);">
+                    İlinizde başka uygun takım bulunmuyor.
+                </p>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: var(--spacing-lg);">
+                Birlik Önerisi Oluştur
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

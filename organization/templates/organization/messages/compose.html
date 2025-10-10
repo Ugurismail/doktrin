@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Yeni Mesaj - Doktrin{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1400px; padding-left: 40px; padding-right: 40px;">
+    <h1 style="font-size: 36px; font-weight: 700; margin-bottom: 32px;">Mesajlar</h1>
+
+    <!-- Tabs -->
+    <div style="display: flex; gap: 16px; margin-bottom: 32px; border-bottom: 2px solid var(--border);">
+        <a href="{% url 'organization:message_inbox' %}"
+           style="padding: 12px 24px; font-size: 16px; font-weight: 600; text-decoration: none; color: var(--text-light);">
+            📥 Gelen Kutusu
+        </a>
+        <a href="{% url 'organization:message_sent' %}"
+           style="padding: 12px 24px; font-size: 16px; font-weight: 600; text-decoration: none; color: var(--text-light);">
+            📤 Gönderilen
+        </a>
+        <a href="{% url 'organization:message_compose' %}"
+           style="padding: 12px 24px; font-size: 16px; font-weight: 600; text-decoration: none; color: var(--primary); border-bottom: 3px solid var(--primary); margin-bottom: -2px;">
+            ✍️ Yeni Mesaj
+        </a>
+    </div>
+
+    <!-- Compose Form -->
+    <div class="card">
+        {% if available_recipients %}
+            <form method="post">
+                {% csrf_token %}
+
+                <div style="margin-bottom: 24px;">
+                    <label for="recipient_id" style="display: block; font-weight: 600; margin-bottom: 12px; font-size: 16px;">Alıcı</label>
+                    <select name="recipient_id" id="recipient_id" required {% if preselected_recipient %}disabled{% endif %}
+                            style="width: 100%; padding: 14px 16px; border: 2px solid var(--border); border-radius: 8px; font-size: 16px; background: var(--bg-secondary); color: var(--text);">
+                        {% if preselected_recipient %}
+                            <option value="{{ preselected_recipient.id }}" selected>{{ preselected_recipient.username }}</option>
+                        {% else %}
+                            <option value="">Alıcı seçin...</option>
+                            {% for recipient in available_recipients %}
+                                <option value="{{ recipient.id }}">{{ recipient.username }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                    {% if preselected_recipient %}
+                        <input type="hidden" name="recipient_id" value="{{ preselected_recipient.id }}">
+                    {% endif %}
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <label for="subject" style="display: block; font-weight: 600; margin-bottom: 12px; font-size: 16px;">Konu</label>
+                    <input type="text" name="subject" id="subject" required
+                           placeholder="Mesaj konusu"
+                           value="{% if preselected_subject %}{{ preselected_subject }}{% endif %}"
+                           style="width: 100%; padding: 14px 16px; border: 2px solid var(--border); border-radius: 8px; font-size: 16px; background: var(--bg-secondary); color: var(--text);">
+                </div>
+
+                <div style="margin-bottom: 32px;">
+                    <label for="content" style="display: block; font-weight: 600; margin-bottom: 12px; font-size: 16px;">Mesaj</label>
+                    <textarea name="content" id="content" required
+                              placeholder="Mesajınızı yazın..."
+                              style="width: 100%; min-height: 300px; padding: 16px; border: 2px solid var(--border); border-radius: 8px; font-size: 16px; font-family: inherit; line-height: 1.6; background: var(--bg-secondary); color: var(--text); resize: vertical;"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1; padding: 14px 28px; font-size: 16px;">
+                        📨 Gönder
+                    </button>
+                    <a href="{% url 'organization:message_inbox' %}" class="btn btn-secondary" style="flex: 1; padding: 14px 28px; font-size: 16px; text-align: center; text-decoration: none;">
+                        İptal
+                    </a>
+                </div>
+            </form>
+        {% else %}
+            <div style="text-align: center; padding: 80px 20px; color: var(--text-light);">
+                <p style="font-size: 18px; margin-bottom: 12px;">Mesaj gönderebileceğiniz lider bulunmamaktadır.</p>
+                <p style="font-size: 15px;">Sadece aynı veya farklı seviyelerdeki liderlerle mesajlaşabilirsiniz.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

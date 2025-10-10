@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Organizasyon Grafiği - Doktrin{% endblock %}
+
+{% block content %}
+
+<div class="container" style="max-width: 1200px; padding: var(--spacing-lg) var(--spacing-md);">
+    <div style="margin-bottom: var(--spacing-xl);">
+        <h1 style="font-size: 28px; font-weight: 700; margin: 0;">🏛️ Organizasyon Grafiği</h1>
+        <p style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">
+            Örgütlenme hiyerarşinizi görselleştirin
+        </p>
+    </div>
+
+    {% if user_team %}
+    <!-- Hiyerarşi Ağacı -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: var(--spacing-xl);">
+
+        <!-- İl Örgütü (en üstte) -->
+        {% if province_org %}
+        <div style="text-align: center;">
+            <div style="background: linear-gradient(135deg, #FFD93D 0%, #FF6B35 100%); padding: var(--spacing-lg); border-radius: 16px; min-width: 300px; box-shadow: var(--shadow-soft);">
+                <div style="font-size: 13px; color: white; opacity: 0.9; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;">İl Örgütü</div>
+                <div style="font-size: 20px; font-weight: 700; color: white;">{{ province_org.name }}</div>
+                <div style="font-size: 13px; color: white; opacity: 0.9; margin-top: 4px;">Lider: {{ province_org.leader.username }}</div>
+                <div style="font-size: 13px; color: white; opacity: 0.9;">{{ province_org.member_count }} Üye</div>
+            </div>
+            <!-- Bağlantı çizgisi -->
+            <div style="width: 2px; height: 40px; background: var(--gray); margin: 0 auto;"></div>
+        </div>
+        {% endif %}
+
+        <!-- Birlik -->
+        {% if union %}
+        <div style="text-align: center;">
+            <div style="background: var(--pastel-mint); padding: var(--spacing-lg); border-radius: 16px; min-width: 280px; box-shadow: var(--shadow-soft);">
+                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;">Birlik</div>
+                <div style="font-size: 18px; font-weight: 700;">{{ union.name }}</div>
+                <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Lider: {{ union.leader.username }}</div>
+                <div style="font-size: 13px; color: var(--text-secondary);">{{ union.member_count }} Üye · {{ union.squad_count }} Takım</div>
+            </div>
+            <!-- Bağlantı çizgisi -->
+            <div style="width: 2px; height: 40px; background: var(--gray); margin: 0 auto;"></div>
+        </div>
+        {% endif %}
+
+        <!-- Takım -->
+        {% if squad %}
+        <div style="text-align: center;">
+            <div style="background: var(--pastel-lavender); padding: var(--spacing-lg); border-radius: 16px; min-width: 260px; box-shadow: var(--shadow-soft);">
+                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;">Takım</div>
+                <div style="font-size: 18px; font-weight: 700;">{{ squad.name }}</div>
+                <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Lider: {{ squad.leader.username }}</div>
+                <div style="font-size: 13px; color: var(--text-secondary);">{{ squad.member_count }} Üye · {{ squad.team_count }} Ekip</div>
+            </div>
+            <!-- Bağlantı çizgisi -->
+            <div style="width: 2px; height: 40px; background: var(--gray); margin: 0 auto;"></div>
+        </div>
+        {% endif %}
+
+        <!-- Ekip (en altta) -->
+        <div style="text-align: center;">
+            <div style="background: var(--pastel-blue); padding: var(--spacing-lg); border-radius: 16px; min-width: 240px; box-shadow: var(--shadow-soft); border: 3px solid var(--primary);">
+                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;">Ekibim</div>
+                <div style="font-size: 18px; font-weight: 700;">{{ user_team.display_name }}</div>
+                <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Lider: {{ user_team.leader.username }}</div>
+                <div style="font-size: 13px; color: var(--text-secondary);">{{ user_team.member_count }}/15 Üye</div>
+            </div>
+        </div>
+
+        <!-- Sen (kullanıcı) -->
+        <div style="text-align: center;">
+            <div style="width: 2px; height: 40px; background: var(--gray); margin: 0 auto;"></div>
+            <div style="background: white; border: 2px solid var(--primary); padding: var(--spacing-md); border-radius: 50%; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: var(--shadow-soft);">
+                <div style="font-size: 32px;">👤</div>
+            </div>
+            <div style="margin-top: var(--spacing-sm); font-weight: 600; color: var(--primary);">{{ user.username }}</div>
+        </div>
+    </div>
+
+    <!-- İstatistikler -->
+    <div class="card" style="margin-top: var(--spacing-2xl); padding: var(--spacing-lg);">
+        <h2 style="font-size: 18px; font-weight: 700; margin-bottom: var(--spacing-md);">📊 Hiyerarşi İstatistikleri</h2>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-md);">
+            <div style="text-align: center; padding: var(--spacing-md); background: var(--pastel-blue); border-radius: 12px;">
+                <div style="font-size: 24px; font-weight: 700; color: var(--primary);">{{ user_team.member_count }}</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Ekip Üyesi</div>
+            </div>
+            {% if squad %}
+            <div style="text-align: center; padding: var(--spacing-md); background: var(--pastel-lavender); border-radius: 12px;">
+                <div style="font-size: 24px; font-weight: 700; color: var(--lavender);">{{ squad.member_count }}</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Takım Üyesi</div>
+            </div>
+            {% endif %}
+            {% if union %}
+            <div style="text-align: center; padding: var(--spacing-md); background: var(--pastel-mint); border-radius: 12px;">
+                <div style="font-size: 24px; font-weight: 700; color: #059669;">{{ union.member_count }}</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Birlik Üyesi</div>
+            </div>
+            {% endif %}
+            {% if province_org %}
+            <div style="text-align: center; padding: var(--spacing-md); background: var(--pastel-peach); border-radius: 12px;">
+                <div style="font-size: 24px; font-weight: 700; color: #F97316;">{{ province_org.member_count }}</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">İl Örgütü Üyesi</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% else %}
+    <div class="card" style="text-align: center; padding: var(--spacing-2xl);">
+        <div style="font-size: 64px; margin-bottom: var(--spacing-md);">🏛️</div>
+        <h2 style="font-size: 20px; font-weight: 600; margin-bottom: var(--spacing-sm);">Henüz Örgütlenme Yok</h2>
+        <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">
+            Bir ekibe katılarak örgütlenmeye başlayın
+        </p>
+        <a href="{% url 'organization:my_team' %}" class="btn btn-primary">
+            Ekibe Katıl
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

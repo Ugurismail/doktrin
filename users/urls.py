@@ -1,0 +1,15 @@
+from django.urls import path
+from . import views
+
+app_name = 'users'
+
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('register/', views.register, name='register'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('profile/', views.profile, name='profile'),
+    path('user/<str:username>/', views.user_profile, name='user_profile'),
+    path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
+    path('guide/', views.user_guide, name='user_guide'),
+]

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Ekibe Katıl{% endblock %}
+
+{% block content %}
+
+<div class="container" style="max-width: 600px;">
+    <div style="text-align: center; margin-bottom: 48px;">
+        <h1 style="margin-bottom: 16px;">Ekibe Katıl</h1>
+        <p style="color: var(--text-secondary);">Davet kodunu girerek bir ekibe katılabilirsiniz</p>
+    </div>
+
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">Davet Kodu</label>
+                <input
+                    type="text"
+                    name="invite_code"
+                    required
+                    placeholder="Örn: ABC123XYZ"
+                    style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 12px; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; background: var(--bg-secondary); color: var(--text);"
+                    maxlength="50"
+                >
+                <small style="display: block; margin-top: 8px; color: var(--text-secondary);">
+                    Liderinizden aldığınız davet kodunu girin
+                </small>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                Ekibe Katıl
+            </button>
+        </form>
+
+        <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); text-align: center;">
+            <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">
+                Henüz davet kodunuz yok mu?
+            </p>
+            <a href="{% url 'organization:create_team' %}" class="btn btn-secondary">
+                Yeni Ekip Oluştur
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

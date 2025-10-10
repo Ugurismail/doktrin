@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}İl Örgütü Önerisi Oluştur - Doktrin{% endblock %}
+
+{% block content %}
+
+<div class="container" style="max-width: 900px; padding-top: var(--spacing-xl);">
+    <div style="margin-bottom: var(--spacing-lg);">
+        <a href="{% url 'organization:my_union' %}" style="color: var(--text-secondary); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500;">
+            ← Geri Dön
+        </a>
+    </div>
+
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: var(--spacing-2xl);">
+        <h1 style="font-size: 36px; font-weight: 700; letter-spacing: -1.5px; margin-bottom: var(--spacing-sm);">
+            İl Örgütü Oluşturma Önerisi
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 16px;">
+            En az 3 birlik lideri oy birliği ile anlaşmalıdır
+        </p>
+    </div>
+
+    <!-- Info Card -->
+    <div style="padding: var(--spacing-lg); background: var(--pastel-yellow); border-left: 4px solid #f59e0b; border-radius: 12px; margin-bottom: var(--spacing-xl);">
+        <p style="color: #92400e; font-weight: 500; line-height: 1.6; margin: 0;">
+            <strong>Minimum Gereksinimler:</strong><br>
+            • En az 3 birlik gerekli<br>
+            • Toplam en az 375 üye gerekli<br>
+            • Tüm birlikler aynı ilde olmalı<br>
+            • Tüm birlik liderlerinin onayı gerekli
+        </p>
+    </div>
+
+    <!-- Form -->
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- İl Örgütü Adı -->
+            <div class="form-group">
+                <label for="province_org_name" style="font-weight: 600; margin-bottom: var(--spacing-sm); display: block;">
+                    İl Örgütü Adı
+                </label>
+                <input
+                    type="text"
+                    id="province_org_name"
+                    name="province_org_name"
+                    required
+                    placeholder="Örn: İstanbul İl Örgütü"
+                    style="width: 100%; padding: var(--spacing-md); border: 2px solid var(--gray); border-radius: 12px; font-size: 15px;"
+                >
+            </div>
+
+            <!-- Lider Seçimi -->
+            <div class="form-group">
+                <label for="leader_id" style="font-weight: 600; margin-bottom: var(--spacing-sm); display: block;">
+                    İl Örgütü Lideri
+                </label>
+                <select
+                    id="leader_id"
+                    name="leader_id"
+                    required
+                    style="width: 100%; padding: var(--spacing-md); border: 2px solid var(--gray); border-radius: 12px; font-size: 15px;"
+                >
+                    <option value="">Lider Seçin</option>
+                    {% for user in potential_leaders %}
+                    <option value="{{ user.id }}">
+                        {{ user.username }} ({{ user.current_team.parent_squad.parent_union.name }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Birlik Seçimi -->
+            <div class="form-group">
+                <label style="font-weight: 600; margin-bottom: var(--spacing-md); display: block;">
+                    İl Örgütüne Dahil Olacak Birlikler
+                </label>
+
+                <!-- Kendi Birliği -->
+                <div style="padding: var(--spacing-lg); background: var(--pastel-mint); border-radius: 12px; margin-bottom: var(--spacing-md); border: 2px solid #10b981;">
+                    <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <input type="checkbox" checked disabled style="width: 18px; height: 18px;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;">
+                                {{ user_union.name }}
+                            </div>
+                            <div style="font-size: 14px; color: var(--text-secondary);">
+                                {{ user_union.member_count }} üye · {{ user_union.squad_count }} takım · Lider: {{ user_union.leader.username }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="union_ids" value="{{ user_union.id }}">
+
+                <!-- Diğer Birlikler -->
+                {% if available_unions %}
+                <div style="display: grid; gap: var(--spacing-sm);">
+                    {% for union in available_unions %}
+                    <label style="cursor: pointer; display: block;">
+                        <div style="padding: var(--spacing-md); background: var(--background-secondary); border-radius: 12px; border: 2px solid transparent; transition: all 0.2s;">
+                            <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                                <input
+                                    type="checkbox"
+                                    name="union_ids"
+                                    value="{{ union.id }}"
+                                    style="width: 18px; height: 18px;"
+                                >
+                                <div>
+                                    <div style="font-weight: 600; font-size: 15px; margin-bottom: 4px;">
+                                        {{ union.name }}
+                                    </div>
+                                    <div style="font-size: 13px; color: var(--text-secondary);">
+                                        {{ union.member_count }} üye · {{ union.squad_count }} takım · Lider: {{ union.leader.username }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: var(--spacing-2xl); color: var(--text-secondary);">
+                    <p>İlinizde başka uygun birlik bulunmuyor.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Submit Button -->
+            <button
+                type="submit"
+                class="btn btn-primary"
+                style="width: 100%; padding: var(--spacing-md); font-size: 16px; font-weight: 600; margin-top: var(--spacing-md);"
+            >
+                İl Örgütü Önerisi Oluştur
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+label:has(input[type="checkbox"]:checked) > div {
+    background: var(--pastel-blue) !important;
+    border-color: var(--primary) !important;
+}
+
+label:has(input[type="checkbox"]) > div:hover {
+    border-color: var(--primary);
+}
+</style>
+
+{% endblock %}

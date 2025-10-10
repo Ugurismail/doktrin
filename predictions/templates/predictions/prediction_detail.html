@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ prediction.title }}{% endblock %}
+
+{% block content %}
+
+<div style="max-width: 1000px; margin: 0 auto; padding: var(--space-lg) var(--space-md);">
+
+    <!-- Header -->
+    <div class="mb-lg" style="padding-bottom: var(--space-md); border-bottom: 1px solid var(--border);">
+        <div class="flex-start mb-md">
+            <div style="flex: 1;">
+                <h1 class="page-title">{{ prediction.title }}</h1>
+                <div class="prediction-meta">
+                    <span>{{ prediction.created_by.username }}</span>
+                    <span>•</span>
+                    <span>{{ prediction.deadline|date:"d M Y H:i" }}</span>
+                    <span>•</span>
+                    <span>{{ prediction.created_at|date:"d M Y" }}</span>
+                    <span>•</span>
+                    <span>Bitiş: {{ prediction.deadline|date:"d M Y" }}</span>
+                </div>
+            </div>
+
+            {% if prediction.status == 'ACTIVE' %}
+            <form method="post" action="{% url 'predictions:toggle_follow' prediction.id %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="btn {% if is_following %}btn-secondary{% else %}btn-primary{% endif %}">
+                    {% if is_following %}Takipten Çık{% else %}Takip Et{% endif %}
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
+        <!-- Status -->
+        <div class="status-badge
+            {% if prediction.status == 'ACTIVE' %}status-active
+            {% elif prediction.status == 'EXPIRED' %}status-expired
+            {% else %}status-verified{% endif %}">
+            {% if prediction.status == 'ACTIVE' %}Aktif
+            {% elif prediction.status == 'EXPIRED' %}Süresi Doldu
+            {% else %}Doğrulandı{% endif %}
+        </div>
+    </div>
+
+    <div class="grid-2">
+
+        <!-- Sol Kolon -->
+        <div>
+            <!-- Açıklama -->
+            <div class="content-box">
+                <h2 class="content-title">Açıklama</h2>
+                <p class="content-description">{{ prediction.description }}</p>
+            </div>
+
+            <!-- Oylama Bölümü -->
+            {% if prediction.status == 'EXPIRED' %}
+            <div class="content-box">
+                <h2 class="content-title">Doğrulama</h2>
+
+                {% if user_vote %}
+                <p class="prediction-description mb-md">
+                    Oyunuz: <strong>{{ user_vote.get_vote_display }}</strong>
+                </p>
+                {% endif %}
+
+                <div class="mb-md">
+                    <div class="vote-summary">
+                        <span>Tuttu: {{ prediction.vote_yes_count }}</span>
+                        <span>Tutmadı: {{ prediction.vote_no_count }}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ prediction.yes_percentage }}%;"></div>
+                    </div>
+                </div>
+
+                {% if prediction.can_be_verified %}
+                    {% if prediction.created_by == user %}
+                    <p style="text-align: center; color: var(--text-secondary); padding: var(--space-lg); background: var(--bg-secondary); border-radius: 12px;">
+                        Kendi tahmininize oy veremezsiniz. Diğer kullanıcılar oylamaya katılabilir.
+                    </p>
+                    {% else %}
+                    <div class="button-group">
+                        <form method="post" action="{% url 'predictions:vote_prediction' prediction.id %}" style="flex: 1; margin: 0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="vote" value="CORRECT">
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Tuttu</button>
+                        </form>
+                        <form method="post" action="{% url 'predictions:vote_prediction' prediction.id %}" style="flex: 1; margin: 0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="vote" value="INCORRECT">
+                            <button type="submit" class="btn btn-secondary" style="width: 100%;">Tutmadı</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-top: var(--space-sm); text-align: center;">
+                        Doğrulama süresi: {{ prediction.verification_deadline|date:"d M Y H:i" }}
+                    </p>
+                {% else %}
+                <p style="text-align: center; color: var(--text-secondary); padding: var(--space-lg); background: var(--bg-secondary); border-radius: 12px;">
+                    Doğrulama süresi doldu (3 gün)
+                </p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% if prediction.status == 'VERIFIED' %}
+            <div class="content-box">
+                <h2 class="content-title">Sonuç</h2>
+                <p style="font-size: 20px; font-weight: 600; color: {% if prediction.is_correct %}#34C759{% else %}#FF3B30{% endif %};">
+                    {% if prediction.is_correct %}✓ Tahmin Tuttu!{% else %}✗ Tahmin Tutmadı{% endif %}
+                </p>
+                <p class="prediction-description mt-sm">
+                    {{ prediction.vote_yes_count }} Tuttu / {{ prediction.vote_no_count }} Tutmadı
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sağ Kolon -->
+        <div>
+            <!-- İstatistikler -->
+            <div class="content-box-sm mb-md">
+                <div class="mb-md">
+                    <div class="stat-card-label">Takipçi</div>
+                    <div class="stat-card-value-sm">{{ prediction.follower_count }}</div>
+                </div>
+                {% if prediction.status != 'ACTIVE' %}
+                <div>
+                    <div class="stat-card-label">Oy</div>
+                    <div class="stat-card-value-sm">{{ prediction.total_votes }}</div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Tahmin Sahibi -->
+            <div class="content-box-sm">
+                <h3 class="content-title" style="font-size: 14px;">Tahmin Sahibi</h3>
+                <div style="font-size: 16px; font-weight: 500; margin-bottom: 4px;">{{ prediction.created_by.username }}</div>
+                <div class="prediction-meta">
+                    Öngörülülük: {{ prediction.created_by.foresight_score }} puan
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Takım Önerisi Oluştur - Doktrin Platformu{% endblock %}
+
+{% block content %}
+<a href="{% url 'organization:my_team' %}" style="color: #3498db; text-decoration: none;">← Geri Dön</a>
+
+<div class="card" style="max-width: 800px; margin: 2rem auto;">
+    <h1>Takım Oluşturma Önerisi</h1>
+    
+    <p style="margin-top: 1rem; padding: 1rem; background: #fff3cd; border-radius: 4px;">
+        Takım oluşturmak için en az 3 ekip lideri oy birliği ile anlaşmalıdır. 
+        Toplam en az 45 kişi gereklidir.
+    </p>
+    
+    <form method="post" style="margin-top: 2rem;">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="squad_name">Takım Adı:</label>
+            <input type="text" id="squad_name" name="squad_name" required placeholder="Örn: İstanbul Anadolu Takımı">
+        </div>
+        
+        <div class="form-group">
+            <label for="leader_id">Takım Lideri:</label>
+            <select id="leader_id" name="leader_id" required>
+                <option value="">Lider Seçin</option>
+                {% for user in potential_leaders %}
+                <option value="{{ user.id }}">{{ user.username }} ({{ user.current_team.display_name }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Takıma Dahil Olacak Ekipler (kendi ekibiniz otomatik dahil):</label>
+            
+            <div style="padding: 1rem; background: #f8f9fa; border-radius: 4px; margin-bottom: 0.5rem;">
+                <input type="checkbox" checked disabled>
+                <strong>{{ user_team.display_name }}</strong> ({{ user_team.member_count }} üye)
+            </div>
+            <input type="hidden" name="team_ids" value="{{ user_team.id }}">
+            
+            {% for team in available_teams %}
+            <div style="padding: 0.5rem; border-bottom: 1px solid #dee2e6;">
+                <label style="cursor: pointer;">
+                    <input type="checkbox" name="team_ids" value="{{ team.id }}">
+                    {{ team.display_name }} - {{ team.member_count }} üye (Lider: {{ team.leader.username }})
+                </label>
+            </div>
+            {% endfor %}
+            
+            {% if not available_teams %}
+            <p style="color: #95a5a6; margin-top: 1rem;">İlinizde başka uygun ekip bulunmuyor.</p>
+            {% endif %}
+        </div>
+        
+        <button type="submit" class="btn" style="width: 100%;">Takım Önerisi Oluştur</button>
+    </form>
+</div>
+{% endblock %}

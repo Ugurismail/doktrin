@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }} - Profil{% endblock %}
+
+{% block content %}
+
+<div style="max-width: 900px; margin: 0 auto; padding: var(--space-lg) var(--space-md);">
+    <!-- Profil Başlığı -->
+    <div class="card" style="margin-bottom: var(--space-xl);">
+        <div style="display: flex; align-items: center; gap: var(--space-lg);">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%); display: flex; align-items: center; justify-content: center; font-size: 36px; color: white; font-weight: 700;">
+                {{ profile_user.username|slice:":1"|upper }}
+            </div>
+            <div style="flex: 1;">
+                <h1 style="font-size: 32px; font-weight: 700; margin: 0 0 8px 0;">{{ profile_user.username }}</h1>
+                {% if team_info %}
+                <div style="font-size: 14px; color: var(--text-secondary);">
+                    {% if team_info.is_union_leader %}
+                        👑 Birlik Lideri - {{ team_info.union.name }}
+                    {% elif team_info.is_squad_leader %}
+                        👑 Takım Lideri - {{ team_info.squad.name }}
+                    {% elif team_info.is_team_leader %}
+                        👑 Ekip Lideri - {{ team_info.team.display_name }}
+                    {% else %}
+                        📋 {{ team_info.team.display_name }}
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- İstatistikler -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-xl);">
+        <div class="card" style="text-align: center; padding: var(--space-lg);">
+            <div style="font-size: 36px; font-weight: 700; color: var(--accent);">{{ total_votes }}</div>
+            <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">Toplam Oy</div>
+        </div>
+        <div class="card" style="text-align: center; padding: var(--space-lg);">
+            <div style="font-size: 36px; font-weight: 700; color: var(--accent);">{{ total_comments }}</div>
+            <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">Yorum</div>
+        </div>
+    </div>
+
+    <!-- Oy Dağılımı -->
+    <div class="card" style="margin-bottom: var(--space-xl);">
+        <h2 style="font-size: 20px; font-weight: 700; margin-bottom: var(--space-md);">Oy Dağılımı</h2>
+        <div style="display: flex; gap: var(--space-md); margin-bottom: var(--space-md);">
+            <div style="flex: 1; text-align: center; padding: var(--space-md); background: var(--bg-secondary); border-radius: var(--radius);">
+                <div style="font-size: 24px; font-weight: 700; color: #10B981;">{{ yes_votes }}</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">Kabul</div>
+            </div>
+            <div style="flex: 1; text-align: center; padding: var(--space-md); background: var(--bg-secondary); border-radius: var(--radius);">
+                <div style="font-size: 24px; font-weight: 700; color: #F59E0B;">{{ abstain_votes }}</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">Çekimser</div>
+            </div>
+            <div style="flex: 1; text-align: center; padding: var(--space-md); background: var(--bg-secondary); border-radius: var(--radius);">
+                <div style="font-size: 24px; font-weight: 700; color: #EF4444;">{{ veto_votes }}</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">Veto</div>
+            </div>
+        </div>
+
+        <!-- Oy Grafiği -->
+        {% if yes_votes or abstain_votes or veto_votes %}
+        <div style="height: 30px; display: flex; border-radius: var(--radius); overflow: hidden;">
+            {% with total=yes_votes|add:abstain_votes|add:veto_votes %}
+                <div style="background: #10B981; width: {% widthratio yes_votes total 100 %}%;"></div>
+                <div style="background: #F59E0B; width: {% widthratio abstain_votes total 100 %}%;"></div>
+                <div style="background: #EF4444; width: {% widthratio veto_votes total 100 %}%;"></div>
+            {% endwith %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Son Yorumlar -->
+    <div class="card">
+        <h2 style="font-size: 20px; font-weight: 700; margin-bottom: var(--space-md);">Son Yorumlar</h2>
+        {% if recent_comments %}
+            <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+                {% for comment in recent_comments %}
+                <div style="padding: var(--space-md); background: var(--bg-secondary); border-radius: var(--radius);">
+                    <div style="font-size: 14px; color: var(--text); margin-bottom: 8px;">{{ comment.comment_text|truncatewords:20 }}</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">
+                        {% if comment.proposal %}
+                            <a href="{% url 'doctrine:proposal_detail' comment.proposal.id %}" style="color: var(--accent);">Öneride</a>
+                        {% elif comment.article %}
+                            <a href="{% url 'doctrine:article_detail' comment.article.id %}" style="color: var(--accent);">Maddede</a>
+                        {% endif %}
+                        • {{ comment.created_at|timesince }} önce
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="text-align: center; color: var(--text-secondary); padding: var(--space-lg);">Henüz yorum yok</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <!-- Header - Minimal -->
+    <div style="margin-bottom: 48px;">
+        <h1 style="margin-bottom: 8px;">{{ user.username }}</h1>
+        <p style="color: var(--text-secondary); font-size: 14px;">{{ user.current_team.display_name|default:"Henüz ekip yok" }}</p>
+    </div>
+
+    <!-- Grid - Sade 2 Kolon -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+
+        <!-- Sol -->
+        <div>
+            <!-- Stats -->
+            <div style="display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 24px;">
+                <div class="card">
+                    <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Toplam Oy</div>
+                    <div style="font-size: 32px; font-weight: 600;">{{ total_votes }}</div>
+                </div>
+            </div>
+
+            <!-- Oylamalar -->
+            {% if active_proposals %}
+            <div class="card">
+                <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Aktif Oylamalar</h2>
+                {% for proposal in active_proposals %}
+                <a href="{% url 'doctrine:proposal_detail' proposal.id %}" style="display: block; padding: 16px 0; border-bottom: 1px solid var(--border); text-decoration: none; color: var(--text);">
+                    <div style="font-weight: 500; margin-bottom: 6px;">{{ proposal.get_proposal_type_display }}</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">{{ proposal.vote_yes_count }} Evet · {{ proposal.vote_veto_count }} Veto</div>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sağ -->
+        <div>
+            <!-- Linkler -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <a href="{% url 'doctrine:doctrine_list' %}" class="btn btn-secondary" style="width: 100%; text-align: center;">Doktrin</a>
+                <a href="{% url 'organization:my_team' %}" class="btn btn-secondary" style="width: 100%; text-align: center;">Ekibim</a>
+                <a href="{% url 'users:profile' %}" class="btn btn-secondary" style="width: 100%; text-align: center;">Profil</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

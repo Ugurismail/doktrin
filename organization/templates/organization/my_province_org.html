@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}İl Örgütüm - Doktrin{% endblock %}
+
+{% block content %}
+
+<div class="container" style="max-width: 900px; padding-top: var(--spacing-xl);">
+    {% if province_org %}
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: var(--spacing-2xl);">
+        <h1 style="font-size: 36px; font-weight: 700; letter-spacing: -1.5px; margin-bottom: var(--spacing-sm);">
+            {{ province_org.name }}
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 16px;">
+            {{ province_org.member_count }} üye · {{ province_org.union_count }} birlik · {{ province_org.province }}
+        </p>
+    </div>
+
+    <!-- Province Org Info Card -->
+    <div class="card">
+        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: var(--spacing-lg); letter-spacing: -0.5px;">
+            İl Örgütü Bilgileri
+        </h2>
+        <div style="display: grid; gap: var(--spacing-md);">
+            <div style="display: flex; justify-content: space-between; padding: var(--spacing-md) 0; border-bottom: 1px solid var(--gray);">
+                <span style="color: var(--text-secondary); font-weight: 500;">İl</span>
+                <span style="font-weight: 600;">{{ province_org.province }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: var(--spacing-md) 0; border-bottom: 1px solid var(--gray);">
+                <span style="color: var(--text-secondary); font-weight: 500;">Lider</span>
+                <span style="font-weight: 600;">{{ province_org.leader.username }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: var(--spacing-md) 0; border-bottom: 1px solid var(--gray);">
+                <span style="color: var(--text-secondary); font-weight: 500;">Toplam Üye</span>
+                <span style="font-weight: 600;">{{ province_org.member_count }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: var(--spacing-md) 0; border-bottom: 1px solid var(--gray);">
+                <span style="color: var(--text-secondary); font-weight: 500;">Birlik Sayısı</span>
+                <span style="font-weight: 600;">{{ province_org.union_count }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: var(--spacing-md) 0;">
+                <span style="color: var(--text-secondary); font-weight: 500;">Kuruluş Tarihi</span>
+                <span style="font-weight: 600;">{{ province_org.created_date|date:"d.m.Y" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unions List -->
+    <div class="card">
+        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: var(--spacing-lg); letter-spacing: -0.5px;">
+            İl Örgütündeki Birlikler
+        </h2>
+        <div style="display: grid; gap: var(--spacing-md);">
+            {% for union in province_org.unions.all %}
+            <div style="padding: var(--spacing-lg); background: var(--background-secondary); border-radius: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: var(--spacing-xs);">
+                            {{ union.name }}
+                        </h3>
+                        <p style="font-size: 14px; color: var(--text-secondary);">
+                            {{ union.member_count }} üye · {{ union.squad_count }} takım
+                            {% if union.leader %}
+                            · Lider: {{ union.leader.username }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% if user.current_team.parent_squad.parent_union == union %}
+                    <span style="background: var(--pastel-mint); color: #059669; padding: 6px 14px; border-radius: 12px; font-size: 13px; font-weight: 600;">
+                        Birliğim
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Province Org Leader Election -->
+    {% if user.current_team and user.current_team.parent_squad and user.current_team.parent_squad.parent_union %}
+        {% if user.current_team.parent_squad.parent_union.leader == user %}
+        <div class="card">
+            <h2 style="font-size: 24px; font-weight: 700; margin-bottom: var(--spacing-sm); letter-spacing: -0.5px;">
+                İl Örgütü Lideri Seçimi
+            </h2>
+            <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md); line-height: 1.6;">
+                İl örgütü lideri seçimi için <strong>tüm birlik liderlerinin oy birliği</strong> gerekir. Sadece birlik liderleri oy kullanabilir.
+            </p>
+
+            <!-- Voting Form -->
+            <form method="post" action="{% url 'organization:vote_province_org_leader' %}">
+                {% csrf_token %}
+                <div style="background: var(--background-secondary); padding: var(--spacing-lg); border-radius: 12px; margin-bottom: var(--spacing-md);">
+                    <label for="candidate_id" style="font-weight: 600; margin-bottom: var(--spacing-md); display: block; font-size: 15px;">
+                        Lider Adayınızı Seçin
+                    </label>
+                    <select
+                        id="candidate_id"
+                        name="candidate_id"
+                        required
+                        style="width: 100%; padding: var(--spacing-md); border: 2px solid var(--gray); border-radius: 12px; font-size: 15px; font-weight: 500; background: white;"
+                    >
+                        <option value="">Bir birlik lideri seçin...</option>
+                        {% for union in province_org.unions.all %}
+                            {% if union.leader %}
+                            <option value="{{ union.leader.id }}" {% if union.leader == province_org.leader %}selected{% endif %}>
+                                {{ union.leader.username }} ({{ union.name }}){% if union.leader == province_org.leader %} - Mevcut Lider{% endif %}
+                            </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    style="width: 100%; padding: var(--spacing-md); font-size: 16px; font-weight: 600;"
+                >
+                    Oy Ver / Oyumu Değiştir
+                </button>
+            </form>
+
+            <div style="margin-top: var(--spacing-md); padding: var(--spacing-md); background: var(--pastel-yellow); border-radius: 8px; border-left: 4px solid #f59e0b;">
+                <p style="font-size: 13px; color: #92400e; margin: 0;">
+                    <strong>Not:</strong> Oy birliği sağlandığında lider otomatik olarak değişir.
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    {% else %}
+    <!-- No Province Org State -->
+    <div style="text-align: center; margin-bottom: var(--spacing-2xl);">
+        <h1 style="font-size: 36px; font-weight: 700; letter-spacing: -1.5px; margin-bottom: var(--spacing-sm);">
+            İl Örgütüm
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 16px;">
+            Henüz bir il örgütüne dahil değilsiniz
+        </p>
+    </div>
+
+    <div class="card">
+        <div style="text-align: center; padding: var(--spacing-2xl);">
+            <p style="color: var(--text-secondary); font-size: 16px; line-height: 1.8;">
+                İl örgütü oluşturmak için en az 3 birlik lideri oy birliği ile bir araya gelmelidir.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

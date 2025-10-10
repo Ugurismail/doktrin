@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Doktrin{% endblock %}
+
+{% block content %}
+
+<div class="container" style="max-width: 1400px; padding: var(--spacing-lg) var(--spacing-md);">
+    <!-- Hoşgeldin Başlığı -->
+    <div style="margin-bottom: var(--spacing-lg);">
+        <h1 style="font-size: 32px; font-weight: 700; margin: 0;">Hoşgeldin, {{ user.username }}</h1>
+        <p style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">
+            Bugünkü aktivitelerine göz at
+        </p>
+    </div>
+
+    <!-- 2-Sütun Layout -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--spacing-md);">
+        <!-- Sol Kolon -->
+        <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+            <!-- Bekleyen Oylar -->
+            {% if pending_votes %}
+            <div class="card" style="padding: var(--spacing-md); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
+                    <h2 style="font-size: 20px; font-weight: 700; margin: 0;">⏰ Bekleyen Oylar</h2>
+                    <span style="background: rgba(255,255,255,0.3); padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 700;">
+                        {{ pending_votes|length }}
+                    </span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    {% for proposal in pending_votes %}
+                    <a href="{% url 'doctrine:proposal_detail' proposal.id %}" style="background: rgba(255,255,255,0.2); padding: var(--spacing-sm); border-radius: 8px; text-decoration: none; color: white; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 4px;">{{ proposal.get_proposal_type_display }}</div>
+                            <div style="font-size: 12px; opacity: 0.9;">Bitiş: {{ proposal.end_date|date:"d.m.Y" }}</div>
+                        </div>
+                        <div style="font-size: 20px;">→</div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Aktif Oylamalar -->
+            <div class="card" style="padding: var(--spacing-md);">
+                <h2 style="font-size: 20px; font-weight: 700; margin-bottom: var(--spacing-md);">🗳️ Aktif Oylamalar</h2>
+                {% if active_proposals %}
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    {% for proposal in active_proposals %}
+                    <a href="{% url 'doctrine:proposal_detail' proposal.id %}" style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-sm); background: #f9fafb; border-radius: 8px; text-decoration: none; color: inherit;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 15px; margin-bottom: 4px;">{{ proposal.get_proposal_type_display }}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">
+                                {{ proposal.vote_yes_count }} Evet · {{ proposal.vote_abstain_count }} Çekimser · {{ proposal.vote_veto_count }} Veto
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary); text-align: right;">
+                            {{ proposal.end_date|timeuntil }} kaldı
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                <a href="{% url 'doctrine:doctrine_list' %}" class="btn btn-secondary" style="margin-top: var(--spacing-md); width: 100%; text-align: center;">
+                    Tüm Oylamaları Gör
+                </a>
+                {% else %}
+                <p style="color: var(--text-secondary); text-align: center; padding: var(--spacing-xl);">
+                    Şu anda aktif oylama yok.
+                </p>
+                {% endif %}
+            </div>
+
+            <!-- Son Bildirimler -->
+            <div class="card" style="padding: var(--spacing-md);">
+                <h2 style="font-size: 20px; font-weight: 700; margin-bottom: var(--spacing-md);">🔔 Son Bildirimler</h2>
+                {% if recent_notifications %}
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    {% for notification in recent_notifications %}
+                    <div style="padding: var(--spacing-sm); background: {% if not notification.is_read %}#fafafa{% else %}#ffffff{% endif %}; border-radius: 8px; {% if not notification.is_read %}border-left: 3px solid var(--primary);{% endif %}">
+                        <div style="font-size: 14px; line-height: 1.5; {% if not notification.is_read %}font-weight: 600;{% endif %}">
+                            {{ notification.message }}
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                            {{ notification.created_at|timesince }} önce
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <a href="{% url 'notifications:notification_list' %}" class="btn btn-secondary" style="margin-top: var(--spacing-md); width: 100%; text-align: center;">
+                    Tüm Bildirimleri Gör
+                </a>
+                {% else %}
+                <p style="color: var(--text-secondary); text-align: center; padding: var(--spacing-xl);">
+                    Henüz bildiriminiz yok.
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sağ Kolon -->
+        <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+            <!-- İstatistikler -->
+            <div class="card" style="padding: var(--spacing-md);">
+                <h2 style="font-size: 18px; font-weight: 700; margin-bottom: var(--spacing-md);">📊 İstatistiklerim</h2>
+                <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
+                    <div style="display: flex; justify-content: space-between; padding: var(--spacing-sm); background: var(--pastel-blue); border-radius: 8px;">
+                        <span style="font-size: 14px;">Toplam Oy</span>
+                        <span style="font-weight: 700; font-size: 16px;">{{ total_votes }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: var(--spacing-sm); background: var(--pastel-coral); border-radius: 8px;">
+                        <span style="font-size: 14px;">Okunmamış</span>
+                        <span style="font-weight: 700; font-size: 16px;">{{ unread_notifications }}</span>
+                    </div>
+                </div>
+                <a href="{% url 'users:profile' %}" class="btn btn-secondary" style="margin-top: var(--spacing-md); width: 100%; text-align: center;">
+                    Profili Görüntüle
+                </a>
+            </div>
+
+            <!-- Örgütlenme -->
+            {% if user.current_team %}
+            <div class="card" style="padding: var(--spacing-md);">
+                <h2 style="font-size: 18px; font-weight: 700; margin-bottom: var(--spacing-md);">🏛️ Örgütlenme</h2>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="background: var(--pastel-blue); padding: var(--spacing-sm); border-radius: 8px;">
+                        <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; text-transform: uppercase;">Ekip</div>
+                        <div style="font-size: 14px; font-weight: 600;">{{ user.current_team.display_name }}</div>
+                    </div>
+                    {% if user.current_team.parent_squad %}
+                    <div style="background: var(--pastel-lavender); padding: var(--spacing-sm); border-radius: 8px;">
+                        <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; text-transform: uppercase;">Takım</div>
+                        <div style="font-size: 14px; font-weight: 600;">{{ user.current_team.parent_squad.name }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+                <a href="{% url 'organization:my_team' %}" class="btn btn-secondary" style="margin-top: var(--spacing-md); width: 100%; text-align: center;">
+                    Ekibime Git
+                </a>
+            </div>
+            {% else %}
+            <div class="card" style="padding: var(--spacing-md); text-align: center;">
+                <div style="font-size: 48px; margin-bottom: var(--spacing-sm);">👥</div>
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: var(--spacing-sm);">Henüz Ekip Yok</h3>
+                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: var(--spacing-md);">
+                    Bir ekibe katılarak örgütlenmeye başla
+                </p>
+                <a href="{% url 'organization:my_team' %}" class="btn btn-primary" style="width: 100%; text-align: center;">
+                    Ekibe Katıl
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Hızlı Erişim -->
+            <div class="card" style="padding: var(--spacing-md);">
+                <h2 style="font-size: 18px; font-weight: 700; margin-bottom: var(--spacing-md);">⚡ Hızlı Erişim</h2>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <a href="{% url 'doctrine:doctrine_list' %}" style="padding: 10px 12px; background: #f9fafb; border-radius: 8px; text-decoration: none; color: inherit; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                        <span>📋</span> Doktrin
+                    </a>
+                    <a href="{% url 'organization:my_team' %}" style="padding: 10px 12px; background: #f9fafb; border-radius: 8px; text-decoration: none; color: inherit; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                        <span>👥</span> Ekibim
+                    </a>
+                    <a href="{% url 'users:profile' %}" style="padding: 10px 12px; background: #f9fafb; border-radius: 8px; text-decoration: none; color: inherit; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                        <span>👤</span> Profilim
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

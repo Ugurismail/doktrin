@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}Ekibim - Doktrin{% endblock %}
+
+{% block content %}
+
+<div class="container" style="max-width: 1400px; padding: var(--spacing-lg) var(--spacing-md);">
+    {% if team %}
+    <!-- Compact Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg); padding-bottom: var(--spacing-md); border-bottom: 2px solid var(--gray);">
+        <div>
+            <h1 style="font-size: 28px; font-weight: 700; letter-spacing: -1px; margin: 0 0 4px 0;">
+                {{ team.display_name }}
+            </h1>
+            <p style="color: var(--text-secondary); font-size: 14px; margin: 0;">
+                {{ team.district }}, {{ team.province }} · Lider: {{ team.leader.username }} · {{ team.created_date|date:"d.m.Y" }}
+            </p>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 32px; font-weight: 800; line-height: 1; color: var(--primary);">
+                {{ team.member_count }}/15
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">ÜYE</div>
+        </div>
+    </div>
+
+    <!-- Main Grid Layout -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
+        <!-- Team Members -->
+        <div class="card" style="padding: var(--spacing-md);">
+            <h2 style="font-size: 16px; font-weight: 700; margin-bottom: var(--spacing-md); color: var(--text-secondary);">
+                EKİP ÜYELERİ
+            </h2>
+            <div style="display: grid; gap: 6px;">
+                {% for member in team.members.all %}
+                <div style="padding: 10px 12px; background: var(--background-secondary); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 500; font-size: 14px;">{{ member.username }}</span>
+                    {% if member == team.leader %}
+                    <span style="background: var(--accent); color: white; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                        LİDER
+                    </span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Team Info + Parent Squad -->
+        <div style="display: grid; gap: var(--spacing-md);">
+            <!-- Team Info (Compact) -->
+            <div class="card" style="padding: var(--spacing-md);">
+                <h2 style="font-size: 16px; font-weight: 700; margin-bottom: var(--spacing-md); color: var(--text-secondary);">
+                    EKİP BİLGİLERİ
+                </h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm); font-size: 13px;">
+                    <div>
+                        <div style="color: var(--text-secondary); margin-bottom: 4px;">Resmi İsim</div>
+                        <div style="font-weight: 600;">{{ team.official_name }}</div>
+                    </div>
+                    {% if team.custom_name %}
+                    <div>
+                        <div style="color: var(--text-secondary); margin-bottom: 4px;">Özel İsim</div>
+                        <div style="font-weight: 600;">{{ team.custom_name }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Parent Squad -->
+            {% if team.parent_squad %}
+            <div class="card" style="background: var(--pastel-lavender); padding: var(--spacing-md);">
+                <h2 style="font-size: 14px; font-weight: 700; margin-bottom: var(--spacing-sm); color: var(--text-secondary);">
+                    TAKIMIMIZ
+                </h2>
+                <div style="font-size: 18px; font-weight: 700; margin-bottom: 6px;">
+                    {{ team.parent_squad.name }}
+                </div>
+                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: var(--spacing-md);">
+                    {{ team.parent_squad.member_count }} üye · {{ team.parent_squad.team_count }} ekip
+                </div>
+                <a href="{% url 'organization:my_squad' %}" class="btn btn-primary" style="font-size: 13px; padding: 8px 16px;">
+                    Takım Detayları →
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Leader Election & Actions Grid -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
+        <!-- Leader Election (Compact) -->
+        <div class="card" style="padding: var(--spacing-md);">
+            <h2 style="font-size: 16px; font-weight: 700; margin-bottom: var(--spacing-sm); color: var(--text-secondary);">
+                LİDER SEÇİMİ
+                <span style="font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-left: 8px;">
+                    ({{ leader_votes_data.total_votes }}/{{ leader_votes_data.member_count }} oy)
+                </span>
+            </h2>
+
+            {% if leader_votes_data.vote_counts %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: var(--spacing-md);">
+                {% for candidate, count in leader_votes_data.vote_counts.items %}
+                <div style="padding: 12px; background: {% if candidate == team.leader %}var(--pastel-mint){% else %}var(--background-secondary){% endif %}; border-radius: 8px; border: 2px solid {% if candidate == team.leader %}#10b981{% else %}transparent{% endif %};">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-weight: 700; font-size: 14px;">{{ candidate.username }}</span>
+                        <span style="font-size: 20px; font-weight: 800; color: var(--primary);">{{ count }}</span>
+                    </div>
+                    {% if candidate == team.leader %}
+                    <div style="font-size: 10px; color: #065f46; font-weight: 600;">MEVCUT LİDER</div>
+                    {% endif %}
+                    {% if leader_votes_data.total_votes == leader_votes_data.member_count and count == leader_votes_data.member_count %}
+                    <div style="margin-top: 6px; padding: 4px; background: rgba(16, 185, 129, 0.2); border-radius: 4px; text-align: center; font-size: 10px; color: #065f46; font-weight: 600;">
+                        ✓ OY BİRLİĞİ
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'organization:vote_team_leader' %}" style="display: flex; gap: 8px;">
+                {% csrf_token %}
+                <select
+                    id="candidate_id"
+                    name="candidate_id"
+                    required
+                    style="flex: 1; padding: 10px; border: 2px solid var(--gray); border-radius: 8px; font-size: 13px; font-weight: 500; background: white;"
+                >
+                    <option value="">Lider adayı seçin...</option>
+                    {% for member in team.members.all %}
+                    <option value="{{ member.id }}" {% if member == team.leader %}selected{% endif %}>
+                        {{ member.username }}{% if member == team.leader %} ★{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary" style="padding: 10px 20px; font-size: 13px; white-space: nowrap;">
+                    Oy Ver
+                </button>
+            </form>
+        </div>
+
+        <!-- Leader Actions -->
+        {% if user == team.leader %}
+        <div class="card" style="padding: var(--spacing-md);">
+            <h2 style="font-size: 16px; font-weight: 700; margin-bottom: var(--spacing-md); color: var(--text-secondary);">
+                LİDER İŞLEMLERİ
+            </h2>
+            <div style="display: grid; gap: 8px;">
+                <a href="{% url 'organization:create_invite' %}" class="btn btn-primary" style="font-size: 13px; padding: 10px; text-align: center;">
+                    Davet Kodu Oluştur
+                </a>
+                {% if not team.parent_squad %}
+                <a href="{% url 'organization:propose_squad' %}" class="btn btn-secondary" style="font-size: 13px; padding: 10px; text-align: center;">
+                    Takım Öner
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Pending Squad Proposals (Compact) -->
+    {% if user == team.leader and pending_proposals %}
+    <div class="card" style="padding: var(--spacing-md);">
+        <h2 style="font-size: 16px; font-weight: 700; margin-bottom: var(--spacing-md); color: var(--text-secondary);">
+            BEKLEYEN TAKIM ÖNERİLERİ
+        </h2>
+        <div style="display: grid; gap: var(--spacing-sm);">
+            {% for proposal in pending_proposals %}
+            <div style="border: 2px solid var(--accent); padding: var(--spacing-md); border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-sm);">
+                    <div>
+                        <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 4px;">
+                            {{ proposal.proposed_name }}
+                        </h3>
+                        <p style="font-size: 13px; color: var(--text-secondary);">
+                            Lider: {{ proposal.proposed_leader.username }} · {{ proposal.teams|length }} ekip
+                        </p>
+                    </div>
+                </div>
+
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
+                    {% for team in proposal.teams %}{{ team.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                </div>
+
+                {% if proposal.user_voted %}
+                    <div style="background: var(--pastel-mint); padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                        Oyunuz: {{ proposal.user_vote_choice }}
+                    </div>
+                {% else %}
+                    <form method="post" action="{% url 'organization:vote_squad_formation' proposal.id %}" style="display: flex; gap: 8px;">
+                        {% csrf_token %}
+                        <button type="submit" name="vote" value="APPROVE" class="btn btn-primary" style="flex: 1; font-size: 13px; padding: 8px;">
+                            ✓ Onayla
+                        </button>
+                        <button type="submit" name="vote" value="REJECT" style="flex: 1; background: #DC2626; color: white; padding: 8px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">
+                            ✗ Reddet
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- No Team State -->
+    <div style="text-align: center; margin-bottom: var(--spacing-2xl);">
+        <h1 style="font-size: 36px; font-weight: 700; letter-spacing: -1.5px; margin-bottom: var(--spacing-sm);">
+            Ekibim
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 16px;">
+            Henüz bir ekibe dahil değilsiniz
+        </p>
+    </div>
+
+    <div class="card">
+        <p style="color: var(--text-secondary); text-align: center; margin-bottom: var(--spacing-2xl);">
+            Bir ekibe katılmak için davet kodu kullanabilir veya yeni ekip oluşturabilirsiniz.
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl);">
+            <div style="padding: var(--spacing-xl); border: 2px solid var(--accent); border-radius: 12px; text-align: center;">
+                <h3 style="font-size: 20px; font-weight: 600; margin-bottom: var(--spacing-md);">
+                    Yeni Ekip Oluştur
+                </h3>
+                <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">
+                    Kendi ekibinizi kurun ve lider olun.
+                </p>
+                <a href="{% url 'organization:create_team' %}" class="btn btn-primary" style="width: 100%; text-align: center;">
+                    Ekip Oluştur
+                </a>
+            </div>
+
+            <div style="padding: var(--spacing-xl); border: 2px solid var(--gray); border-radius: 12px;">
+                <h3 style="font-size: 20px; font-weight: 600; margin-bottom: var(--spacing-md); text-align: center;">
+                    Ekibe Katıl
+                </h3>
+                <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg); text-align: center;">
+                    Davet kodu ile mevcut bir ekibe katılın.
+                </p>
+                <form method="post" action="{% url 'organization:join_team' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input type="text" name="invite_code" placeholder="Davet kodunu girin" required style="text-transform: uppercase;">
+                    </div>
+                    <button type="submit" class="btn btn-secondary" style="width: 100%;">
+                        Katıl
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

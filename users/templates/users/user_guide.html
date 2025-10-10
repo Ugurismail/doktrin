@@ -1,0 +1,1042 @@
+{% extends 'base.html' %}
+
+{% block title %}Kullanım Kılavuzu - Doktrin{% endblock %}
+
+{% block content %}
+<style>
+.guide-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-xl);
+}
+
+.guide-sidebar {
+    position: sticky;
+    top: 80px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 24px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+}
+
+.guide-sidebar h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: var(--primary);
+}
+
+.guide-sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.guide-sidebar li {
+    margin-bottom: 8px;
+}
+
+.guide-sidebar a {
+    color: var(--text);
+    text-decoration: none;
+    font-size: 14px;
+    display: block;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.guide-sidebar a:hover {
+    background: var(--bg);
+    color: var(--primary);
+}
+
+.guide-content {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 40px;
+}
+
+.guide-section {
+    margin-bottom: 60px;
+    padding-bottom: 40px;
+    border-bottom: 2px solid var(--border);
+}
+
+.guide-section:last-child {
+    border-bottom: none;
+}
+
+.guide-section h2 {
+    font-size: 32px;
+    margin-bottom: 16px;
+    color: var(--primary);
+}
+
+.guide-section h3 {
+    font-size: 24px;
+    margin-top: 32px;
+    margin-bottom: 12px;
+    color: var(--accent);
+}
+
+.guide-section h4 {
+    font-size: 18px;
+    margin-top: 24px;
+    margin-bottom: 8px;
+    color: var(--text);
+    font-weight: 600;
+}
+
+.guide-section p {
+    line-height: 1.8;
+    margin-bottom: 16px;
+    color: var(--text);
+}
+
+.guide-section ul, .guide-section ol {
+    margin-left: 24px;
+    margin-bottom: 16px;
+    line-height: 1.8;
+}
+
+.guide-section li {
+    margin-bottom: 8px;
+}
+
+.info-box {
+    background: var(--pastel-blue);
+    border-left: 4px solid var(--primary);
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.warning-box {
+    background: var(--pastel-peach);
+    border-left: 4px solid var(--warning);
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.success-box {
+    background: var(--pastel-mint);
+    border-left: 4px solid var(--success);
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.code-block {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    overflow-x: auto;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.feature-card {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid var(--border);
+}
+
+.feature-card h4 {
+    margin-top: 0;
+    color: var(--primary);
+}
+</style>
+
+<div class="guide-container">
+    <h1 style="font-size: 48px; margin-bottom: 16px; text-align: center;">📖 Doktrin Kullanım Kılavuzu</h1>
+    <p style="text-align: center; color: var(--text-light); margin-bottom: 40px;">
+        Sistemi etkin kullanmak için kapsamlı rehber
+    </p>
+
+    <div style="display: grid; grid-template-columns: 280px 1fr; gap: 32px;">
+        <!-- Sidebar Navigation -->
+        <div class="guide-sidebar">
+            <h3>İçindekiler</h3>
+            <ul>
+                <li><a href="#giris">🌟 Giriş</a></li>
+                <li><a href="#hesap">👤 Hesap İşlemleri</a></li>
+                <li><a href="#doktrin">📜 Doktrin Sistemi</a></li>
+                <li><a href="#oylama">🗳️ Oylama Sistemi</a></li>
+                <li><a href="#organizasyon">🏢 Organizasyon Yapısı</a></li>
+                <li><a href="#tahminler">🔮 Tahmin Sistemi</a></li>
+                <li><a href="#bildirimler">🔔 Bildirimler</a></li>
+                <li><a href="#mesajlar">💬 Mesajlaşma</a></li>
+                <li><a href="#arama">🔍 Arama & Filtreleme</a></li>
+                <li><a href="#export">📦 Export & Yedekleme</a></li>
+                <li><a href="#yetkiler">🔐 Yetki Seviyeleri</a></li>
+                <li><a href="#ipuclari">💡 İpuçları</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="guide-content">
+
+            <!-- GİRİŞ -->
+            <div id="giris" class="guide-section">
+                <h2>🌟 Doktrin Platformuna Hoş Geldiniz</h2>
+                <p>
+                    Doktrin, demokratik karar alma süreçlerini dijitalleştiren, şeffaf ve katılımcı bir platformdur.
+                    Bu platform üzerinde örgütünüzün temel ilkelerini ve yasalarını oluşturabilir, değiştirebilir
+                    ve yönetebilirsiniz.
+                </p>
+
+                <div class="info-box">
+                    <strong>⚡ Temel Özellikler:</strong>
+                    <ul style="margin-bottom: 0;">
+                        <li>Demokratik öneri ve oylama sistemi</li>
+                        <li>Hiyerarşik organizasyon yapısı (Ekip → Takım → Birlik)</li>
+                        <li>Versiyon kontrolü ile madde geçmişi</li>
+                        <li>Çarpanlı oy sistemi</li>
+                        <li>Tahmin ve öngörülülük sistemi</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- HESAP İŞLEMLERİ -->
+            <div id="hesap" class="guide-section">
+                <h2>👤 Hesap İşlemleri</h2>
+
+                <h3>Kayıt Olma</h3>
+                <ol>
+                    <li><strong>Kayıt Ol</strong> sayfasına gidin</li>
+                    <li>Kullanıcı adı, email, şifre ve lokasyon bilgilerinizi girin</li>
+                    <li>Email'inize gelen doğrulama linkine tıklayın</li>
+                    <li>Hesabınız aktif olur ve giriş yapabilirsiniz</li>
+                </ol>
+
+                <h3>Profil Yönetimi</h3>
+                <p>Navbar'daki profil ikonuna tıklayarak profilinize erişebilirsiniz.</p>
+
+                <h4>Profilinizde Görebilecekleriniz:</h4>
+                <ul>
+                    <li>Toplam oy sayınız</li>
+                    <li>Yorum sayınız</li>
+                    <li>Öngörülülük puanınız</li>
+                    <li>Okunmamış bildirim sayısı</li>
+                    <li>Oy dağılımınız (Kabul/Çekimser/Veto)</li>
+                    <li>Son oylarınız ve tahminleriniz</li>
+                    <li>Organizasyon bilgileriniz</li>
+                </ul>
+
+                <div class="success-box">
+                    <strong>💡 İpucu:</strong> Eğer bir Ekip/Takım/Birlik lideriyseniz, profilinizde "Yönetim Paneli" butonu görünür.
+                    Bu butona tıklayarak ekibinizi/takımınızı/birliğinizi yönetebilirsiniz.
+                </div>
+            </div>
+
+            <!-- DOKTRİN SİSTEMİ -->
+            <div id="doktrin" class="guide-section">
+                <h2>📜 Doktrin Sistemi</h2>
+
+                <p>
+                    Doktrin, örgütünüzün temel belgesidir. İki tip madde vardır:
+                </p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>⭐ Kuruluş İlkeleri</h4>
+                        <p>Örgütün temel değerleri ve prensipleri. Sadece Kurucu ve Birlikler değiştirebilir.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>⚖️ Yasalar</h4>
+                        <p>Günlük işleyiş kuralları. Takım seviyesi ve üstü öneri sunabilir.</p>
+                    </div>
+                </div>
+
+                <h3>Doktrin'e Erişim</h3>
+                <p>Navbar'daki <strong>"Doktrin"</strong> linkine tıklayarak ana doktrin sayfasına erişebilirsiniz.</p>
+
+                <h4>Doktrin Sayfasında:</h4>
+                <ul>
+                    <li><strong>Arama Kutusu:</strong> Maddelerde kelime araması yapabilirsiniz</li>
+                    <li><strong>🔧 Gelişmiş Filtreler:</strong> Tarih aralığı, kullanıcı, öneri türü gibi kriterlere göre filtreleme</li>
+                    <li><strong>🏷️ Etiket Filtreleri:</strong> Maddeleri etiketlere göre süzebilirsiniz (Ekonomi, Dış Politika, vb.)</li>
+                    <li><strong>Sekmeler:</strong> İlkeler, Yasalar, Aktif Oylamalar, Arşiv</li>
+                </ul>
+
+                <h3>Öneri Türleri</h3>
+
+                <h4>1. Yeni Madde Ekleme (ADD)</h4>
+                <p><strong>Kimler Yapabilir:</strong> Takım liderleri ve üstü</p>
+                <ol>
+                    <li>"Öneri Oluştur" butonuna tıklayın</li>
+                    <li>"Yeni Madde Ekle" seçeneğini seçin</li>
+                    <li>Madde içeriğini yazın</li>
+                    <li>Gerekçenizi açıklayın</li>
+                    <li>Uygun etiketleri seçin (isteğe bağlı)</li>
+                    <li>Öneriyi oluşturun</li>
+                </ol>
+
+                <h4>2. Madde Değiştirme (MODIFY)</h4>
+                <p><strong>Kimler Yapabilir:</strong> Takım liderleri ve üstü (İlkeler için sadece Kurucu ve Birlik)</p>
+                <ol>
+                    <li>"Öneri Oluştur" butonuna tıklayın</li>
+                    <li>"Mevcut Maddeyi Değiştir" seçeneğini seçin</li>
+                    <li>Değiştirilecek maddeyi listeden seçin</li>
+                    <li>Yeni içeriği yazın</li>
+                    <li>Değişiklik gerekçenizi açıklayın</li>
+                    <li>Öneriyi oluşturun</li>
+                </ol>
+
+                <h4>3. Madde Kaldırma (REMOVE)</h4>
+                <p><strong>Kimler Yapabilir:</strong> Takım liderleri ve üstü (İlkeler için sadece Kurucu ve Birlik)</p>
+                <ol>
+                    <li>"Öneri Oluştur" butonuna tıklayın</li>
+                    <li>"Madde Kaldır" seçeneğini seçin</li>
+                    <li>Kaldırılacak maddeyi seçin</li>
+                    <li>Kaldırma gerekçenizi yazın (zorunlu)</li>
+                    <li>Öneriyi oluşturun</li>
+                </ol>
+
+                <div class="warning-box">
+                    <strong>⚠️ Önemli:</strong> Öneriler oluşturulduktan sonra <strong>10 dakika</strong> (test için)
+                    boyunca oylamaya açık kalır. Gerçek kullanımda bu süre 14 gün olacaktır.
+                </div>
+
+                <h3>Madde Detayı</h3>
+                <p>Herhangi bir maddeye tıklayarak detaylarını görebilirsiniz:</p>
+                <ul>
+                    <li><strong>İçerik:</strong> Maddenin tam metni</li>
+                    <li><strong>Etiketler:</strong> Maddeye atanmış kategoriler</li>
+                    <li><strong>📄 Gerekçe:</strong> Maddenin gerekçesi (varsa)</li>
+                    <li><strong>📚 Versiyon Geçmişi:</strong> Maddenin tüm değişiklik geçmişi</li>
+                    <li><strong>Yorumlar:</strong> Madde hakkında yapılan tartışmalar</li>
+                </ul>
+
+                <h4>Versiyon Geçmişinde Arama</h4>
+                <p>Madde detayında "Versiyon Geçmişi" butonuna tıkladıktan sonra arama kutusunu kullanarak:</p>
+                <ul>
+                    <li>Eski versiyonlarda kelime araması yapabilirsiniz</li>
+                    <li>Hangi versiyonda ne değiştiğini görebilirsiniz</li>
+                    <li>Değişikliğe neden olan öneriyi görebilirsiniz</li>
+                </ul>
+
+                <h3>Etiket Sistemi</h3>
+                <p>Maddeler kategorilere ayrılabilir:</p>
+                <div class="feature-grid">
+                    <div style="background: #10B981; color: white; padding: 12px; border-radius: 8px; text-align: center;">
+                        🟢 Ekonomi
+                    </div>
+                    <div style="background: #3B82F6; color: white; padding: 12px; border-radius: 8px; text-align: center;">
+                        🔵 Dış Politika
+                    </div>
+                    <div style="background: #8B5CF6; color: white; padding: 12px; border-radius: 8px; text-align: center;">
+                        🟣 İç İşleri
+                    </div>
+                    <div style="background: #F59E0B; color: white; padding: 12px; border-radius: 8px; text-align: center;">
+                        🟠 Eğitim
+                    </div>
+                    <div style="background: #EF4444; color: white; padding: 12px; border-radius: 8px; text-align: center;">
+                        🔴 Sağlık
+                    </div>
+                    <div style="background: #6366F1; color: white; padding: 12px; border-radius: 8px; text-align: center;">
+                        🟣 Adalet
+                    </div>
+                </div>
+            </div>
+
+            <!-- OYLAMA SİSTEMİ -->
+            <div id="oylama" class="guide-section">
+                <h2>🗳️ Oylama Sistemi</h2>
+
+                <h3>Oy Kullanma</h3>
+                <p>Her öneri için 3 seçenek vardır:</p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4 style="color: #10B981;">✅ KABUL</h4>
+                        <p>Öneriyi destekliyorsunuz</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4 style="color: #F59E0B;">⊘ ÇEKİMSER</h4>
+                        <p>Kararsızsınız veya tarafsızsınız</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4 style="color: #EF4444;">❌ VETO</h4>
+                        <p>Öneriyi reddediyorsunuz</p>
+                    </div>
+                </div>
+
+                <h3>Oy Değiştirme</h3>
+                <div class="warning-box">
+                    <strong>⚠️ Önemli Kural:</strong> Oyunuzu verdikten sonra <strong>24 saat</strong> içinde
+                    değiştiremezsiniz. Bu kural, düşünceli oy kullanmayı teşvik eder.
+                </div>
+
+                <h3>Çarpan Sistemi</h3>
+                <p>Oy birliği durumunda toplam oy ağırlığınız artar:</p>
+
+                <div class="code-block">
+<strong>Oy Çarpanları:</strong>
+• Ekip tam oy birliği: x2 çarpan
+• Takım liderleri oy birliği (min 3 lider): Takımın TOPLAM oyu x4
+• Birlik liderleri oy birliği (min 3 lider): Birliğin TOPLAM oyu x8
+
+<strong>Önemli:</strong>
+- Sadece ÇOĞUNLUK çarpan alır, azınlık x1 kalır
+- Çekimser oylar pozitif tarafa eklenir ancak çarpan etkisi yaratmaz
+                </div>
+
+                <h3>Öneri Sonuçlanması</h3>
+                <p>Oylama süresi (14 gün) bittiğinde:</p>
+                <ul>
+                    <li><strong>Kabul:</strong> %75+ Kabul oyu ise öneri geçer</li>
+                    <li><strong>Çekimser Oylar:</strong> Ham oy olarak pozitif tarafa eklenir (çarpan yok)</li>
+                    <li><strong>Red:</strong> %75 eşiğine ulaşılmazsa reddedilir</li>
+                    <li><strong>Oy Değişikliği:</strong> İlk oydan 24 saat sonra değiştirilebilir</li>
+                </ul>
+
+                <div class="success-box">
+                    <strong>✅ Kabul Edilen Öneriler:</strong>
+                    <ul style="margin-bottom: 0;">
+                        <li><strong>ADD:</strong> Yeni madde doktrine eklenir</li>
+                        <li><strong>MODIFY:</strong> Mevcut madde güncellenir, eski hali versiyonlanır</li>
+                        <li><strong>REMOVE:</strong> Madde gizlenir (silinmez, versiyon geçmişinde kalır)</li>
+                    </ul>
+                </div>
+
+                <h3>Tartışma & Yorumlar</h3>
+                <p>Her öneri ve madde altında tartışma yapabilirsiniz:</p>
+                <ul>
+                    <li>Yorum ekleyebilirsiniz</li>
+                    <li>Başkalarının yorumlarına yanıt verebilirsiniz</li>
+                    <li>Yorumlara upvote/downvote verebilirsiniz</li>
+                    <li>En çok upvote alan yorumlar üstte görünür</li>
+                </ul>
+
+                <div class="warning-box">
+                    <strong>⚠️ Spam Koruması:</strong> Dakikada en fazla 30 oy ve 20 yorum yapabilirsiniz.
+                    5 dakikada en fazla 5 öneri oluşturabilirsiniz.
+                </div>
+            </div>
+
+            <!-- ORGANİZASYON YAPISI -->
+            <div id="organizasyon" class="guide-section">
+                <h2>🏢 Organizasyon Yapısı</h2>
+
+                <p>Platform 4 seviyeli hiyerarşik bir yapıya sahiptir:</p>
+
+                <div style="background: var(--bg-secondary); padding: 24px; border-radius: 12px; margin: 20px 0;">
+                    <div style="text-align: center; font-family: monospace; line-height: 2;">
+                        <div style="font-size: 20px; color: var(--primary);">🏛️ İl Örgütü</div>
+                        <div style="margin: 8px 0;">↓</div>
+                        <div style="font-size: 18px; color: var(--accent);">🔷 Birlik</div>
+                        <div style="margin: 8px 0;">↓</div>
+                        <div style="font-size: 16px; color: var(--success);">🔶 Takım</div>
+                        <div style="margin: 8px 0;">↓</div>
+                        <div style="font-size: 14px; color: var(--text);">👥 Ekip (15 kişi maks.)</div>
+                    </div>
+                </div>
+
+                <h3>Ekip (Team)</h3>
+                <p><strong>Temel organizasyon birimi:</strong></p>
+                <ul>
+                    <li>En fazla 15 kişiden oluşur</li>
+                    <li>Her ekibin bir lideri vardır</li>
+                    <li><strong>Ekip üyeleri sadece oy kullanabilir</strong></li>
+                    <li><strong>Ekip olmayanlar oy kullanamaz</strong></li>
+                    <li><strong>Sadece ekip liderleri öneri sunabilir</strong></li>
+                    <li><strong>Tüm ekip üyeleri davet kodu oluşturabilir</strong></li>
+                </ul>
+
+                <h4>Ekibe Katılma:</h4>
+                <ol>
+                    <li>Navbar'dan <strong>"☰ Menü"</strong> → <strong>"👥 Ekibim"</strong> linkine tıklayın</li>
+                    <li>"Ekibe Katıl" veya "Ekip Oluştur" seçeneklerinden birini seçin</li>
+                    <li>Davet kodunu girin veya yeni ekip oluşturun</li>
+                </ol>
+
+                <h4>Ekip Transferi (Davet Kodu ile):</h4>
+                <p><strong>UYARI:</strong> Transfer için davet kodu zorunludur. İstediğiniz ekibe giremezsiniz.</p>
+                <ol>
+                    <li>Transfer olmak istediğiniz ekipten <strong>herhangi bir üyeden</strong> davet kodu isteyin</li>
+                    <li>Ekip üyesi "Ekibim" sayfasından "Davet Kodu Oluştur" butonuna tıklayarak kod üretir</li>
+                    <li>Navbar'dan <strong>"☰ Menü"</strong> → <strong>"👥 Ekibim"</strong> → <strong>"🔄 Ekip Değiştir"</strong> linkine tıklayın</li>
+                    <li>Aldığınız davet kodunu girin</li>
+                    <li>"Davet Kodu ile Transfer Ol" butonuna tıklayın</li>
+                </ol>
+
+                <div class="info-box">
+                    <strong>💡 Davet Kodu Yetkileri:</strong>
+                    <ul style="margin-bottom: 0;">
+                        <li><strong>Ekip:</strong> Tüm ekip üyeleri davet kodu oluşturabilir</li>
+                        <li><strong>Takım/Birlik:</strong> Sadece takım/birlik liderleri davet kodu oluşturabilir (gelecek özellik)</li>
+                    </ul>
+                </div>
+
+                <div class="warning-box">
+                    <strong>⚠️ Transfer Kuralları:</strong>
+                    <ul style="margin-bottom: 0;">
+                        <li>Transfer için geçerli bir davet kodu zorunludur</li>
+                        <li>Her davet kodu yalnızca bir kez kullanılabilir</li>
+                        <li>Hedef ekip dolu ise (15/15) transfer yapamazsınız</li>
+                        <li>Transfer işlemi anında gerçekleşir</li>
+                    </ul>
+                </div>
+
+                <h3>Takım (Squad)</h3>
+                <p><strong>Birden fazla ekipten oluşur:</strong></p>
+                <ul>
+                    <li>3+ ekip bir araya gelerek takım oluşturma önerisi sunabilir</li>
+                    <li>Takım lideri, Normal Yasalar için öneri sunabilir</li>
+                    <li>Takım seviyesinde istatistikler ve yönetim paneli</li>
+                </ul>
+
+                <h3>Birlik (Union)</h3>
+                <p><strong>Birden fazla takımdan oluşur:</strong></p>
+                <ul>
+                    <li>3+ takım bir araya gelerek birlik oluşturma önerisi sunabilir</li>
+                    <li>Birlik lideri, hem İlkeler hem Yasalar için öneri sunabilir</li>
+                    <li>Birlik seviyesinde kapsamlı istatistikler</li>
+                </ul>
+
+                <h3>Yönetim Panelleri</h3>
+                <p><strong>Lider iseniz:</strong></p>
+                <ul>
+                    <li>Profilinizde "🛠️ Yönetim Paneli" butonu görünür</li>
+                    <li>Ekibinizi/Takımınızı/Birliğinizi yönetebilirsiniz</li>
+                    <li>Üye listesi, istatistikler, aktiviteler görüntülenebilir</li>
+                </ul>
+
+                <h4>Yönetim Panelinde:</h4>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>📊 İstatistikler</h4>
+                        <p>Toplam üye, oy, yorum, öneri sayıları</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>👥 Üye Listesi</h4>
+                        <p>Tüm üyeler ve rolleri</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🏢 Alt Birimler</h4>
+                        <p>Ekipler/Takımlar listesi</p>
+                    </div>
+                </div>
+
+                <h3>Lider Seçimleri</h3>
+                <p>Her seviyede liderlik değiştirilebilir:</p>
+                <ol>
+                    <li>Organizasyon sayfanıza gidin</li>
+                    <li>"Lider Seçimi Başlat" butonuna tıklayın</li>
+                    <li>Aday olmak isteyenler başvurur</li>
+                    <li>Üyeler oy kullanır</li>
+                    <li>En çok oy alan seçilir</li>
+                </ol>
+
+                <h3>Duyurular</h3>
+                <p><strong>Liderler duyuru yapabilir:</strong></p>
+                <ul>
+                    <li>Navbar'dan "Duyurular" → "Duyuru Oluştur"</li>
+                    <li>Başlık ve içerik yazın</li>
+                    <li>Hedef seviyeyi seçin (Ekip/Takım/Birlik)</li>
+                    <li>İlgili seviyedeki tüm üyeler bildirim alır</li>
+                </ul>
+            </div>
+
+            <!-- TAHMİN SİSTEMİ -->
+            <div id="tahminler" class="guide-section">
+                <h2>🔮 Tahmin Sistemi (Öngörülülük)</h2>
+
+                <p>
+                    Tahmin sistemi, üyelerin geleceği öngörme yeteneklerini ölçer ve ödüllendirir.
+                    Doğru tahminler yapan üyeler "Öngörülülük Puanı" kazanır.
+                </p>
+
+                <h3>Tahmin Oluşturma</h3>
+                <ol>
+                    <li>Navbar'dan <strong>"Tahminler"</strong> linkine tıklayın</li>
+                    <li>"Tahmin Oluştur" butonuna tıklayın</li>
+                    <li>Tahmin sorunuzu yazın (Örn: "X partisi seçimi kazanacak mı?")</li>
+                    <li>Son tahmin tarihini belirleyin</li>
+                    <li>Doğrulama tarihini belirleyin (sonuç ne zaman belli olacak?)</li>
+                    <li>Tahmininizi oluşturun</li>
+                </ol>
+
+                <h3>Tahminlere Katılma</h3>
+                <ol>
+                    <li>Aktif tahminler listesinden bir tahmin seçin</li>
+                    <li>"EVET" veya "HAYIR" butonuna tıklayın</li>
+                    <li>Tahmin kaydedilir</li>
+                </ol>
+
+                <h3>Tahmin Doğrulama</h3>
+                <p>Doğrulama tarihi geldiğinde:</p>
+                <ul>
+                    <li>Tahmin oluşturan kişi sonucu işaretler</li>
+                    <li>Doğru tahmin yapanlar puan kazanır</li>
+                    <li>Öngörülülük puanı güncellenir</li>
+                </ul>
+
+                <h3>Öngörülülük Puanı</h3>
+                <div class="info-box">
+                    <strong>Puan Hesaplama:</strong>
+                    <ul style="margin-bottom: 0;">
+                        <li>Her doğru tahmin: +10 puan</li>
+                        <li>Her yanlış tahmin: -5 puan</li>
+                        <li>Tahmin durumu belirsiz kalırsa: puan değişmez</li>
+                    </ul>
+                </div>
+
+                <p>
+                    Yüksek öngörülülük puanı, kararlarınızın daha değerli olduğunu gösterir.
+                    İleride bu puan sistemde ek avantajlar sağlayabilir.
+                </p>
+            </div>
+
+            <!-- BİLDİRİMLER -->
+            <div id="bildirimler" class="guide-section">
+                <h2>🔔 Bildirimler</h2>
+
+                <p>Sistem size önemli olaylar hakkında bildirim gönderir:</p>
+
+                <h3>Bildirim Türleri</h3>
+                <ul>
+                    <li><strong>Yeni Öneri:</strong> Seviyenizde yeni bir öneri oluşturuldu</li>
+                    <li><strong>Öneri Sonucu:</strong> Bir öneri kabul edildi veya reddedildi</li>
+                    <li><strong>Yorum Yanıtı:</strong> Yorumunuza yanıt geldi</li>
+                    <li><strong>Duyuru:</strong> Lideriniz duyuru yaptı</li>
+                    <li><strong>Organizasyon:</strong> Organizasyonunuzda değişiklik oldu</li>
+                    <li><strong>Tahmin:</strong> Tahminlerle ilgili güncelleme</li>
+                </ul>
+
+                <h3>Bildirimlere Erişim</h3>
+                <ol>
+                    <li>Navbar'daki profil ikonuna tıklayın</li>
+                    <li>"🔔 Bildirimler" linkine tıklayın</li>
+                    <li>Tüm bildirimlerinizi görürsünüz</li>
+                </ol>
+
+                <h4>Bildirim İşlemleri:</h4>
+                <ul>
+                    <li>Okunmamış bildirimler <strong>kalın</strong> görünür</li>
+                    <li>Bildirime tıklayarak ilgili sayfaya gidebilirsiniz</li>
+                    <li>Bildirimi "Okundu" olarak işaretleyebilirsiniz</li>
+                    <li>Sayfalama ile 50'şer bildirim gösterilir</li>
+                </ul>
+            </div>
+
+            <!-- MESAJLAŞMA -->
+            <div id="mesajlar" class="guide-section">
+                <h2>💬 Mesajlaşma Sistemi</h2>
+
+                <p>Diğer üyelerle özel mesajlaşabilirsiniz:</p>
+
+                <h3>Mesaj Gönderme</h3>
+                <ol>
+                    <li>Navbar'daki <strong>💬</strong> ikonuna tıklayın</li>
+                    <li>"Yeni Mesaj" butonuna tıklayın</li>
+                    <li>Alıcı kullanıcı adını girin</li>
+                    <li>Konu ve mesajınızı yazın</li>
+                    <li>"Gönder" butonuna tıklayın</li>
+                </ol>
+
+                <h3>Gelen Kutusu</h3>
+                <ul>
+                    <li>Aldığınız tüm mesajları görürsünüz</li>
+                    <li>Okunmamış mesajlar kalın gösterilir</li>
+                    <li>Mesaja tıklayarak içeriğini okuyabilirsiniz</li>
+                    <li>Doğrudan yanıt verebilirsiniz</li>
+                </ul>
+
+                <h3>Gönderilen Kutusu</h3>
+                <ul>
+                    <li>Gönderdiğiniz tüm mesajları görürsünüz</li>
+                    <li>Mesaj geçmişinizi takip edebilirsiniz</li>
+                </ul>
+
+                <div class="info-box">
+                    <strong>💡 İpucu:</strong> Navbar'daki mesaj ikonunda okunmamış mesaj sayısı gösterilir.
+                </div>
+            </div>
+
+            <!-- ARAMA & FİLTRELEME -->
+            <div id="arama" class="guide-section">
+                <h2>🔍 Arama & Filtreleme</h2>
+
+                <h3>Doktrin'de Arama</h3>
+                <p>Doktrin sayfasının üstündeki arama kutusunu kullanabilirsiniz:</p>
+                <ul>
+                    <li>Madde numarası ile arama</li>
+                    <li>İçerikte kelime arama</li>
+                    <li>Gerekçede kelime arama</li>
+                </ul>
+
+                <h3>Gelişmiş Filtreler</h3>
+                <p>"🔧 Gelişmiş Filtreler" butonuna tıklayarak:</p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>📅 Tarih Filtreleri</h4>
+                        <p>Başlangıç ve bitiş tarihi seçerek maddeleri filtreleyin</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>👤 Kullanıcı Filtresi</h4>
+                        <p>Belirli bir kullanıcının oluşturduğu maddeleri bulun</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📝 Öneri Türü</h4>
+                        <p>Ekleme, Değişiklik veya Kaldırma önerilerini filtreleyin</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>✅ Öneri Durumu</h4>
+                        <p>Kabul, Red veya Arşivlenmiş önerileri görüntüleyin</p>
+                    </div>
+                </div>
+
+                <h3>Etiket Filtresi</h3>
+                <p>Doktrin sayfasında etiket butonlarına tıklayarak:</p>
+                <ul>
+                    <li>Sadece o etiketteki maddeleri görürsünüz</li>
+                    <li>"Tümü" butonuna tıklayarak filtreyi kaldırabilirsiniz</li>
+                    <li>Etiket + arama kombinasyonu kullanılabilir</li>
+                </ul>
+
+                <h3>Versiyon Geçmişinde Arama</h3>
+                <p>Madde detay sayfasında:</p>
+                <ol>
+                    <li>"📚 Versiyon Geçmişi" butonuna tıklayın</li>
+                    <li>Açılan arama kutusuna kelime yazın</li>
+                    <li>Sadece o kelimeyi içeren versiyonlar gösterilir</li>
+                </ol>
+            </div>
+
+            <!-- EXPORT & YEDEKLEME -->
+            <div id="export" class="guide-section">
+                <h2>📦 Export & Yedekleme</h2>
+
+                <h3>Doktrin Export</h3>
+                <p>Tüm doktrin'i metin dosyası olarak indirebilirsiniz:</p>
+                <ol>
+                    <li>Tarayıcınıza şu URL'yi girin: <code>/doctrine/export/text/</code></li>
+                    <li>Veya doğrudan: <a href="{% url 'doctrine:export_doctrine_text' %}">Doktrin'i İndir</a></li>
+                    <li>Dosya otomatik olarak indirilir</li>
+                </ol>
+
+                <div class="info-box">
+                    <strong>📄 Export Formatı:</strong>
+                    <ul style="margin-bottom: 0;">
+                        <li>Kuruluş İlkeleri (tümü)</li>
+                        <li>Normal Yasalar (tümü)</li>
+                        <li>Her maddenin içeriği, gerekçesi ve etiketleri</li>
+                        <li>Tarih damgalı dosya adı</li>
+                    </ul>
+                </div>
+
+                <h3>Veritabanı Yedeği (Yalnızca Admin)</h3>
+                <p>Sistem yöneticileri terminal üzerinden yedek alabilir:</p>
+                <div class="code-block">
+python manage.py backup_database
+
+# veya özel klasöre:
+python manage.py backup_database --output=/path/to/backups
+                </div>
+
+                <p>Yedek dosyası şunları içerir:</p>
+                <ul>
+                    <li>Tüm doktrin maddeleri</li>
+                    <li>Etiketler ve versiyonlar</li>
+                    <li>Tüm öneriler ve oylar</li>
+                    <li>Kullanıcı bilgileri</li>
+                    <li>Organizasyon yapısı</li>
+                </ul>
+            </div>
+
+            <!-- YETKİ SEVİYELERİ -->
+            <div id="yetkiler" class="guide-section">
+                <h2>🔐 Yetki Seviyeleri ve İzinler</h2>
+
+                <p>Her kullanıcının yetkileri, organizasyondaki pozisyonuna göre belirlenir:</p>
+
+                <h3>Ekipsiz Kullanıcı</h3>
+                <div class="feature-card" style="background: var(--pastel-coral);">
+                    <h4>⛔ Kısıtlamalar:</h4>
+                    <ul>
+                        <li>❌ <strong>Oy kullanamaz</strong></li>
+                        <li>❌ Öneri oluşturamaz</li>
+                        <li>❌ Yönetim paneline erişemez</li>
+                        <li>✅ Sadece doktrin'i görüntüleyebilir</li>
+                    </ul>
+                    <p><strong>⚠️ Bir ekibe katılmalısınız!</strong></p>
+                </div>
+
+                <h3>Ekip Üyesi</h3>
+                <div class="feature-card">
+                    <h4>Yapabilecekleri:</h4>
+                    <ul>
+                        <li>✅ Önerilere oy kullanabilir (1x çarpan)</li>
+                        <li>✅ Yorumlar yapabilir ve yanıt verebilir</li>
+                        <li>✅ Tahminler oluşturabilir ve katılabilir</li>
+                        <li>✅ Mesajlaşabilir</li>
+                    </ul>
+                    <h4>Yapamayacakları:</h4>
+                    <ul>
+                        <li>❌ Öneri oluşturamazlar</li>
+                        <li>❌ Yönetim paneline erişemezler</li>
+                    </ul>
+                </div>
+
+                <h3>Ekip Lideri</h3>
+                <div class="feature-card">
+                    <h4>Ek Yetkiler:</h4>
+                    <ul>
+                        <li>✅ Oy çarpanı 1.5x</li>
+                        <li>✅ <strong>Öneri sunabilir</strong> (önemli değişiklik!)</li>
+                        <li>✅ Ekip yönetim paneline erişim</li>
+                        <li>✅ Ekip duyuruları yapabilir</li>
+                        <li>✅ Ekip davet kodu oluşturabilir</li>
+                        <li>✅ Ekip üyelerini yönetebilir</li>
+                    </ul>
+                </div>
+
+                <h3>Takım Lideri</h3>
+                <div class="feature-card">
+                    <h4>Ek Yetkiler:</h4>
+                    <ul>
+                        <li>✅ Oy çarpanı 2x</li>
+                        <li>✅ <strong>Normal Yasalar</strong> için öneri sunabilir</li>
+                        <li>✅ Takım yönetim paneline erişim</li>
+                        <li>✅ Takım duyuruları yapabilir</li>
+                    </ul>
+                    <h4>Sınırlamalar:</h4>
+                    <ul>
+                        <li>❌ Kuruluş İlkelerini değiştiremezler</li>
+                    </ul>
+                </div>
+
+                <h3>Birlik Lideri</h3>
+                <div class="feature-card">
+                    <h4>Ek Yetkiler:</h4>
+                    <ul>
+                        <li>✅ Oy çarpanı 3x</li>
+                        <li>✅ <strong>Hem İlkeler hem Yasalar</strong> için öneri sunabilir</li>
+                        <li>✅ Birlik yönetim paneline erişim</li>
+                        <li>✅ Birlik duyuruları yapabilir</li>
+                    </ul>
+                </div>
+
+                <h3>Kurucu</h3>
+                <div class="feature-card">
+                    <h4>Tam Yetkiler:</h4>
+                    <ul>
+                        <li>✅ Oy çarpanı 5x</li>
+                        <li>✅ Her türlü öneri sunabilir</li>
+                        <li>✅ Kuruluş İlkelerinin gerekçesini düzenleyebilir</li>
+                        <li>✅ İstatistik Dashboard'a erişim</li>
+                        <li>✅ Tüm yönetim panellerine erişim</li>
+                    </ul>
+                </div>
+
+                <h3>Öneri Yetkileri Özet Tablosu</h3>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                        <thead>
+                            <tr style="background: var(--bg-secondary);">
+                                <th style="padding: 12px; border: 1px solid var(--border); text-align: left;">Seviye</th>
+                                <th style="padding: 12px; border: 1px solid var(--border);">Yeni Madde</th>
+                                <th style="padding: 12px; border: 1px solid var(--border);">Yasa Değiştir</th>
+                                <th style="padding: 12px; border: 1px solid var(--border);">Yasa Kaldır</th>
+                                <th style="padding: 12px; border: 1px solid var(--border);">İlke Değiştir</th>
+                                <th style="padding: 12px; border: 1px solid var(--border);">İlke Kaldır</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: var(--pastel-coral);">
+                                <td style="padding: 12px; border: 1px solid var(--border);"><strong>Ekipsiz</strong></td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">❌</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">❌</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">❌</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">❌</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">❌</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid var(--border);">Ekip Üyesi</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">❌</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">❌</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">❌</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">❌</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">❌</td>
+                            </tr>
+                            <tr style="background: var(--pastel-mint);">
+                                <td style="padding: 12px; border: 1px solid var(--border);"><strong>Ekip Lideri</strong></td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">❌</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">❌</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid var(--border);">Takım Lideri</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">❌</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">❌</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid var(--border);">Birlik Lideri</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid var(--border);">Kurucu</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                                <td style="padding: 12px; border: 1px solid var(--border); text-align: center;">✅</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- İPUÇLARI -->
+            <div id="ipuclari" class="guide-section">
+                <h2>💡 Kullanım İpuçları</h2>
+
+                <h3>Etkili Öneri Sunma</h3>
+                <ul>
+                    <li>Öneri metninizi net ve anlaşılır yazın</li>
+                    <li>Gerekçenizi detaylı açıklayın - insanlar neden desteklemeli?</li>
+                    <li>Yeni maddeler için uygun etiketleri seçin</li>
+                    <li>Öneri sunmadan önce mevcut maddeleri kontrol edin</li>
+                </ul>
+
+                <h3>Oy Kullanırken</h3>
+                <ul>
+                    <li>Öneriyi ve gerekçesini dikkatlice okuyun</li>
+                    <li>Tartışmaları inceleyin</li>
+                    <li>24 saat içinde değiştiremeyeceğinizi unutmayın</li>
+                    <li>Emin değilseniz çekimser kalabilirsiniz</li>
+                </ul>
+
+                <h3>Organizasyonda İlerleme</h3>
+                <ol>
+                    <li>Önce bir ekibe katılın</li>
+                    <li>Aktif olarak oy kullanın ve yorum yapın</li>
+                    <li>Ekip lideri olmak için ekip içinde öne çıkın</li>
+                    <li>Takım oluşturmak için diğer ekiplerle işbirliği yapın</li>
+                    <li>Takım lideri olarak öneri sunmaya başlayın</li>
+                    <li>Birlik oluşturmak için diğer takımlarla birleşin</li>
+                </ol>
+
+                <h3>Öngörülülük Puanını Artırma</h3>
+                <ul>
+                    <li>Tahminlere düzenli olarak katılın</li>
+                    <li>Gerçekçi ve iyi düşünülmüş tahminler yapın</li>
+                    <li>Tahmin oluştururken net ve ölçülebilir sorular sorun</li>
+                    <li>Tahminlerinizi zamanında doğrulayın</li>
+                </ul>
+
+                <h3>Toplulukta Etkili Olma</h3>
+                <ul>
+                    <li>Yapıcı ve nazik yorumlar yazın</li>
+                    <li>Tartışmalara katılın ama saygılı kalın</li>
+                    <li>İyi yorumlara upvote verin</li>
+                    <li>Mesajlaşma ile ağınızı genişletin</li>
+                    <li>Aktivite feed'ini takip edin</li>
+                </ul>
+
+                <h3>Hızlı Erişim Kısayolları</h3>
+                <div class="code-block">
+<strong>Önemli Linkler:</strong>
+• Doktrin: /doctrine/
+• Öneri Oluştur: /doctrine/proposal/create/
+• Ekip Transfer: /organization/transfer/
+• Doktrin Export: /doctrine/export/text/
+• İstatistikler: /doctrine/statistics/ (Kurucu/Admin)
+• Lider Tablosu: /doctrine/leaderboard/
+• Kılavuz: /guide/ (bu sayfa)
+                </div>
+
+                <div class="success-box">
+                    <strong>✨ Son Tavsiye:</strong> Sistemi keşfetmekten çekinmeyin! Her özelliği deneyerek
+                    en iyi öğrenirsiniz. Sorunuz olduğunda bu kılavuza geri dönebilir veya topluluğa sorabilirsiniz.
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="margin-top: 60px; padding: 32px; background: var(--bg-secondary); border-radius: 12px; text-align: center;">
+                <h3 style="margin-bottom: 16px; color: var(--primary);">Yardıma mı İhtiyacınız Var?</h3>
+                <p style="margin-bottom: 20px; color: var(--text-light);">
+                    Bu kılavuzda bulamadığınız bir şey mi var? Topluluğa sorun!
+                </p>
+                <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                    <a href="{% url 'organization:message_compose' %}" class="btn btn-primary">
+                        💬 Mesaj Gönder
+                    </a>
+                    <a href="{% url 'doctrine:activity_feed' %}" class="btn btn-secondary">
+                        📊 Aktivite Feed
+                    </a>
+                    <a href="{% url 'users:profile' %}" class="btn btn-secondary">
+                        👤 Profilim
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+// Smooth scroll for navigation links
+document.querySelectorAll('.guide-sidebar a').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+            targetElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// Highlight active section in sidebar
+window.addEventListener('scroll', () => {
+    const sections = document.querySelectorAll('.guide-section');
+    const navLinks = document.querySelectorAll('.guide-sidebar a');
+
+    let current = '';
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+        if (pageYOffset >= sectionTop - 100) {
+            current = section.getAttribute('id');
+        }
+    });
+
+    navLinks.forEach(link => {
+        link.style.background = '';
+        link.style.color = '';
+        if (link.getAttribute('href') === '#' + current) {
+            link.style.background = 'var(--bg)';
+            link.style.color = 'var(--primary)';
+        }
+    });
+});
+</script>
+
+{% endblock %}

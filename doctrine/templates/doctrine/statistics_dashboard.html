@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}İstatistikler - Doktrin{% endblock %}
+
+{% block content %}
+
+<div style="max-width: 1400px; margin: 0 auto; padding: var(--space-lg) var(--space-md);">
+    <h1 style="font-size: 36px; font-weight: 700; margin-bottom: var(--space-lg);">📊 İstatistik Dashboard'u</h1>
+
+    <!-- Genel İstatistikler -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-xl);">
+        <div class="card" style="padding: var(--space-lg); text-align: center;">
+            <div style="font-size: 40px; font-weight: 700; color: var(--accent); margin-bottom: 8px;">{{ total_articles }}</div>
+            <div style="font-size: 14px; color: var(--text-secondary);">Toplam Madde</div>
+            <div style="margin-top: 12px; font-size: 13px;">
+                <span style="color: #F59E0B;">{{ foundation_laws_count}} İlke</span> •
+                <span style="color: var(--accent);">{{ normal_laws_count }} Yasa</span>
+            </div>
+        </div>
+
+        <div class="card" style="padding: var(--space-lg); text-align: center;">
+            <div style="font-size: 40px; font-weight: 700; color: var(--accent); margin-bottom: 8px;">{{ total_proposals }}</div>
+            <div style="font-size: 14px; color: var(--text-secondary);">Toplam Öneri</div>
+            <div style="margin-top: 12px; font-size: 13px;">
+                <span style="color: #10B981;">{{ passed_proposals }} Kabul</span> •
+                <span style="color: #EF4444;">{{ rejected_proposals }} Red</span> •
+                <span style="color: #F59E0B;">{{ active_proposals }} Aktif</span>
+            </div>
+        </div>
+
+        <div class="card" style="padding: var(--space-lg); text-align: center;">
+            <div style="font-size: 40px; font-weight: 700; color: var(--accent); margin-bottom: 8px;">{{ total_users }}</div>
+            <div style="font-size: 14px; color: var(--text-secondary);">Aktif Kullanıcı</div>
+        </div>
+
+        <div class="card" style="padding: var(--space-lg); text-align: center;">
+            <div style="font-size: 40px; font-weight: 700; color: var(--accent); margin-bottom: 8px;">{{ total_votes }}</div>
+            <div style="font-size: 14px; color: var(--text-secondary);">Toplam Oy</div>
+        </div>
+    </div>
+
+    <!-- Oy Dağılımı -->
+    <div class="card" style="margin-bottom: var(--space-xl);">
+        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: var(--space-lg);">Oy Dağılımı</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md);">
+            <div style="padding: var(--space-md); background: var(--bg-secondary); border-radius: var(--radius); text-align: center;">
+                <div style="font-size: 32px; font-weight: 700; color: #10B981;">{{ yes_votes }}</div>
+                <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">Kabul Oyları</div>
+            </div>
+            <div style="padding: var(--space-md); background: var(--bg-secondary); border-radius: var(--radius); text-align: center;">
+                <div style="font-size: 32px; font-weight: 700; color: #F59E0B;">{{ abstain_votes }}</div>
+                <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">Çekimser Oyları</div>
+            </div>
+            <div style="padding: var(--space-md); background: var(--bg-secondary); border-radius: var(--radius); text-align: center;">
+                <div style="font-size: 32px; font-weight: 700; color: #EF4444;">{{ veto_votes }}</div>
+                <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">Veto Oyları</div>
+            </div>
+        </div>
+
+        <!-- Basit oy grafiği -->
+        <div style="margin-top: var(--space-lg); height: 40px; display: flex; border-radius: var(--radius); overflow: hidden;">
+            {% if yes_votes or abstain_votes or veto_votes %}
+                {% widthratio yes_votes 1 100 as yes_total %}
+                {% widthratio abstain_votes 1 100 as abstain_total %}
+                {% widthratio veto_votes 1 100 as veto_total %}
+                {% with total_votes_sum=yes_votes|add:abstain_votes|add:veto_votes %}
+                    <div style="background: #10B981; width: {% widthratio yes_votes total_votes_sum 100 %}%;"></div>
+                    <div style="background: #F59E0B; width: {% widthratio abstain_votes total_votes_sum 100 %}%;"></div>
+                    <div style="background: #EF4444; width: {% widthratio veto_votes total_votes_sum 100 %}%;"></div>
+                {% endwith %}
+            {% else %}
+                <div style="background: var(--bg-secondary); width: 100%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text-secondary);">Henüz oy yok</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- En Çok Oy Alan Öneriler -->
+    <div class="card" style="margin-bottom: var(--space-xl);">
+        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: var(--space-lg);">🔥 En Çok Oy Alan Öneriler (Son 30 Gün)</h2>
+        {% if top_proposals %}
+            <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+                {% for proposal in top_proposals %}
+                <a href="{% url 'doctrine:proposal_detail' proposal.id %}" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-md); background: var(--bg-secondary); border-radius: var(--radius); text-decoration: none; color: var(--text); transition: all 0.2s;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg-secondary)'">
+                    <div>
+                        <div style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">{{ proposal.get_proposal_type_display }}</div>
+                        <div style="font-size: 13px; color: var(--text-secondary);">{{ proposal.proposed_content|truncatewords:15 }}</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                        <span style="font-size: 20px; font-weight: 700; color: var(--accent);">{{ proposal.total_votes }}</span>
+                        <span style="font-size: 13px; color: var(--text-secondary);">oy</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="text-align: center; color: var(--text-secondary); padding: var(--space-lg);">Henüz öneri yok</p>
+        {% endif %}
+    </div>
+
+    <!-- En Aktif Kullanıcılar -->
+    <div class="card">
+        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: var(--space-lg);">⭐ En Aktif Kullanıcılar</h2>
+        {% if top_users %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-md);">
+                {% for user in top_users %}
+                <div style="padding: var(--space-md); background: var(--bg-secondary); border-radius: var(--radius); text-align: center;">
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">{{ user.username }}</div>
+                    <div style="font-size: 13px; color: var(--text-secondary);">
+                        {{ user.vote_count }} oy • {{ user.discussion_count }} yorum
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="text-align: center; color: var(--text-secondary); padding: var(--space-lg);">Henüz kullanıcı yok</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

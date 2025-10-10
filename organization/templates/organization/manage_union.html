@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Birlik Yönetimi{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1200px; padding: var(--spacing-xl);">
+    <div style="margin-bottom: var(--spacing-lg);">
+        <a href="{% url 'organization:my_union' %}" style="color: var(--primary); text-decoration: none; font-weight: 500;">
+            ← Birliğime Geri Dön
+        </a>
+    </div>
+
+    <div class="card">
+        <h1 style="font-size: 36px; font-weight: 700; margin-bottom: var(--spacing-md);">
+            🛠️ Birlik Yönetim Paneli
+        </h1>
+
+        <div style="padding: 20px; background: var(--pastel-mint); border-radius: 12px; margin-bottom: var(--spacing-xl);">
+            <h2 style="font-size: 24px; margin-bottom: 8px;">{{ union.display_name }}</h2>
+            <p style="color: var(--text-light); margin: 0;">{{ union.official_name }}</p>
+        </div>
+
+        <!-- Statistics -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: var(--spacing-xl);">
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 48px; font-weight: 800; color: var(--primary);">{{ union_squads.count }}</div>
+                <div style="font-size: 14px; color: var(--text-light); margin-top: 8px;">Takım Sayısı</div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 48px; font-weight: 800; color: var(--secondary);">{{ union_teams.count }}</div>
+                <div style="font-size: 14px; color: var(--text-light); margin-top: 8px;">Ekip Sayısı</div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 48px; font-weight: 800; color: var(--info);">{{ union_members.count }}</div>
+                <div style="font-size: 14px; color: var(--text-light); margin-top: 8px;">Toplam Üye</div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 48px; font-weight: 800; color: var(--success);">{{ union_votes }}</div>
+                <div style="font-size: 14px; color: var(--text-light); margin-top: 8px;">Toplam Oy</div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 48px; font-weight: 800; color: var(--warning);">{{ union_proposals }}</div>
+                <div style="font-size: 14px; color: var(--text-light); margin-top: 8px;">Birlik Önerileri</div>
+            </div>
+        </div>
+
+        <!-- Squads -->
+        <h2 style="font-size: 24px; margin-bottom: var(--spacing-md);">Takımlar ({{ union_squads.count }})</h2>
+
+        <div style="display: grid; gap: 12px; margin-bottom: var(--spacing-xl);">
+            {% for squad in union_squads %}
+            <div style="padding: 16px; background: var(--bg-secondary); border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>{{ squad.display_name }}</strong>
+                        <div style="font-size: 13px; color: var(--text-light); margin-top: 4px;">
+                            Lider: {{ squad.leader.username }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Teams -->
+        <h2 style="font-size: 24px; margin-bottom: var(--spacing-md);">Ekipler ({{ union_teams.count }})</h2>
+
+        <div style="display: grid; gap: 12px; margin-bottom: var(--spacing-xl);">
+            {% for team in union_teams %}
+            <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+                <strong>{{ team.display_name }}</strong>
+                <span style="font-size: 12px; color: var(--text-light); margin-left: 8px;">
+                    ({{ team.parent_squad.display_name }})
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- All Members -->
+        <h2 style="font-size: 24px; margin-bottom: var(--spacing-md);">Tüm Üyeler ({{ union_members.count }})</h2>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px;">
+            {% for member in union_members %}
+            <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+                <strong>{{ member.username }}</strong>
+                <div style="font-size: 12px; color: var(--text-light); margin-top: 4px;">
+                    {{ member.current_team.display_name }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

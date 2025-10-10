@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ proposal.get_proposal_type_display }} - Doktrin{% endblock %}
+
+{% block content %}
+
+<div class="container proposal-container">
+    <!-- Back Button -->
+    <a href="{% url 'doctrine:doctrine_list' %}" class="proposal-back-link">
+        ← Doktrini Geri Dön
+    </a>
+
+    <!-- Proposal Header -->
+    <div class="card">
+        <div class="proposal-header">
+            <div>
+                <h1 class="proposal-title">
+                    {{ proposal.get_proposal_type_display }}
+                </h1>
+                <div class="proposal-meta">
+                    <span class="proposal-meta-item">
+                        {{ proposal.get_proposed_by_level_display }}
+                    </span>
+                    <span class="proposal-meta-separator">•</span>
+                    <span class="proposal-meta-item">
+                        {{ proposal.start_date|date:"d M Y" }}
+                    </span>
+                </div>
+            </div>
+
+            {% if proposal.status == 'ACTIVE' %}
+                <span class="proposal-badge-active">
+                    Aktif
+                </span>
+            {% elif proposal.status == 'PASSED' %}
+                <span class="proposal-badge-passed">
+                    Kabul Edildi
+                </span>
+            {% elif proposal.status == 'REJECTED' %}
+                <span class="proposal-badge-rejected">
+                    Reddedildi
+                </span>
+            {% endif %}
+        </div>
+
+        {% if proposal.related_article and proposal.proposal_type == 'MODIFY' %}
+        <!-- Karşılaştırma Görünümü -->
+        <div style="margin: 24px 0;">
+            <h3 style="font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 16px;">
+                📊 Değişiklik Karşılaştırması
+            </h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px;">
+                <!-- Mevcut Madde -->
+                <div style="background: #FEF3C7; border: 2px solid #F59E0B; border-radius: 12px; padding: 24px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                        <span style="font-size: 24px;">📜</span>
+                        <h4 style="font-size: 16px; font-weight: 700; color: #92400E; margin: 0;">
+                            Mevcut Madde {{ proposal.related_article.article_number }}
+                        </h4>
+                    </div>
+                    <p style="font-size: 15px; line-height: 1.8; color: #78350F; margin: 0; white-space: pre-wrap;" id="currentContent">{{ proposal.original_article_content|default:proposal.related_article.content }}</p>
+                </div>
+
+                <!-- Önerilen Değişiklik -->
+                <div style="background: #DBEAFE; border: 2px solid #3B82F6; border-radius: 12px; padding: 24px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                        <span style="font-size: 24px;">✨</span>
+                        <h4 style="font-size: 16px; font-weight: 700; color: #1E40AF; margin: 0;">
+                            Önerilen Değişiklik
+                        </h4>
+                    </div>
+                    <p style="font-size: 15px; line-height: 1.8; color: #1E3A8A; margin: 0; white-space: pre-wrap;" id="proposedContent">{{ proposal.proposed_content }}</p>
+                </div>
+            </div>
+        </div>
+        {% elif proposal.related_article %}
+        <div class="proposal-related-article">
+            <p class="proposal-related-label">
+                İlgili Madde
+            </p>
+            <h3 class="proposal-related-title">
+                {{ proposal.related_article.get_article_type_display }} {{ proposal.related_article.article_number }}
+            </h3>
+            <p class="proposal-related-content">
+                {{ proposal.related_article.content }}
+            </p>
+        </div>
+
+        <div class="proposal-content-section">
+            <h3 class="proposal-content-title">Önerilen İçerik</h3>
+            <p class="proposal-content-text">
+                {{ proposal.proposed_content }}
+            </p>
+        </div>
+        {% else %}
+        <div class="proposal-content-section">
+            <h3 class="proposal-content-title">Önerilen İçerik</h3>
+            <p class="proposal-content-text">
+                {{ proposal.proposed_content }}
+            </p>
+        </div>
+        {% endif %}
+
+        {% if proposal.justification %}
+        <div class="proposal-content-section" style="margin-top: 32px;">
+            <h3 class="proposal-content-title">Gerekçe</h3>
+            <p class="proposal-content-text">
+                {{ proposal.justification }}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Voting Section -->
+    <div class="card">
+        <h2 class="proposal-title">
+            Oylama
+        </h2>
+
+        {% if user_vote %}
+        <div class="user-vote-display">
+            <p class="user-vote-title">
+                Sizin Oyunuz: {{ user_vote.get_vote_choice_display }}
+            </p>
+            <p class="user-vote-date">
+                {{ user_vote.voted_at|date:"d M Y, H:i" }}
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- Vote Stats -->
+        <div class="vote-stats-grid">
+            <div class="vote-stat-box-yes">
+                <h3 class="vote-stat-number-yes">
+                    {{ proposal.vote_yes_count }}
+                </h3>
+                <p class="vote-stat-label">Kabul</p>
+            </div>
+            <div class="vote-stat-box-abstain">
+                <h3 class="vote-stat-number-abstain">
+                    {{ proposal.vote_abstain_count }}
+                </h3>
+                <p class="vote-stat-label">Çekimser</p>
+            </div>
+            <div class="vote-stat-box-veto">
+                <h3 class="vote-stat-number-veto">
+                    {{ proposal.vote_veto_count }}
+                </h3>
+                <p class="vote-stat-label">Veto</p>
+            </div>
+        </div>
+
+        <!-- Vote Buttons -->
+        {% if proposal.status == 'ACTIVE' %}
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-md); margin-top: var(--spacing-lg);">
+            <form method="post" action="{% url 'doctrine:vote_proposal' proposal.id %}" style="margin: 0;">
+                {% csrf_token %}
+                <input type="hidden" name="vote_choice" value="YES">
+                <button type="submit" style="background: #10B981; color: white; padding: 16px; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; transition: all 0.2s; width: 100%; font-size: 16px;">
+                    ✓ Kabul
+                </button>
+            </form>
+            <form method="post" action="{% url 'doctrine:vote_proposal' proposal.id %}" style="margin: 0;">
+                {% csrf_token %}
+                <input type="hidden" name="vote_choice" value="ABSTAIN">
+                <button type="submit" style="background: var(--bg-secondary); color: var(--text); padding: 16px; border: 2px solid var(--border); border-radius: 12px; cursor: pointer; font-weight: 700; transition: all 0.2s; width: 100%; font-size: 16px;">
+                    ⊘ Çekimser
+                </button>
+            </form>
+            <form method="post" action="{% url 'doctrine:vote_proposal' proposal.id %}" style="margin: 0;">
+                {% csrf_token %}
+                <input type="hidden" name="vote_choice" value="VETO">
+                <button type="submit" style="background: #DC2626; color: white; padding: 16px; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; transition: all 0.2s; width: 100%; font-size: 16px;">
+                    ✗ Veto
+                </button>
+            </form>
+        </div>
+        {% else %}
+        <p style="text-align: center; color: var(--text-secondary); padding: var(--spacing-lg); margin-top: var(--spacing-lg);">
+            Oylama sona ermiştir.
+        </p>
+        {% endif %}
+
+        <!-- Deadline -->
+        <div class="vote-deadline">
+            <p class="vote-deadline-text">
+                Bitiş: <strong>{{ proposal.end_date|date:"d M Y, H:i" }}</strong>
+            </p>
+        </div>
+    </div>
+
+    <!-- Comments Section -->
+    <div class="comments-list">
+        <div class="comments-header">
+            <h2 class="proposal-title">Tartışma</h2>
+            <span class="proposal-meta-item">{{ discussions.count }} yorum</span>
+        </div>
+
+        <!-- Comment Form -->
+        <div class="comment-form">
+            <form method="post">
+                {% csrf_token %}
+                <textarea name="comment" placeholder="Görüşlerinizi paylaşın..." required></textarea>
+                <button type="submit" class="btn btn-primary mt-md">
+                    Yorum Gönder
+                </button>
+            </form>
+        </div>
+
+        <!-- Comments List -->
+        {% if discussions %}
+            {% for discussion in discussions %}
+            <div style="background: var(--bg); border: 2px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; transition: all 0.2s;">
+                <!-- Yorum metni önce, büyük -->
+                <p style="font-size: 18px; line-height: 1.8; color: var(--text); margin: 0 0 16px 0; font-weight: 400; white-space: pre-wrap;">{{ discussion.comment_text }}</p>
+
+                <!-- Meta bilgiler küçük, altta -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div>
+                        <span style="font-weight: 600; color: var(--text-light); font-size: 13px;">{{ discussion.user.username }}</span>
+                        <span style="margin-left: 8px; font-size: 12px; color: var(--text-light);">{{ discussion.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                </div>
+
+                {% include "doctrine/_discussion_vote_buttons.html" %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="discussion-empty">
+                <p>Henüz yorum yok. İlk yorumu siz yapın!</p>
+            </div>
+        {% endif %}
+
+        <!-- Pagination -->
+        {% if discussions.has_other_pages %}
+        <div class="pagination">
+            {% if discussions.has_previous %}
+                <a href="?page=1">İlk</a>
+                <a href="?page={{ discussions.previous_page_number }}">←</a>
+            {% else %}
+                <span class="disabled">İlk</span>
+                <span class="disabled">←</span>
+            {% endif %}
+
+            <span class="page-info">
+                Sayfa {{ discussions.number }} / {{ discussions.paginator.num_pages }}
+            </span>
+
+            {% if discussions.has_next %}
+                <a href="?page={{ discussions.next_page_number }}">→</a>
+                <a href="?page={{ discussions.paginator.num_pages }}">Son</a>
+            {% else %}
+                <span class="disabled">→</span>
+                <span class="disabled">Son</span>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Basit kelime bazlı diff vurgulama
+document.addEventListener('DOMContentLoaded', function() {
+    const currentEl = document.getElementById('currentContent');
+    const proposedEl = document.getElementById('proposedContent');
+
+    if (!currentEl || !proposedEl) return;
+
+    const currentText = currentEl.textContent.trim();
+    const proposedText = proposedEl.textContent.trim();
+
+    // Kelimelere ayır
+    const currentWords = currentText.split(/(\s+)/);
+    const proposedWords = proposedText.split(/(\s+)/);
+
+    // Silinen kelimeleri vurgula (mevcut maddede)
+    let currentHTML = '';
+    currentWords.forEach(word => {
+        if (word.match(/^\s+$/)) {
+            currentHTML += word;
+        } else if (!proposedText.includes(word) && word.length > 0) {
+            currentHTML += `<span style="background: #FCA5A5; padding: 2px 4px; border-radius: 3px; text-decoration: line-through;">${word}</span>`;
+        } else {
+            currentHTML += word;
+        }
+    });
+
+    // Eklenen kelimeleri vurgula (önerilen maddede)
+    let proposedHTML = '';
+    proposedWords.forEach(word => {
+        if (word.match(/^\s+$/)) {
+            proposedHTML += word;
+        } else if (!currentText.includes(word) && word.length > 0) {
+            proposedHTML += `<span style="background: #86EFAC; padding: 2px 4px; border-radius: 3px; font-weight: 600;">${word}</span>`;
+        } else {
+            proposedHTML += word;
+        }
+    });
+
+    currentEl.innerHTML = currentHTML;
+    proposedEl.innerHTML = proposedHTML;
+});
+</script>
+
+{% endblock %}

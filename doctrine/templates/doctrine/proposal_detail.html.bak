@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ proposal.get_proposal_type_display }} - Doktrin{% endblock %}
+
+{% block content %}
+
+<div class="container" style="max-width: 900px; padding-top: var(--spacing-xl);">
+    <!-- Back Button -->
+    <a href="{% url 'doctrine:doctrine_list' %}" style="color: var(--text-secondary); text-decoration: none; font-size: 14px; display: inline-block; margin-bottom: var(--spacing-lg);">
+        ← Doktrini Geri Dön
+    </a>
+
+    <!-- Proposal Header -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-lg);">
+            <div>
+                <h1 style="font-size: 32px; font-weight: 700; letter-spacing: -1px; margin-bottom: var(--spacing-sm);">
+                    {{ proposal.get_proposal_type_display }}
+                </h1>
+                <div style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-sm);">
+                    <span style="font-size: 14px; color: var(--text-secondary);">
+                        {{ proposal.get_proposed_by_level_display }}
+                    </span>
+                    <span style="font-size: 14px; color: var(--text-secondary);">•</span>
+                    <span style="font-size: 14px; color: var(--text-secondary);">
+                        {{ proposal.start_date|date:"d M Y" }}
+                    </span>
+                </div>
+            </div>
+
+            {% if proposal.status == 'ACTIVE' %}
+                <span style="background: var(--pastel-mint); color: #059669; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+                    Aktif
+                </span>
+            {% elif proposal.status == 'PASSED' %}
+                <span style="background: var(--pastel-blue); color: #0066FF; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+                    Kabul Edildi
+                </span>
+            {% elif proposal.status == 'REJECTED' %}
+                <span style="background: var(--pastel-peach); color: #DC2626; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+                    Reddedildi
+                </span>
+            {% endif %}
+        </div>
+
+        {% if proposal.related_article %}
+        <div style="background: var(--pastel-blue); padding: var(--spacing-lg); border-radius: 12px; margin-bottom: var(--spacing-lg);">
+            <p style="font-size: 13px; color: var(--text-light); margin-bottom: var(--spacing-xs); text-transform: uppercase; letter-spacing: 1px;">
+                İlgili Madde
+            </p>
+            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: var(--spacing-sm);">
+                {{ proposal.related_article.get_article_type_display }} {{ proposal.related_article.article_number }}
+            </h3>
+            <p style="color: var(--text-secondary); line-height: 1.7;">
+                {{ proposal.related_article.content }}
+            </p>
+        </div>
+        {% endif %}
+
+        <div>
+            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: var(--spacing-md);">Önerilen İçerik</h3>
+            <p style="line-height: 1.8; color: var(--text-secondary); font-size: 16px;">
+                {{ proposal.proposed_content }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Voting Section -->
+    <div class="card">
+        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: var(--spacing-lg); letter-spacing: -0.5px;">
+            Oylama
+        </h2>
+
+        {% if user_vote %}
+        <div style="background: var(--pastel-mint); padding: var(--spacing-md); border-radius: 12px; margin-bottom: var(--spacing-lg); border-left: 4px solid #10B981;">
+            <p style="font-weight: 600; margin-bottom: var(--spacing-xs);">
+                Sizin Oyunuz: {{ user_vote.get_vote_choice_display }}
+            </p>
+            <p style="font-size: 13px; color: var(--text-secondary);">
+                {{ user_vote.voted_at|date:"d M Y, H:i" }}
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- Vote Stats -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-xl);">
+            <div style="text-align: center; padding: var(--spacing-lg); background: var(--pastel-mint); border-radius: 12px;">
+                <h3 style="font-size: 36px; font-weight: 700; color: #059669; margin-bottom: var(--spacing-xs);">
+                    {{ proposal.vote_yes_count }}
+                </h3>
+                <p style="font-size: 14px; color: var(--text-secondary); font-weight: 500;">Kabul</p>
+            </div>
+            <div style="text-align: center; padding: var(--spacing-lg); background: var(--pastel-peach); border-radius: 12px;">
+                <h3 style="font-size: 36px; font-weight: 700; color: #F59E0B; margin-bottom: var(--spacing-xs);">
+                    {{ proposal.vote_abstain_count }}
+                </h3>
+                <p style="font-size: 14px; color: var(--text-secondary); font-weight: 500;">Çekimser</p>
+            </div>
+            <div style="text-align: center; padding: var(--spacing-lg); background: var(--pastel-pink); border-radius: 12px;">
+                <h3 style="font-size: 36px; font-weight: 700; color: #DC2626; margin-bottom: var(--spacing-xs);">
+                    {{ proposal.vote_veto_count }}
+                </h3>
+                <p style="font-size: 14px; color: var(--text-secondary); font-weight: 500;">Veto</p>
+            </div>
+        </div>
+
+        <!-- Vote Buttons -->
+        {% if proposal.status == 'ACTIVE' %}
+        <form method="post" action="{% url 'doctrine:vote_proposal' proposal.id %}">
+            {% csrf_token %}
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-md);">
+                <button type="submit" name="vote_choice" value="YES" class="btn btn-accent" style="background: #10B981; padding: 14px;">
+                    ✓ Kabul
+                </button>
+                <button type="submit" name="vote_choice" value="ABSTAIN" class="btn btn-secondary" style="padding: 14px;">
+                    ⊘ Çekimser
+                </button>
+                <button type="submit" name="vote_choice" value="VETO" style="background: #DC2626; color: white; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                    ✗ Veto
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <p style="text-align: center; color: var(--text-secondary); padding: var(--spacing-lg);">
+            Oylama sona ermiştir.
+        </p>
+        {% endif %}
+
+        <!-- Deadline -->
+        <div style="text-align: center; margin-top: var(--spacing-lg); padding-top: var(--spacing-lg); border-top: 1px solid var(--gray);">
+            <p style="font-size: 14px; color: var(--text-secondary);">
+                Bitiş: <strong>{{ proposal.end_date|date:"d M Y, H:i" }}</strong>
+            </p>
+        </div>
+    </div>
+
+    <!-- Comments Section -->
+    <div class="comments-list">
+        <div class="comments-header">
+            <h2 style="font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">Tartışma</h2>
+            <span style="font-size: 14px; color: var(--text-light);">{{ discussions.count }} yorum</span>
+        </div>
+
+        <!-- Comment Form -->
+        <div class="comment-form">
+            <form method="post">
+                {% csrf_token %}
+                <textarea name="comment" placeholder="Görüşlerinizi paylaşın..." required></textarea>
+                <button type="submit" class="btn btn-primary" style="margin-top: var(--spacing-md);">
+                    Yorum Gönder
+                </button>
+            </form>
+        </div>
+
+        <!-- Comments List -->
+        {% if discussions %}
+            {% for discussion in discussions %}
+            <div class="comment">
+                <div class="comment-header">
+                    <div>
+                        <span class="comment-author">{{ discussion.user.username }}</span>
+                        <span class="comment-date">{{ discussion.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                </div>
+
+                <p class="comment-text">{{ discussion.comment_text }}</p>
+
+                <div class="comment-actions">
+                    <div class="vote-buttons">
+                        <form method="post" action="{% url 'doctrine:vote_discussion' discussion.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" name="vote_type" value="UP" class="vote-btn {% if user in discussion.votes.all and discussion.votes.get.vote_type == 'UP' %}voted-up{% endif %}">
+                                ↑ <span>{{ discussion.upvotes }}</span>
+                            </button>
+                        </form>
+
+                        <span class="vote-count {% if discussion.score > 0 %}positive{% elif discussion.score < 0 %}negative{% endif %}">
+                            {{ discussion.score }}
+                        </span>
+
+                        <form method="post" action="{% url 'doctrine:vote_discussion' discussion.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" name="vote_type" value="DOWN" class="vote-btn {% if user in discussion.votes.all and discussion.votes.get.vote_type == 'DOWN' %}voted-down{% endif %}">
+                                ↓ <span>{{ discussion.downvotes }}</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; padding: var(--spacing-3xl); color: var(--text-light);">
+                <p>Henüz yorum yok. İlk yorumu siz yapın!</p>
+            </div>
+        {% endif %}
+
+        <!-- Pagination -->
+        {% if discussions.has_other_pages %}
+        <div class="pagination">
+            {% if discussions.has_previous %}
+                <a href="?page=1">İlk</a>
+                <a href="?page={{ discussions.previous_page_number }}">←</a>
+            {% else %}
+                <span class="disabled">İlk</span>
+                <span class="disabled">←</span>
+            {% endif %}
+
+            <span class="page-info">
+                Sayfa {{ discussions.number }} / {{ discussions.paginator.num_pages }}
+            </span>
+
+            {% if discussions.has_next %}
+                <a href="?page={{ discussions.next_page_number }}">→</a>
+                <a href="?page={{ discussions.paginator.num_pages }}">Son</a>
+            {% else %}
+                <span class="disabled">→</span>
+                <span class="disabled">Son</span>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

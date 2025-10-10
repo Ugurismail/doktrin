@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load activity_tags %}
+
+{% block title %}Aktivite Akışı - Doktrin{% endblock %}
+
+{% block content %}
+
+<div class="container" style="max-width: 1000px; padding: var(--spacing-lg) var(--spacing-md);">
+    <div style="margin-bottom: var(--spacing-lg);">
+        <h1 style="font-size: 28px; font-weight: 700; margin: 0;">📊 Aktivite Akışı</h1>
+        <p style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">
+            Platformdaki son aktiviteleri takip et
+        </p>
+    </div>
+
+    {% if activities %}
+    <div class="card" style="padding: 0; overflow: hidden;">
+        {% for activity in activities %}
+        <div style="padding: var(--spacing-md); border-bottom: 1px solid #f0f0f0; display: flex; align-items: start; gap: var(--spacing-md);">
+            <!-- İkon -->
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: {{ activity.activity_type|activity_color }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px;">
+                {{ activity.activity_type|activity_icon }}
+            </div>
+
+            <!-- İçerik -->
+            <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: 4px;">
+                    <span style="font-weight: 600; font-size: 15px;">{{ activity.user.username }}</span>
+                    <span style="color: var(--text-secondary); font-size: 13px;">•</span>
+                    <span style="color: var(--text-secondary); font-size: 13px;">{{ activity.created_at|timesince }} önce</span>
+                </div>
+                <div style="font-size: 14px; line-height: 1.5; color: var(--text-primary);">
+                    {{ activity.description }}
+                </div>
+                {% if activity.related_url %}
+                <a href="{{ activity.related_url }}" style="display: inline-block; margin-top: 6px; font-size: 13px; color: var(--primary); text-decoration: none;">
+                    Detayı Gör →
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if activities.has_other_pages %}
+    <div class="pagination" style="margin-top: var(--spacing-lg);">
+        {% if activities.has_previous %}
+        <a href="?page={{ activities.previous_page_number }}">← Önceki</a>
+        {% else %}
+        <span class="disabled">← Önceki</span>
+        {% endif %}
+
+        <span class="page-info">
+            Sayfa {{ activities.number }} / {{ activities.paginator.num_pages }}
+        </span>
+
+        {% if activities.has_next %}
+        <a href="?page={{ activities.next_page_number }}">Sonraki →</a>
+        {% else %}
+        <span class="disabled">Sonraki →</span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="card" style="text-align: center; padding: var(--spacing-xl);">
+        <div style="font-size: 48px; margin-bottom: var(--spacing-md);">📊</div>
+        <p style="font-size: 16px; color: var(--text-secondary); margin: 0;">
+            Henüz aktivite yok.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

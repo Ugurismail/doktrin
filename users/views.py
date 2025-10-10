@@ -1,0 +1,245 @@
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils import timezone
+from .models import User
+
+def home(request):
+    """Ana sayfa - Herkes için home.html"""
+    from doctrine.models import DoctrineArticle, Proposal, Vote
+    from organization.models import Team, Squad, Union
+
+    # Platform istatistikleri (herkes için)
+    stats = {
+        'total_users': User.objects.count(),
+        'total_teams': Team.objects.count(),
+        'total_squads': Squad.objects.count(),
+        'total_unions': Union.objects.count(),
+        'total_articles': DoctrineArticle.objects.filter(is_active=True).count(),
+        'active_proposals': Proposal.objects.filter(status='ACTIVE').count(),
+        'total_votes': Vote.objects.count(),
+        'passed_proposals': Proposal.objects.filter(status='PASSED').count(),
+    }
+
+    context = {'stats': stats}
+
+    # Giriş yapmış kullanıcılar için ekstra bilgiler
+    if request.user.is_authenticated:
+        from notifications.models import Notification
+
+        # Kullanıcının oy kullanmadığı aktif öneriler
+        user_votes = Vote.objects.filter(user=request.user).values_list('proposal_id', flat=True)
+        pending_votes = Proposal.objects.filter(status='ACTIVE').exclude(id__in=user_votes).order_by('-start_date')[:3]
+
+        # Kullanıcı istatistikleri
+        user_stats = {
+            'total_votes': Vote.objects.filter(user=request.user).count(),
+            'unread_notifications': Notification.objects.filter(user=request.user, is_read=False).count(),
+        }
+
+        context['pending_votes'] = pending_votes
+        context['user_stats'] = user_stats
+
+    return render(request, 'users/home.html', context)
+
+def register(request):
+    """Kayıt sayfası"""
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        password2 = request.POST.get('password2')
+        province = request.POST.get('province')
+        district = request.POST.get('district')
+        
+        # Validasyon
+        if password != password2:
+            messages.error(request, 'Şifreler eşleşmiyor.')
+            return render(request, 'users/register.html')
+        
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Bu kullanıcı adı zaten kullanılıyor.')
+            return render(request, 'users/register.html')
+        
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'Bu email adresi zaten kayıtlı.')
+            return render(request, 'users/register.html')
+        
+        # Kullanıcı oluştur
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            province=province,
+            district=district
+        )
+        
+        # Email doğrulama token'ı oluştur ve gönder
+        user.generate_verification_token()
+
+        # Email gönder
+        from django.core.mail import send_mail
+        from django.urls import reverse
+
+        verification_url = request.build_absolute_uri(
+            reverse('users:verify_email', args=[user.email_verification_token])
+        )
+
+        send_mail(
+            subject='Doktrin - Email Doğrulama',
+            message=f'Merhaba {user.username},\n\nEmail adresinizi doğrulamak için aşağıdaki linke tıklayın:\n\n{verification_url}\n\nBu link 24 saat geçerlidir.',
+            from_email='noreply@doktrin.com',
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+
+        messages.success(request, 'Kayıt başarılı! Email adresinize doğrulama linki gönderildi.')
+        return redirect('users:login')
+    
+    return render(request, 'users/register.html')
+
+def login_view(request):
+    """Giriş sayfası"""
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('users:home')
+        else:
+            messages.error(request, 'Kullanıcı adı veya şifre hatalı.')
+    return render(request, 'users/login.html')
+
+def logout_view(request):
+    """Çıkış"""
+    logout(request)
+    return redirect('users:home')
+
+@login_required
+def profile(request):
+    """Profil sayfası"""
+    from doctrine.models import Vote, Discussion, Proposal
+    from organization.models import LeaderVote, FormationVote
+    from notifications.models import Notification
+
+    # İstatistikler
+    total_votes = Vote.objects.filter(user=request.user).count()
+    total_comments = Discussion.objects.filter(user=request.user).count()
+    total_proposals_created = Proposal.objects.filter(
+        proposed_by_level__in=['SQUAD', 'UNION', 'PROVINCE_ORG']
+    ).count()  # Basitleştirilmiş - gerçekte user'a göre filtrelenmeli
+
+    # Oy dağılımı
+    yes_votes = Vote.objects.filter(user=request.user, vote_choice='YES').count()
+    abstain_votes = Vote.objects.filter(user=request.user, vote_choice='ABSTAIN').count()
+    veto_votes = Vote.objects.filter(user=request.user, vote_choice='VETO').count()
+
+    # Son aktiviteler
+    recent_votes = Vote.objects.filter(user=request.user).select_related('proposal').order_by('-voted_at')[:5]
+    recent_comments = Discussion.objects.filter(user=request.user).select_related('proposal').order_by('-created_at')[:5]
+
+    # Liderlik pozisyonları
+    is_team_leader = request.user.current_team and request.user.current_team.leader == request.user
+    is_squad_leader = (request.user.current_team and
+                      request.user.current_team.parent_squad and
+                      request.user.current_team.parent_squad.leader == request.user)
+    is_union_leader = (request.user.current_team and
+                      request.user.current_team.parent_squad and
+                      request.user.current_team.parent_squad.parent_union and
+                      request.user.current_team.parent_squad.parent_union.leader == request.user)
+    is_province_leader = (request.user.current_team and
+                         request.user.current_team.parent_squad and
+                         request.user.current_team.parent_squad.parent_union and
+                         request.user.current_team.parent_squad.parent_union.parent_province_org and
+                         request.user.current_team.parent_squad.parent_union.parent_province_org.leader == request.user)
+
+    # Bildirimler
+    unread_notifications = Notification.objects.filter(user=request.user, is_read=False).count()
+
+    context = {
+        'total_votes': total_votes,
+        'total_comments': total_comments,
+        'total_proposals_created': total_proposals_created,
+        'yes_votes': yes_votes,
+        'abstain_votes': abstain_votes,
+        'veto_votes': veto_votes,
+        'recent_votes': recent_votes,
+        'recent_comments': recent_comments,
+        'is_team_leader': is_team_leader,
+        'is_squad_leader': is_squad_leader,
+        'is_union_leader': is_union_leader,
+        'is_province_leader': is_province_leader,
+        'unread_notifications': unread_notifications,
+    }
+    return render(request, 'users/profile.html', context)
+
+def verify_email(request, token):
+    """Email doğrulama"""
+    try:
+        user = User.objects.get(email_verification_token=token)
+        if user.token_expires_at and user.token_expires_at > timezone.now():
+            user.is_email_verified = True
+            user.email_verification_token = None
+            user.save()
+            messages.success(request, 'Email adresiniz doğrulandı!')
+        else:
+            messages.error(request, 'Doğrulama linki süresi dolmuş.')
+    except User.DoesNotExist:
+        messages.error(request, 'Geçersiz doğrulama linki.')
+    return redirect('users:login')
+@login_required
+def user_profile(request, username):
+    """Başka bir kullanıcının profil sayfası"""
+    from django.contrib.auth import get_user_model
+    from doctrine.models import Vote, Discussion
+    
+    User = get_user_model()
+    profile_user = get_object_or_404(User, username=username)
+    
+    # İstatistikler
+    total_votes = Vote.objects.filter(user=profile_user).count()
+    total_comments = Discussion.objects.filter(user=profile_user).count()
+    
+    # Oy dağılımı
+    yes_votes = Vote.objects.filter(user=profile_user, vote_choice='YES').count()
+    abstain_votes = Vote.objects.filter(user=profile_user, vote_choice='ABSTAIN').count()
+    veto_votes = Vote.objects.filter(user=profile_user, vote_choice='VETO').count()
+    
+    # Son aktiviteler (sadece yorumlar - oylar gizli)
+    recent_comments = Discussion.objects.filter(user=profile_user).select_related('proposal', 'article').order_by('-created_at')[:10]
+    
+    # Organizational info
+    team_info = None
+    if profile_user.current_team:
+        team_info = {
+            'team': profile_user.current_team,
+            'is_team_leader': profile_user.current_team.leader == profile_user,
+            'squad': profile_user.current_team.parent_squad,
+            'is_squad_leader': profile_user.current_team.parent_squad and profile_user.current_team.parent_squad.leader == profile_user,
+            'union': profile_user.current_team.parent_squad.parent_union if profile_user.current_team.parent_squad else None,
+            'is_union_leader': (profile_user.current_team.parent_squad and 
+                              profile_user.current_team.parent_squad.parent_union and 
+                              profile_user.current_team.parent_squad.parent_union.leader == profile_user),
+        }
+    
+    context = {
+        'profile_user': profile_user,
+        'total_votes': total_votes,
+        'total_comments': total_comments,
+        'yes_votes': yes_votes,
+        'abstain_votes': abstain_votes,
+        'veto_votes': veto_votes,
+        'recent_comments': recent_comments,
+        'team_info': team_info,
+        'is_own_profile': request.user == profile_user,
+    }
+    
+    return render(request, 'users/user_profile.html', context)
+
+
+@login_required
+def user_guide(request):
+    """Kullanım Kılavuzu - Tüm sistem özellikleri"""
+    return render(request, 'users/user_guide.html')

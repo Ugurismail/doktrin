@@ -1,0 +1,285 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Doktrin Platform{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/favicon.svg' %}">
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="{% url 'users:home' %}" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
+                <img src="{% static 'images/favicon.svg' %}" alt="Doktrin Logo" style="width: 36px; height: 36px;">
+                <h1 style="margin: 0;">Doktrin</h1>
+            </a>
+            <ul>
+                {% if user.is_authenticated %}
+                    <li class="nav-dropdown">
+                        <button class="nav-dropdown-btn" onclick="toggleNavDropdown(event)">
+                            ☰ Menü
+                        </button>
+                        <div class="nav-dropdown-content" id="navDropdown">
+                            <a href="{% url 'doctrine:doctrine_list' %}">📜 Doktrin</a>
+                            <a href="{% url 'doctrine:my_drafts' %}">📝 Taslaklar</a>
+                            <a href="{% url 'organization:my_team' %}">👥 Ekibim</a>
+                            <a href="{% url 'predictions:prediction_list' %}">🔮 Tahminler</a>
+                            <a href="{% url 'doctrine:activity_feed' %}">📊 Aktivite</a>
+                            <a href="{% url 'organization:view_announcements' %}">📢 Duyurular</a>
+                            {% if user.is_superuser or user.is_founder %}
+                            <a href="{% url 'doctrine:statistics_dashboard' %}">📈 İstatistikler</a>
+                            {% endif %}
+                            <a href="{% url 'users:user_guide' %}">📖 Kılavuz</a>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="{% url 'organization:message_inbox' %}" style="position: relative; display: inline-block;">
+                            <span style="margin-right: 4px;">💬</span>
+                            <span id="message-badge" style="opacity: 0; position: absolute; top: -4px; right: -8px; background: #FF3B30; color: white; border-radius: 50%; min-width: 18px; height: 18px; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 5px; transition: opacity 0.2s ease;"></span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'notifications:notification_list' %}" style="position: relative; display: inline-block;">
+                            <span style="margin-right: 4px;">🔔</span>
+                            <span id="notification-badge" style="opacity: 0; position: absolute; top: -4px; right: -8px; background: #FF3B30; color: white; border-radius: 50%; min-width: 18px; height: 18px; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 5px; transition: opacity 0.2s ease;"></span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'users:profile' %}" title="{{ user.username }}" style="font-size: 20px;">
+                            👤
+                        </a>
+                    </li>
+                    <li>
+                        <button id="theme-toggle" style="background: none; border: none; font-size: 20px; cursor: pointer; padding: 8px;">
+                            <span id="theme-icon">🌙</span>
+                        </button>
+                    </li>
+                    <li>
+                        <a href="{% url 'users:logout' %}" style="font-size: 20px; color: #DC2626;" title="Çıkış Yap">
+                            ⎋
+                        </a>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'users:home' %}">Ana Sayfa</a></li>
+                    <li><a href="{% url 'users:login' %}">Giriş</a></li>
+                    <li><a href="{% url 'users:register' %}" class="btn btn-primary" style="padding: 8px 20px; font-size: 14px;">Başla</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% if messages %}
+            <div class="container">
+                <div class="messages" id="django-messages">
+                    {% for message in messages %}
+                        <div class="message {{ message.tags }} auto-fade-message">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>© 2025 Doktrin Platform</p>
+    </footer>
+
+    <script>
+        // Scroll pozisyonunu koruma sistemi
+        (function() {
+            // Sayfa yüklendiğinde scroll pozisyonunu geri yükle
+            window.addEventListener('load', function() {
+                const scrollPos = sessionStorage.getItem('scrollPosition');
+                if (scrollPos) {
+                    window.scrollTo(0, parseInt(scrollPos));
+                    sessionStorage.removeItem('scrollPosition');
+                }
+            });
+
+            // Tüm formlarda submit öncesi scroll pozisyonunu kaydet
+            document.addEventListener('submit', function(e) {
+                if (e.target.tagName === 'FORM') {
+                    sessionStorage.setItem('scrollPosition', window.scrollY);
+                }
+            });
+
+            // Linklerde scroll pozisyonunu kaydet (aynı sayfaya geri dönüş için)
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('a');
+                if (link && link.href && link.href.includes(window.location.pathname)) {
+                    sessionStorage.setItem('scrollPosition', window.scrollY);
+                }
+            });
+        })();
+
+        // Bildirim ve mesaj badge güncelleme sistemi
+        {% if user.is_authenticated %}
+        (function() {
+            function updateNotificationBadge() {
+                fetch('{% url "notifications:get_unread_count" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        const badge = document.getElementById('notification-badge');
+                        if (data.count > 0) {
+                            badge.textContent = data.count > 9 ? '9+' : data.count;
+                            badge.style.opacity = '1';
+                        } else {
+                            badge.style.opacity = '0';
+                        }
+                    })
+                    .catch(error => console.log('Bildirim sayısı alınamadı:', error));
+            }
+
+            function updateMessageBadge() {
+                fetch('{% url "organization:get_unread_message_count" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        const badge = document.getElementById('message-badge');
+                        if (badge && data.count > 0) {
+                            badge.textContent = data.count > 9 ? '9+' : data.count;
+                            badge.style.opacity = '1';
+                        } else if (badge) {
+                            badge.style.opacity = '0';
+                        }
+                    })
+                    .catch(error => console.log('Mesaj sayısı alınamadı:', error));
+            }
+
+            function checkExpiredPredictions() {
+                fetch('{% url "predictions:check_expired" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.expired_count > 0) {
+                            // Bildirim badge'ini güncelle
+                            updateNotificationBadge();
+                        }
+                    })
+                    .catch(error => console.log('Tahmin kontrolü başarısız:', error));
+            }
+
+            // Sayfa yüklendiğinde güncelle
+            updateNotificationBadge();
+            updateMessageBadge();
+            checkExpiredPredictions();
+
+            // Her 30 saniyede bir güncelle
+            setInterval(updateNotificationBadge, 30000);
+            setInterval(updateMessageBadge, 30000);
+            setInterval(checkExpiredPredictions, 30000);
+        })();
+        {% endif %}
+
+        // Dark Mode Toggle
+        (function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const htmlElement = document.documentElement;
+
+            // LocalStorage'dan temayı al veya varsayılan olarak light kullan
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            htmlElement.setAttribute('data-theme', savedTheme);
+            updateIcon(savedTheme);
+
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    const currentTheme = htmlElement.getAttribute('data-theme');
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+                    htmlElement.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                    updateIcon(newTheme);
+                });
+            }
+
+            function updateIcon(theme) {
+                if (themeIcon) {
+                    themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+                }
+            }
+        })();
+
+        // Loading state sistemi - Form gönderimlerinde butonları devre dışı bırak ve loading göster
+        (function() {
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                if (form.tagName === 'FORM') {
+                    // Formdaki tüm submit butonlarını bul
+                    const submitButtons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+
+                    submitButtons.forEach(button => {
+                        // Orijinal metni sakla
+                        const originalText = button.textContent || button.value;
+                        button.dataset.originalText = originalText;
+
+                        // Butonu devre dışı bırak ve loading göster
+                        button.disabled = true;
+
+                        if (button.tagName === 'BUTTON') {
+                            button.innerHTML = '<span style="display: inline-flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border: 2px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite;"></span>Yükleniyor...</span>';
+                        } else {
+                            button.value = 'Yükleniyor...';
+                        }
+                    });
+                }
+            });
+
+            // Spin animasyonu için CSS ekle
+            const style = document.createElement('style');
+            style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+            document.head.appendChild(style);
+        })();
+
+        // Mesajların otomatik kaybolması - 1.5 saniye sonra fade out
+        (function() {
+            const messages = document.querySelectorAll('.auto-fade-message');
+            messages.forEach(message => {
+                // 1.5 saniye bekle, sonra fade out başlat
+                setTimeout(() => {
+                    message.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    message.style.opacity = '0';
+                    message.style.transform = 'translateY(-20px)';
+
+                    // Fade out tamamlandıktan sonra elementi kaldır
+                    setTimeout(() => {
+                        message.remove();
+
+                        // Eğer hiç mesaj kalmadıysa container'ı da kaldır
+                        const container = document.getElementById('django-messages');
+                        if (container && container.querySelectorAll('.message').length === 0) {
+                            container.parentElement.remove();
+                        }
+                    }, 500);
+                }, 1500);
+            });
+        })();
+
+        // Navbar dropdown toggle
+        function toggleNavDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('navDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Dropdown dışına tıklandığında kapat
+        window.addEventListener('click', function(e) {
+            if (!e.target.closest('.nav-dropdown')) {
+                const dropdown = document.getElementById('navDropdown');
+                if (dropdown && dropdown.classList.contains('show')) {
+                    dropdown.classList.remove('show');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

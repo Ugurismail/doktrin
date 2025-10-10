@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Profilim - Doktrin{% endblock %}
+
+{% block content %}
+
+<div class="container" style="max-width: 1400px; padding: var(--spacing-lg) var(--spacing-md);">
+    <!-- Başlık -->
+    <div class="page-header">
+        <h1 class="page-title">{{ user.username }}</h1>
+        <p class="page-subtitle">
+            {{ user.province }}, {{ user.district }} · Üye: {{ user.joined_date|date:"d.m.Y" }}
+        </p>
+    </div>
+
+    <!-- 4-Sütun Grid Layout - İstatistik Kartları -->
+    <div class="grid-4 mb-lg">
+        <div class="card stat-card">
+            <div class="stat-card-label">TOPLAM OY</div>
+            <div class="stat-card-value">{{ total_votes }}</div>
+        </div>
+        <div class="card stat-card">
+            <div class="stat-card-label">YORUM</div>
+            <div class="stat-card-value" style="color: var(--lavender);">{{ total_comments }}</div>
+        </div>
+        <div class="card stat-card">
+            <div class="stat-card-label">ÖNGÖRÜLÜLÜK</div>
+            <div class="stat-card-value" style="color: #0066FF;">{{ user.foresight_score }}</div>
+        </div>
+        <div class="card stat-card">
+            <div class="stat-card-label">BİLDİRİM</div>
+            <div class="stat-card-value" style="color: var(--coral);">{{ unread_notifications }}</div>
+        </div>
+    </div>
+
+    <!-- Ana 2-Sütun Layout -->
+    <div class="grid-2">
+        <!-- Sol Kolon -->
+        <div class="flex-column">
+            <!-- Kullanıcı Bilgileri -->
+            <div class="card content-box-sm">
+                <h2 class="content-title">Kullanıcı Bilgileri</h2>
+                <div class="grid-2" style="font-size: 14px;">
+                    <div class="info-box">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{ user.email }}</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">Durum</div>
+                        {% if user.is_email_verified %}
+                        <div class="status-success">✓ Doğrulandı</div>
+                        {% else %}
+                        <div class="status-error">✗ Doğrulanmadı</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Oy Dağılımı -->
+            <div class="card content-box-sm">
+                <h2 class="content-title">Oy Dağılımı</h2>
+                <div class="grid-3">
+                    <div class="vote-box vote-box-yes">
+                        <div class="vote-value vote-value-yes">{{ yes_votes }}</div>
+                        <div class="vote-label vote-label-yes">EVET</div>
+                    </div>
+                    <div class="vote-box vote-box-abstain">
+                        <div class="vote-value vote-value-abstain">{{ abstain_votes }}</div>
+                        <div class="vote-label vote-label-abstain">ÇEKİMSER</div>
+                    </div>
+                    <div class="vote-box vote-box-veto">
+                        <div class="vote-value vote-value-veto">{{ veto_votes }}</div>
+                        <div class="vote-label vote-label-veto">VETO</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Son Aktiviteler -->
+            <div class="card content-box-sm">
+                <h2 class="content-title">Son Oylar</h2>
+                {% if recent_votes %}
+                <div class="flex-column-sm gap-xs">
+                    {% for vote in recent_votes %}
+                    <div class="activity-item">
+                        <a href="{% url 'doctrine:proposal_detail' vote.proposal.id %}" class="activity-link">
+                            {{ vote.proposal.get_proposal_type_display }}
+                        </a>
+                        <span class="activity-badge
+                            {% if vote.vote_choice == 'YES' %}activity-badge-yes
+                            {% elif vote.vote_choice == 'VETO' %}activity-badge-veto
+                            {% else %}activity-badge-abstain{% endif %}">
+                            {{ vote.get_vote_choice_display }}
+                        </span>
+                        <span class="activity-timestamp">
+                            {{ vote.voted_at|timesince }} önce
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="empty-state">Henüz oy kullanmadınız.</p>
+                {% endif %}
+            </div>
+
+            <!-- Son Yorumlar -->
+            <div class="card content-box-sm">
+                <h2 class="content-title">Son Yorumlar</h2>
+                {% if recent_comments %}
+                <div class="flex-column-sm gap-xs">
+                    {% for comment in recent_comments %}
+                    <div class="comment-item">
+                        <div class="comment-text">{{ comment.comment_text|truncatewords:15 }}</div>
+                        <div class="comment-meta">
+                            {% if comment.proposal %}
+                            <a href="{% url 'doctrine:proposal_detail' comment.proposal.id %}" style="color: var(--primary); text-decoration: none;">
+                                {{ comment.proposal.get_proposal_type_display }}
+                            </a>
+                            {% else %}
+                            <span>Genel Yorum</span>
+                            {% endif %}
+                            <span>{{ comment.created_at|timesince }} önce</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="empty-state">Henüz yorum yapmadınız.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sağ Kolon -->
+        <div class="flex-column">
+            <!-- Liderlik Rozeti -->
+            {% if is_team_leader or is_squad_leader or is_union_leader or is_province_leader %}
+            <div class="card content-box-sm">
+                <h2 class="content-title">Liderlik</h2>
+                <div class="flex-column-sm gap-xs">
+                    {% if is_province_leader %}
+                    <div class="leader-badge">
+                        <span class="leader-icon">👑</span>
+                        <span>İl Örgütü Lideri</span>
+                    </div>
+                    {% endif %}
+                    {% if is_union_leader %}
+                    <div class="leader-badge">
+                        <span class="leader-icon">🏛</span>
+                        <span>Birlik Lideri</span>
+                    </div>
+                    {% endif %}
+                    {% if is_squad_leader %}
+                    <div class="leader-badge">
+                        <span class="leader-icon">⚡</span>
+                        <span>Takım Lideri</span>
+                    </div>
+                    {% endif %}
+                    {% if is_team_leader %}
+                    <div class="leader-badge">
+                        <span class="leader-icon">👥</span>
+                        <span>Ekip Lideri</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Örgütlenme Bilgileri -->
+            <div class="card content-box-sm">
+                <h2 class="content-title">Örgütlenme</h2>
+                {% if user.current_team %}
+                <div class="flex-column-sm gap-xs">
+                    <div class="org-badge org-badge-team">
+                        <div class="org-label">Ekip</div>
+                        <div class="org-name">{{ user.current_team.display_name }}</div>
+                    </div>
+                    {% if user.current_team.parent_squad %}
+                    <div class="org-badge org-badge-squad">
+                        <div class="org-label">Takım</div>
+                        <div class="org-name">{{ user.current_team.parent_squad.name }}</div>
+                    </div>
+                    {% if user.current_team.parent_squad.parent_union %}
+                    <div class="org-badge org-badge-union">
+                        <div class="org-label">Birlik</div>
+                        <div class="org-name">{{ user.current_team.parent_squad.parent_union.name }}</div>
+                    </div>
+                    {% if user.current_team.parent_squad.parent_union.parent_province_org %}
+                    <div class="org-badge org-badge-province">
+                        <div class="org-label">İl Örgütü</div>
+                        <div class="org-name">{{ user.current_team.parent_squad.parent_union.parent_province_org.name }}</div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                    {% endif %}
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: var(--spacing-md);">
+                    <a href="{% url 'organization:my_team' %}" class="btn btn-secondary" style="flex: 1; text-align: center; font-size: 14px;">
+                        Örgütüme Git →
+                    </a>
+
+                    {% if user.current_team.leader == user %}
+                    <a href="{% url 'organization:manage_team' %}" class="btn btn-primary" style="flex: 1; text-align: center; font-size: 14px;">
+                        🛠️ Ekip Yönetimi
+                    </a>
+                    {% elif user.current_team.parent_squad and user.current_team.parent_squad.leader == user %}
+                    <a href="{% url 'organization:manage_squad' %}" class="btn btn-primary" style="flex: 1; text-align: center; font-size: 14px;">
+                        🛠️ Takım Yönetimi
+                    </a>
+                    {% elif user.current_team.parent_squad.parent_union and user.current_team.parent_squad.parent_union.leader == user %}
+                    <a href="{% url 'organization:manage_union' %}" class="btn btn-primary" style="flex: 1; text-align: center; font-size: 14px;">
+                        🛠️ Birlik Yönetimi
+                    </a>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p class="prediction-description mb-md">Henüz bir ekibe dahil değilsiniz.</p>
+                <a href="{% url 'organization:my_team' %}" class="btn btn-primary" style="width: 100%; text-align: center;">
+                    Ekibe Katıl
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Hızlı Linkler -->
+            <div class="card content-box-sm">
+                <h2 class="content-title">Hızlı Erişim</h2>
+                <div class="flex-column-sm gap-xs">
+                    <a href="{% url 'notifications:notification_list' %}" class="quick-link">
+                        <span>🔔 Bildirimler</span>
+                        {% if unread_notifications > 0 %}
+                        <span class="notification-badge">{{ unread_notifications }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'doctrine:doctrine_list' %}" class="quick-link">
+                        <span>📋 Doktrin</span>
+                    </a>
+                    <a href="{% url 'organization:my_team' %}" class="quick-link">
+                        <span>👥 Ekibim</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
