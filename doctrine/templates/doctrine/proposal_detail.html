@@ -45,32 +45,32 @@
 
         {% if proposal.related_article and proposal.proposal_type == 'MODIFY' %}
         <!-- Karşılaştırma Görünümü -->
-        <div style="margin: 24px 0;">
-            <h3 style="font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 16px;">
+        <div class="comparison-section">
+            <h3 class="comparison-title">
                 📊 Değişiklik Karşılaştırması
             </h3>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px;">
+            <div class="comparison-grid">
                 <!-- Mevcut Madde -->
-                <div style="background: #FEF3C7; border: 2px solid #F59E0B; border-radius: 12px; padding: 24px;">
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
-                        <span style="font-size: 24px;">📜</span>
-                        <h4 style="font-size: 16px; font-weight: 700; color: #92400E; margin: 0;">
+                <div class="comparison-box comparison-current">
+                    <div class="comparison-header">
+                        <span class="comparison-icon">📜</span>
+                        <h4 class="comparison-heading">
                             Mevcut Madde {{ proposal.related_article.article_number }}
                         </h4>
                     </div>
-                    <p style="font-size: 15px; line-height: 1.8; color: #78350F; margin: 0; white-space: pre-wrap;" id="currentContent">{{ proposal.original_article_content|default:proposal.related_article.content }}</p>
+                    <p class="comparison-content" id="currentContent">{{ proposal.original_article_content|default:proposal.related_article.content }}</p>
                 </div>
 
                 <!-- Önerilen Değişiklik -->
-                <div style="background: #DBEAFE; border: 2px solid #3B82F6; border-radius: 12px; padding: 24px;">
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
-                        <span style="font-size: 24px;">✨</span>
-                        <h4 style="font-size: 16px; font-weight: 700; color: #1E40AF; margin: 0;">
+                <div class="comparison-box comparison-proposed">
+                    <div class="comparison-header">
+                        <span class="comparison-icon">✨</span>
+                        <h4 class="comparison-heading">
                             Önerilen Değişiklik
                         </h4>
                     </div>
-                    <p style="font-size: 15px; line-height: 1.8; color: #1E3A8A; margin: 0; white-space: pre-wrap;" id="proposedContent">{{ proposal.proposed_content }}</p>
+                    <p class="comparison-content" id="proposedContent">{{ proposal.proposed_content }}</p>
                 </div>
             </div>
         </div>
@@ -103,7 +103,7 @@
         {% endif %}
 
         {% if proposal.justification %}
-        <div class="proposal-content-section" style="margin-top: 32px;">
+        <div class="proposal-content-section mt-lg">
             <h3 class="proposal-content-title">Gerekçe</h3>
             <p class="proposal-content-text">
                 {{ proposal.justification }}
@@ -153,31 +153,31 @@
 
         <!-- Vote Buttons -->
         {% if proposal.status == 'ACTIVE' %}
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-md); margin-top: var(--spacing-lg);">
-            <form method="post" action="{% url 'doctrine:vote_proposal' proposal.id %}" style="margin: 0;">
+        <div class="vote-buttons-grid">
+            <form method="post" action="{% url 'doctrine:vote_proposal' proposal.id %}" class="vote-form">
                 {% csrf_token %}
                 <input type="hidden" name="vote_choice" value="YES">
-                <button type="submit" style="background: #10B981; color: white; padding: 16px; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; transition: all 0.2s; width: 100%; font-size: 16px;">
+                <button type="submit" class="vote-btn vote-btn-yes">
                     ✓ Kabul
                 </button>
             </form>
-            <form method="post" action="{% url 'doctrine:vote_proposal' proposal.id %}" style="margin: 0;">
+            <form method="post" action="{% url 'doctrine:vote_proposal' proposal.id %}" class="vote-form">
                 {% csrf_token %}
                 <input type="hidden" name="vote_choice" value="ABSTAIN">
-                <button type="submit" style="background: var(--bg-secondary); color: var(--text); padding: 16px; border: 2px solid var(--border); border-radius: 12px; cursor: pointer; font-weight: 700; transition: all 0.2s; width: 100%; font-size: 16px;">
+                <button type="submit" class="vote-btn vote-btn-abstain">
                     ⊘ Çekimser
                 </button>
             </form>
-            <form method="post" action="{% url 'doctrine:vote_proposal' proposal.id %}" style="margin: 0;">
+            <form method="post" action="{% url 'doctrine:vote_proposal' proposal.id %}" class="vote-form">
                 {% csrf_token %}
                 <input type="hidden" name="vote_choice" value="VETO">
-                <button type="submit" style="background: #DC2626; color: white; padding: 16px; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; transition: all 0.2s; width: 100%; font-size: 16px;">
+                <button type="submit" class="vote-btn vote-btn-veto">
                     ✗ Veto
                 </button>
             </form>
         </div>
         {% else %}
-        <p style="text-align: center; color: var(--text-secondary); padding: var(--spacing-lg); margin-top: var(--spacing-lg);">
+        <p class="voting-ended-message">
             Oylama sona ermiştir.
         </p>
         {% endif %}

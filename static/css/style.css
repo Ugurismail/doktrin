@@ -2289,3 +2289,311 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         font-size: 24px;
     }
 }
+
+/* =====================================
+   PROPOSAL DETAIL PAGE COMPONENTS
+   ===================================== */
+
+/* Comparison Section */
+.comparison-section {
+    margin: 24px 0;
+}
+
+.comparison-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+}
+
+.comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 16px;
+}
+
+.comparison-box {
+    border-radius: 12px;
+    padding: 24px;
+    border: 2px solid;
+}
+
+.comparison-current {
+    background: #FEF3C7;
+    border-color: #F59E0B;
+}
+
+.comparison-proposed {
+    background: #DBEAFE;
+    border-color: #3B82F6;
+}
+
+.comparison-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.comparison-icon {
+    font-size: 24px;
+}
+
+.comparison-heading {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.comparison-current .comparison-heading {
+    color: #92400E;
+}
+
+.comparison-proposed .comparison-heading {
+    color: #1E40AF;
+}
+
+.comparison-content {
+    font-size: 15px;
+    line-height: 1.8;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.comparison-current .comparison-content {
+    color: #78350F;
+}
+
+.comparison-proposed .comparison-content {
+    color: #1E3A8A;
+}
+
+/* Vote Buttons */
+.vote-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.vote-form {
+    margin: 0;
+}
+
+.vote-btn {
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.2s;
+    width: 100%;
+    font-size: 16px;
+}
+
+.vote-btn-yes {
+    background: #10B981;
+    color: white;
+}
+
+.vote-btn-yes:hover {
+    background: #059669;
+    transform: scale(1.02);
+}
+
+.vote-btn-abstain {
+    background: var(--bg-secondary);
+    color: var(--text);
+    border: 2px solid var(--border);
+}
+
+.vote-btn-abstain:hover {
+    background: var(--bg);
+    border-color: var(--text-light);
+}
+
+.vote-btn-veto {
+    background: #DC2626;
+    color: white;
+}
+
+.vote-btn-veto:hover {
+    background: #B91C1C;
+    transform: scale(1.02);
+}
+
+.voting-ended-message {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+/* Responsive for Proposal Detail */
+@media (max-width: 768px) {
+    .comparison-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .vote-buttons-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .comparison-box {
+        padding: 16px;
+    }
+
+    .comparison-title {
+        font-size: 16px;
+    }
+}
+
+/* =====================================
+   MY TEAM PAGE COMPONENTS
+   ===================================== */
+
+/* Team Header */
+.team-header {
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.team-title {
+    margin-bottom: 8px;
+}
+
+.team-meta {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.team-actions {
+    display: flex;
+    gap: 12px;
+}
+
+/* Team Grid */
+.team-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+/* Members List */
+.members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.member-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.member-name {
+    font-weight: 500;
+}
+
+.member-badge {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+/* Invite Section */
+.invite-section {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.btn-full-width {
+    width: 100%;
+    text-align: center;
+}
+
+.invite-note {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+    text-align: center;
+}
+
+/* Squad Info */
+.squad-label {
+    font-size: 11px;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.squad-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.squad-leader {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Select Input */
+.select-input {
+    margin-bottom: 12px;
+}
+
+/* Empty State (Team Page) */
+.empty-state-title {
+    margin-bottom: 16px;
+}
+
+.empty-state-text {
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+}
+
+.empty-state-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+/* Responsive for My Team */
+@media (max-width: 768px) {
+    .team-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .team-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .team-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .empty-state-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+}
