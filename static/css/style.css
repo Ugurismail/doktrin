@@ -2675,3 +2675,156 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         padding-top: var(--spacing-2xl);
     }
 }
+
+/* =====================================
+   CREATE PROPOSAL PAGE COMPONENTS
+   ===================================== */
+
+/* Large Form Container */
+.form-container-lg {
+    max-width: 900px;
+    padding-top: var(--spacing-xl);
+}
+
+/* Back Link */
+.back-link-container {
+    margin-bottom: var(--spacing-lg);
+}
+
+.back-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+/* Page Title */
+.page-title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    margin-bottom: var(--spacing-md);
+}
+
+/* Info Box */
+.info-box {
+    padding: var(--spacing-lg);
+    background: var(--pastel-peach);
+    border-radius: 12px;
+    margin-bottom: var(--spacing-xl);
+}
+
+.info-box-text {
+    margin: 0;
+    line-height: 1.8;
+}
+
+/* Tags Checkbox Container */
+.tags-checkbox-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.tag-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 14px;
+    background: var(--bg);
+    border-radius: 20px;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.tag-checkbox-label:hover {
+    border-color: var(--border);
+}
+
+.tag-checkbox {
+    cursor: pointer;
+}
+
+.tag-color-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.tag-checkbox-text {
+    font-size: 14px;
+}
+
+/* Form Hint */
+.form-hint {
+    color: var(--text-secondary);
+    display: block;
+    margin-top: var(--spacing-sm);
+}
+
+/* Textarea Content */
+.textarea-content {
+    line-height: 1.8;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: var(--spacing-lg);
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.flex-2 {
+    flex: 2;
+}
+
+/* Draft Message */
+.draft-message {
+    margin-top: 16px;
+    padding: 12px;
+    background: var(--pastel-mint);
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Hidden Utility */
+.hidden {
+    display: none !important;
+}
+
+/* Responsive for Create Proposal */
+@media (max-width: 768px) {
+    .form-container-lg {
+        padding-top: var(--spacing-lg);
+    }
+
+    .page-title {
+        font-size: 28px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .flex-1, .flex-2 {
+        flex: 1;
+    }
+
+    .tags-checkbox-container {
+        gap: 8px;
+        padding: 12px;
+    }
+}
