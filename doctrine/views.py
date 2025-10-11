@@ -967,3 +967,61 @@ def my_references(request):
     
     return JsonResponse(data)
 
+
+
+@login_required
+def references_list(request):
+    """Tüm kaynakları listele - Global kaynaklar sayfası"""
+    from django.http import JsonResponse
+    from .models import Reference, ProposalReference, ArticleReference
+    from django.db.models import Count, Q
+    
+    references = Reference.objects.annotate(
+        usage_count=Count('proposal_usages', distinct=True) + Count('article_usages', distinct=True)
+    ).order_by('-created_at')
+    
+    return render(request, 'doctrine/references_list.html', {
+        'references': references
+    })
+
+
+@login_required
+def reference_usage(request, ref_id):
+    """Kaynağın kullanım yerlerini döndür (AJAX)"""
+    from django.http import JsonResponse
+    from .models import Reference, ProposalReference, ArticleReference
+    
+    try:
+        reference = Reference.objects.get(id=ref_id)
+        
+        # Proposal kullanımları
+        proposal_usages = ProposalReference.objects.filter(reference=reference).select_related('proposal')
+        proposals = [
+            {
+                'id': pu.proposal.id,
+                'proposal_type': pu.proposal.get_proposal_type_display(),
+                'proposed_by_level': pu.proposal.get_proposed_by_level_display(),
+            }
+            for pu in proposal_usages
+        ]
+        
+        # Article kullanımları
+        article_usages = ArticleReference.objects.filter(reference=reference).select_related('article')
+        articles = [
+            {
+                'id': au.article.id,
+                'article_number': au.article.article_number,
+                'article_type': au.article.get_article_type_display(),
+            }
+            for au in article_usages
+        ]
+        
+        return JsonResponse({
+            'success': True,
+            'usage_count': len(proposals) + len(articles),
+            'proposals': proposals,
+            'articles': articles
+        })
+        
+    except Reference.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Kaynak bulunamadı'}, status=404)

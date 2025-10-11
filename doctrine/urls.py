@@ -25,4 +25,8 @@ urlpatterns = [
     path('api/references/create/', views.reference_create, name='reference_create'),
     path('api/references/list/', views.reference_list, name='reference_list'),
     path('api/references/my-references/', views.my_references, name='my_references'),
+    path('api/references/<int:ref_id>/usage/', views.reference_usage, name='reference_usage'),
+
+    # Reference Pages
+    path('references/', views.references_list, name='references_list'),
 ]

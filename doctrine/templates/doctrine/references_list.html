@@ -1,0 +1,531 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kaynaklar - Doktrin{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">📚 Kaynaklar</h1>
+        <p class="page-subtitle">
+            Doktrin platformunda kullanılan tüm akademik kaynaklar.
+            Kaynakların üzerine gelerek hangi madde ve ilkelerde kullanıldığını görebilirsiniz.
+        </p>
+    </div>
+
+    <div class="filters-bar">
+        <div class="search-box">
+            <input type="text" id="searchReferences" placeholder="🔍 Yazar, başlık veya yıla göre ara..." class="search-input">
+        </div>
+        <div class="filter-buttons">
+            <button onclick="filterByType('all')" class="filter-btn active" data-type="all">
+                Tümü ({{ references|length }})
+            </button>
+            <button onclick="filterByType('BOOK')" class="filter-btn" data-type="BOOK">
+                Kitap
+            </button>
+            <button onclick="filterByType('ARTICLE')" class="filter-btn" data-type="ARTICLE">
+                Makale
+            </button>
+            <button onclick="filterByType('JOURNAL')" class="filter-btn" data-type="JOURNAL">
+                Dergi
+            </button>
+            <button onclick="filterByType('WEBSITE')" class="filter-btn" data-type="WEBSITE">
+                Web Sitesi
+            </button>
+            <button onclick="filterByType('OTHER')" class="filter-btn" data-type="OTHER">
+                Diğer
+            </button>
+        </div>
+    </div>
+
+    <div class="references-grid" id="referencesGrid">
+        {% for ref in references %}
+        <div class="reference-card"
+             data-type="{{ ref.reference_type }}"
+             data-author="{{ ref.author|lower }}"
+             data-title="{{ ref.title|lower }}"
+             data-year="{{ ref.year }}">
+
+            <div class="reference-card-header">
+                <span class="reference-type-badge badge-{{ ref.reference_type|lower }}">
+                    {{ ref.get_reference_type_display }}
+                </span>
+                {% if ref.is_verified %}
+                <span class="verified-badge" title="Doğrulanmış kaynak">
+                    ✓
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="reference-card-body">
+                <div class="reference-author">
+                    {{ ref.author }}
+                </div>
+                <div class="reference-title">
+                    {{ ref.title }}
+                </div>
+                <div class="reference-meta">
+                    <span class="reference-year">{{ ref.year }}</span>
+                    {% if ref.publisher %}
+                    <span class="reference-publisher">• {{ ref.publisher }}</span>
+                    {% endif %}
+                    {% if ref.city %}
+                    <span class="reference-city">• {{ ref.city }}</span>
+                    {% endif %}
+                </div>
+
+                {% if ref.url %}
+                <div class="reference-url">
+                    <a href="{{ ref.url }}" target="_blank" rel="noopener noreferrer">
+                        🔗 Kaynağa Git
+                    </a>
+                </div>
+                {% endif %}
+
+                {% if ref.doi %}
+                <div class="reference-doi">
+                    <strong>DOI:</strong> {{ ref.doi }}
+                </div>
+                {% endif %}
+
+                {% if ref.notes %}
+                <div class="reference-notes">
+                    {{ ref.notes|truncatewords:20 }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="reference-card-footer">
+                <div class="reference-usage"
+                     data-ref-id="{{ ref.id }}"
+                     onmouseenter="showUsagePopover({{ ref.id }})"
+                     onmouseleave="hideUsagePopover()">
+                    <span class="usage-icon">📖</span>
+                    <span class="usage-text">
+                        {% if ref.usage_count > 0 %}
+                            {{ ref.usage_count }} yerde kullanıldı
+                        {% else %}
+                            Henüz kullanılmadı
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="reference-creator">
+                    Ekleyen: <strong>{{ ref.created_by.username }}</strong>
+                </div>
+            </div>
+
+            <!-- Popover (hover ile gösterilecek) -->
+            <div id="popover-{{ ref.id }}" class="usage-popover hidden">
+                <div class="popover-content">
+                    <div class="popover-loading">Yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <div class="empty-icon">📚</div>
+            <h3>Henüz kaynak eklenmemiş</h3>
+            <p>İlk kaynağı ekleyen siz olun!</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Citation Format Modal -->
+    <div id="citationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Atıf Bilgisi</h2>
+                <button type="button" class="modal-close" onclick="closeCitationModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="citationContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCitationModal()">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Arama fonksiyonu
+document.getElementById('searchReferences').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('.reference-card');
+
+    cards.forEach(card => {
+        const author = card.dataset.author;
+        const title = card.dataset.title;
+        const year = card.dataset.year;
+
+        if (author.includes(searchTerm) ||
+            title.includes(searchTerm) ||
+            year.includes(searchTerm)) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+
+// Tip filtreleme
+function filterByType(type) {
+    const cards = document.querySelectorAll('.reference-card');
+    const buttons = document.querySelectorAll('.filter-btn');
+
+    // Button aktiflik durumunu güncelle
+    buttons.forEach(btn => {
+        if (btn.dataset.type === type) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    // Kartları filtrele
+    cards.forEach(card => {
+        if (type === 'all' || card.dataset.type === type) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// Kullanım yerleri popover
+let currentPopover = null;
+let popoverTimeout = null;
+
+function showUsagePopover(refId) {
+    // Önceki popover'ı gizle
+    if (currentPopover) {
+        currentPopover.classList.add('hidden');
+    }
+
+    const popover = document.getElementById('popover-' + refId);
+    if (!popover) return;
+
+    currentPopover = popover;
+
+    // Timeout ile göster (hover stability için)
+    popoverTimeout = setTimeout(() => {
+        popover.classList.remove('hidden');
+        loadUsageData(refId);
+    }, 300);
+}
+
+function hideUsagePopover() {
+    // Timeout'u iptal et
+    if (popoverTimeout) {
+        clearTimeout(popoverTimeout);
+    }
+
+    // Popover'ı gizle
+    setTimeout(() => {
+        if (currentPopover) {
+            currentPopover.classList.add('hidden');
+            currentPopover = null;
+        }
+    }, 200);
+}
+
+// Kullanım verilerini yükle (AJAX)
+function loadUsageData(refId) {
+    const popover = document.getElementById('popover-' + refId);
+    if (!popover) return;
+
+    const content = popover.querySelector('.popover-content');
+    content.innerHTML = '<div class="popover-loading">Yükleniyor...</div>';
+
+    fetch('/doctrine/api/references/' + refId + '/usage/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.usage_count === 0) {
+                content.innerHTML = '<div class="popover-empty">Bu kaynak henüz kullanılmamış</div>';
+                return;
+            }
+
+            let html = '<div class="usage-details">';
+
+            if (data.articles.length > 0) {
+                html += '<div class="usage-section">';
+                html += '<h4>İlkeler ve Yasalar:</h4>';
+                html += '<ul>';
+                data.articles.forEach(article => {
+                    html += `<li><a href="/doctrine/article/${article.id}/">${article.article_type} ${article.article_number}</a></li>`;
+                });
+                html += '</ul>';
+                html += '</div>';
+            }
+
+            if (data.proposals.length > 0) {
+                html += '<div class="usage-section">';
+                html += '<h4>Önerilerde:</h4>';
+                html += '<ul>';
+                data.proposals.forEach(proposal => {
+                    html += `<li><a href="/doctrine/proposal/${proposal.id}/">Öneri #${proposal.id} - ${proposal.proposal_type}</a></li>`;
+                });
+                html += '</ul>';
+                html += '</div>';
+            }
+
+            html += '</div>';
+            content.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Kullanım verileri yüklenirken hata:', error);
+            content.innerHTML = '<div class="popover-error">Veriler yüklenemedi</div>';
+        });
+}
+
+// Citation modal
+function showCitationModal(refId) {
+    // TODO: Citation formatlarını göster
+}
+
+function closeCitationModal() {
+    document.getElementById('citationModal').classList.remove('active');
+}
+</script>
+
+<style>
+.references-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: var(--space-lg);
+    margin-top: var(--space-xl);
+}
+
+.reference-card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--space-lg);
+    transition: all 0.2s;
+    position: relative;
+}
+
+.reference-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: var(--primary-color);
+}
+
+.reference-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+}
+
+.reference-type-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-book { background: #e3f2fd; color: #1976d2; }
+.badge-article { background: #f3e5f5; color: #7b1fa2; }
+.badge-journal { background: #e8f5e9; color: #388e3c; }
+.badge-website { background: #fff3e0; color: #f57c00; }
+.badge-other { background: #eceff1; color: #546e7a; }
+
+.verified-badge {
+    background: var(--success-color);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.reference-author {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+}
+
+.reference-title {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+    line-height: 1.5;
+}
+
+.reference-meta {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-sm);
+}
+
+.reference-url a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.85rem;
+}
+
+.reference-url a:hover {
+    text-decoration: underline;
+}
+
+.reference-card-footer {
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.reference-usage {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    cursor: help;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.reference-usage:hover {
+    background: var(--bg-light);
+}
+
+.reference-creator {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+/* Popover */
+.usage-popover {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    margin-bottom: 10px;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: var(--space-md);
+    min-width: 300px;
+    max-width: 400px;
+    z-index: 1000;
+}
+
+.usage-popover::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    border: 8px solid transparent;
+    border-top-color: white;
+}
+
+.usage-details h4 {
+    margin: 0 0 var(--space-sm) 0;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.usage-details ul {
+    margin: 0;
+    padding-left: 20px;
+    list-style: none;
+}
+
+.usage-details li {
+    margin-bottom: var(--space-xs);
+}
+
+.usage-details a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.usage-details a:hover {
+    text-decoration: underline;
+}
+
+.filters-bar {
+    display: flex;
+    gap: var(--space-lg);
+    align-items: center;
+    margin-top: var(--space-lg);
+    flex-wrap: wrap;
+}
+
+.search-box {
+    flex: 1;
+    min-width: 300px;
+}
+
+.search-input {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--border-color);
+    background: white;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.filter-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: var(--space-xxl);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-md);
+}
+
+@media (max-width: 768px) {
+    .references-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+}
+</style>
+
+{% endblock %}
