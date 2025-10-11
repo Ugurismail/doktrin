@@ -3,11 +3,11 @@
 {% block title %}Duyurular{% endblock %}
 
 {% block content %}
-<div style="max-width: 1000px; margin: 0 auto; padding: var(--space-lg) var(--space-md);">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg);">
+<div class="container announcements-container">
+    <div class="announcements-header">
         <div>
-            <h1 style="font-size: 32px; font-weight: 600; margin-bottom: var(--space-xs);">Duyurular</h1>
-            <p style="color: var(--text-secondary);">Örgüt duyuruları</p>
+            <h1 class="page-title">Duyurular</h1>
+            <p class="page-subtitle">Örgüt duyuruları</p>
         </div>
         {% if user.current_team and user.current_team.leader == user %}
         <a href="{% url 'organization:create_announcement' %}" class="btn btn-primary">Duyuru Oluştur</a>
@@ -15,19 +15,19 @@
     </div>
 
     {% if announcements %}
-    <div style="display: grid; gap: var(--space-md);">
+    <div class="announcements-grid">
         {% for announcement in announcements %}
-        <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-lg);">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-sm);">
-                <h2 style="font-size: 20px; font-weight: 600;">{{ announcement.title }}</h2>
-                <span style="font-size: 12px; color: var(--text-light); padding: 4px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px;">
+        <div class="announcement-card">
+            <div class="announcement-card-header">
+                <h2 class="announcement-title">{{ announcement.title }}</h2>
+                <span class="announcement-badge">
                     {{ announcement.get_target_level_display }}
                 </span>
             </div>
 
-            <div style="color: var(--text-secondary); margin-bottom: var(--space-md); white-space: pre-wrap;">{{ announcement.content }}</div>
+            <div class="announcement-content">{{ announcement.content }}</div>
 
-            <div style="display: flex; gap: var(--space-md); font-size: 12px; color: var(--text-light); padding-top: var(--space-sm); border-top: 1px solid var(--border);">
+            <div class="announcement-meta">
                 <span>{{ announcement.created_by.username }}</span>
                 <span>•</span>
                 <span>{{ announcement.created_at|date:"d M Y, H:i" }}</span>
@@ -36,8 +36,8 @@
         {% endfor %}
     </div>
     {% else %}
-    <div style="text-align: center; padding: var(--space-xl); color: var(--text-secondary);">
-        <p>Henüz duyuru yok</p>
+    <div class="empty-state-container">
+        <p class="empty-state-text">Henüz duyuru yok</p>
     </div>
     {% endif %}
 </div>

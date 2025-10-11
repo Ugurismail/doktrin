@@ -2953,3 +2953,140 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         font-size: 14px;
     }
 }
+
+/* =====================================
+   ANNOUNCEMENT & ARTICLE COMPONENTS (Phase 6)
+   ===================================== */
+
+/* Form Container Medium */
+.form-container-md {
+    max-width: 800px;
+}
+
+/* Announcement Form */
+.announcement-form {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-lg);
+}
+
+/* Form Elements */
+.form-select,
+.form-input,
+.form-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+}
+
+.form-textarea {
+    resize: vertical;
+}
+
+.form-select:focus,
+.form-input:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* Form Actions Row */
+.form-actions-row {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+/* Announcements Container */
+.announcements-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: var(--space-lg) var(--space-md);
+}
+
+/* Announcements Header */
+.announcements-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+}
+
+.page-subtitle {
+    color: var(--text-secondary);
+}
+
+/* Announcements Grid */
+.announcements-grid {
+    display: grid;
+    gap: var(--space-md);
+}
+
+/* Announcement Card */
+.announcement-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-lg);
+}
+
+.announcement-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: var(--space-sm);
+}
+
+.announcement-title {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.announcement-badge {
+    font-size: 12px;
+    color: var(--text-light);
+    padding: 4px 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+
+.announcement-content {
+    color: var(--text-secondary);
+    margin-bottom: var(--space-md);
+    white-space: pre-wrap;
+}
+
+.announcement-meta {
+    display: flex;
+    gap: var(--space-md);
+    font-size: 12px;
+    color: var(--text-light);
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--border);
+}
+
+/* Responsive for Announcements */
+@media (max-width: 768px) {
+    .announcements-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-md);
+    }
+
+    .form-actions-row {
+        flex-direction: column;
+    }
+
+    .announcement-card {
+        padding: var(--space-md);
+    }
+
+    .announcement-card-header {
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+}

@@ -3,35 +3,35 @@
 {% block title %}Duyuru Oluştur{% endblock %}
 
 {% block content %}
-<div style="max-width: 800px; margin: 0 auto; padding: var(--space-lg) var(--space-md);">
-    <div style="margin-bottom: var(--space-lg);">
-        <h1 style="font-size: 32px; font-weight: 600; margin-bottom: var(--space-sm);">Duyuru Oluştur</h1>
-        <p style="color: var(--text-secondary);">Örgütünüze duyuru gönderin</p>
+<div class="container form-container-md">
+    <div class="form-header">
+        <h1 class="form-header-title">Duyuru Oluştur</h1>
+        <p class="form-header-subtitle">Örgütünüze duyuru gönderin</p>
     </div>
 
-    <form method="post" style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-lg);">
+    <form method="post" class="announcement-form">
         {% csrf_token %}
 
-        <div style="margin-bottom: var(--space-md);">
-            <label style="display: block; margin-bottom: var(--space-xs); font-weight: 500;">Seviye</label>
-            <select name="level" required style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text);">
+        <div class="form-group">
+            <label class="form-label">Seviye</label>
+            <select name="level" required class="form-select">
                 {% for value, label in available_levels %}
                 <option value="{{ value }}">{{ label }}</option>
                 {% endfor %}
             </select>
         </div>
 
-        <div style="margin-bottom: var(--space-md);">
-            <label style="display: block; margin-bottom: var(--space-xs); font-weight: 500;">Başlık</label>
-            <input type="text" name="title" required maxlength="200" style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text);">
+        <div class="form-group">
+            <label class="form-label">Başlık</label>
+            <input type="text" name="title" required maxlength="200" class="form-input">
         </div>
 
-        <div style="margin-bottom: var(--space-lg);">
-            <label style="display: block; margin-bottom: var(--space-xs); font-weight: 500;">İçerik</label>
-            <textarea name="content" required rows="8" style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); resize: vertical;"></textarea>
+        <div class="form-group">
+            <label class="form-label">İçerik</label>
+            <textarea name="content" required rows="8" class="form-textarea"></textarea>
         </div>
 
-        <div style="display: flex; gap: var(--space-sm);">
+        <div class="form-actions-row">
             <button type="submit" class="btn btn-primary">Duyuru Gönder</button>
             <a href="{% url 'organization:view_announcements' %}" class="btn btn-secondary">İptal</a>
         </div>
