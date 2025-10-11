@@ -285,7 +285,7 @@ def vote_proposal(request, proposal_id):
     return redirect('doctrine:proposal_detail', proposal_id=proposal_id)
 
 @login_required
-@rate_limit(limit=5, period=300, message="Çok fazla öneri oluşturuyorsunuz. Lütfen 5 dakika bekleyin.")
+@rate_limit(limit=50, period=300, message="Çok fazla öneri oluşturuyorsunuz. Lütfen 5 dakika bekleyin.")
 def create_proposal(request):
     """Öneri oluştur - Yetki: Sadece Ekip Liderleri"""
     user_team = request.user.current_team
