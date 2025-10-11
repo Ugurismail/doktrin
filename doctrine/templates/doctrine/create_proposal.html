@@ -91,10 +91,10 @@
                 </small>
                 <div class="reference-toolbar">
                     <button type="button" onclick="openReferenceModal()" class="btn btn-secondary btn-sm">
-                        📚 Kaynak Ekle
+                        📚 Yeni Kaynak Ekle
                     </button>
-                    <button type="button" onclick="showMyReferences()" class="btn btn-secondary btn-sm">
-                        📖 Kaynaklarım
+                    <button type="button" onclick="showAllReferences()" class="btn btn-secondary btn-sm">
+                        📖 Kaynaklar
                     </button>
                 </div>
             </div>
@@ -289,23 +289,23 @@ function saveDraft() {
     </div>
 </div>
 
-<!-- Kaynaklarım Modal -->
-<div id="myReferencesModal" class="modal">
+<!-- Kaynaklar Modal (Global) -->
+<div id="allReferencesModal" class="modal">
     <div class="modal-content modal-lg">
         <div class="modal-header">
-            <h2>Kaynaklarım</h2>
-            <button type="button" class="modal-close" onclick="closeMyReferencesModal()">&times;</button>
+            <h2>📖 Tüm Kaynaklar</h2>
+            <button type="button" class="modal-close" onclick="closeAllReferencesModal()">&times;</button>
         </div>
         <div class="modal-body">
             <div class="form-group">
-                <input type="text" id="searchMyReference" placeholder="🔍 Kaynaklarımda ara..." onkeyup="searchMyReferences()">
+                <input type="text" id="searchAllReference" placeholder="🔍 Kaynaklar search..." onkeyup="searchAllReferences()">
             </div>
-            <div id="myReferenceList" class="reference-list">
+            <div id="allReferenceList" class="reference-list">
                 <p class="text-muted">Kaynaklar yükleniyor...</p>
             </div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeMyReferencesModal()">Kapat</button>
+            <button type="button" class="btn btn-secondary" onclick="closeAllReferencesModal()">Kapat</button>
         </div>
     </div>
 </div>
