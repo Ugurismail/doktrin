@@ -20,4 +20,9 @@ urlpatterns = [
     path('drafts/save/', views.save_proposal_draft, name='save_proposal_draft'),
     path('drafts/<int:draft_id>/load/', views.load_proposal_draft, name='load_proposal_draft'),
     path('drafts/<int:draft_id>/delete/', views.delete_draft, name='delete_draft'),
+
+    # Reference API
+    path('api/references/create/', views.reference_create, name='reference_create'),
+    path('api/references/list/', views.reference_list, name='reference_list'),
+    path('api/references/my-references/', views.my_references, name='my_references'),
 ]

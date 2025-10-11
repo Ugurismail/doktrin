@@ -88,7 +88,23 @@
                 <small class="form-hint">
                     Bu değişikliği neden önerdiğinizi açıklayın. Gerekçe, öneri kabul edilirse maddeyle birlikte kaydedilecektir.
                 </small>
+                <div class="reference-toolbar">
+                    <button type="button" onclick="openReferenceModal()" class="btn btn-secondary btn-sm">
+                        📚 Kaynak Ekle
+                    </button>
+                    <button type="button" onclick="showMyReferences()" class="btn btn-secondary btn-sm">
+                        📖 Kaynaklarım
+                    </button>
+                </div>
             </div>
+
+            <!-- Seçili Kaynaklar Listesi -->
+            <div id="selected-references-container" class="selected-references hidden">
+                <h4>Seçili Kaynaklar</h4>
+                <div id="selected-references-list"></div>
+            </div>
+
+            <input type="hidden" id="selected_references" name="selected_references" value="">
 
             <div class="form-actions">
                 <button type="button" onclick="saveDraft()" class="btn btn-secondary flex-1">
@@ -186,5 +202,113 @@ function saveDraft() {
     });
 }
 </script>
+
+<!-- Kaynakça Modal -->
+<div id="referenceModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h2>Kaynak Ekle</h2>
+            <button type="button" class="modal-close" onclick="closeReferenceModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="tabs">
+                <button type="button" class="tab-btn active" onclick="switchTab('new')">Yeni Kaynak Oluştur</button>
+                <button type="button" class="tab-btn" onclick="switchTab('existing')">Mevcut Kaynak Seç</button>
+            </div>
+
+            <!-- Yeni Kaynak Oluştur Tab -->
+            <div id="newReferenceTab" class="tab-content active">
+                <form id="newReferenceForm">
+                    <div class="form-group">
+                        <label for="ref_type">Kaynak Türü</label>
+                        <select id="ref_type" required>
+                            <option value="BOOK">Kitap</option>
+                            <option value="ARTICLE">Makale</option>
+                            <option value="JOURNAL">Dergi</option>
+                            <option value="WEBSITE">Web Sitesi</option>
+                            <option value="REPORT">Rapor</option>
+                            <option value="THESIS">Tez</option>
+                            <option value="OTHER">Diğer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="ref_author">Yazar(lar) *</label>
+                        <input type="text" id="ref_author" placeholder="Örn: Kant, Immanuel" required>
+                        <small class="form-hint">Birden fazla yazar için "&" kullanın</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="ref_title">Eser Başlığı *</label>
+                        <input type="text" id="ref_title" placeholder="Örn: Praktik Aklın Eleştirisi" required>
+                    </div>
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="ref_year">Yayın Yılı *</label>
+                            <input type="number" id="ref_year" min="1000" max="2100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ref_page">Sayfa Numarası</label>
+                            <input type="text" id="ref_page" placeholder="Örn: s.157 veya s.157-189">
+                        </div>
+                    </div>
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="ref_publisher">Yayınevi</label>
+                            <input type="text" id="ref_publisher">
+                        </div>
+                        <div class="form-group">
+                            <label for="ref_city">Yayın Yeri</label>
+                            <input type="text" id="ref_city">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="ref_url">Online Link (URL)</label>
+                        <input type="url" id="ref_url" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label for="ref_notes">Notlar</label>
+                        <textarea id="ref_notes" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Mevcut Kaynak Seç Tab -->
+            <div id="existingReferenceTab" class="tab-content">
+                <div class="form-group">
+                    <input type="text" id="searchReference" placeholder="🔍 Yazar, başlık veya yıla göre ara..." onkeyup="searchReferences()">
+                </div>
+                <div id="referenceList" class="reference-list">
+                    <p class="text-muted">Kaynaklar yükleniyor...</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeReferenceModal()">İptal</button>
+            <button type="button" class="btn btn-primary" onclick="saveNewReference()" id="saveRefBtn">Kaydet ve Ekle</button>
+        </div>
+    </div>
+</div>
+
+<!-- Kaynaklarım Modal -->
+<div id="myReferencesModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h2>Kaynaklarım</h2>
+            <button type="button" class="modal-close" onclick="closeMyReferencesModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <input type="text" id="searchMyReference" placeholder="🔍 Kaynaklarımda ara..." onkeyup="searchMyReferences()">
+            </div>
+            <div id="myReferenceList" class="reference-list">
+                <p class="text-muted">Kaynaklar yükleniyor...</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeMyReferencesModal()">Kapat</button>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/reference-manager.js' %}"></script>
 
 {% endblock %}

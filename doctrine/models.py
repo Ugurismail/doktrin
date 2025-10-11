@@ -253,3 +253,112 @@ class ArchivedProposal(models.Model):
 
     def __str__(self):
         return f"Arşiv - {self.proposal} - {self.archived_at.strftime('%Y-%m-%d')}"
+
+
+class Reference(models.Model):
+    """Kaynakça/Referans - Akademik kaynak ekleme sistemi"""
+    REFERENCE_TYPE_CHOICES = [
+        ('BOOK', 'Kitap'),
+        ('ARTICLE', 'Makale'),
+        ('JOURNAL', 'Dergi'),
+        ('WEBSITE', 'Web Sitesi'),
+        ('REPORT', 'Rapor'),
+        ('THESIS', 'Tez'),
+        ('OTHER', 'Diğer'),
+    ]
+
+    # Kim ekledi
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='references')
+
+    # Kaynak bilgileri
+    reference_type = models.CharField(max_length=20, choices=REFERENCE_TYPE_CHOICES, default='BOOK')
+    author = models.CharField(max_length=500, help_text="Yazar(lar) - Örn: Kant, Immanuel veya Smith, J. & Doe, A.")
+    title = models.CharField(max_length=500, help_text="Eser başlığı")
+    year = models.IntegerField(help_text="Yayın yılı")
+    publisher = models.CharField(max_length=300, blank=True, help_text="Yayınevi")
+    city = models.CharField(max_length=100, blank=True, help_text="Yayın yeri")
+    url = models.URLField(blank=True, help_text="Online kaynak linki")
+    doi = models.CharField(max_length=100, blank=True, help_text="DOI numarası")
+    isbn = models.CharField(max_length=50, blank=True, help_text="ISBN numarası")
+    pages = models.CharField(max_length=50, blank=True, help_text="Sayfa aralığı - Örn: 157-189")
+
+    # Ek bilgiler
+    notes = models.TextField(blank=True, help_text="Notlar, açıklamalar")
+
+    # Meta
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_verified = models.BooleanField(default=False, help_text="Kaynağın doğruluğu onaylandı mı?")
+
+    class Meta:
+        ordering = ['author', 'year']
+        verbose_name = 'Referans'
+        verbose_name_plural = 'Referanslar'
+
+    def __str__(self):
+        return f"{self.author} ({self.year}). {self.title}"
+
+    def get_citation_short(self):
+        """Kısa alıntı formatı: (Kant, 1789)"""
+        # Yazar soyadı al (ilk kelime genelde soyadı)
+        author_last = self.author.split(',')[0] if ',' in self.author else self.author.split()[0]
+        return f"({author_last}, {self.year})"
+
+    def get_citation_full(self):
+        """Tam bibliyografik format"""
+        citation = f"{self.author} ({self.year}). {self.title}."
+        if self.publisher:
+            citation += f" {self.publisher}."
+        if self.city:
+            citation += f" {self.city}."
+        if self.url:
+            citation += f" {self.url}"
+        return citation
+
+
+class ProposalReference(models.Model):
+    """Öneri-Referans ilişkisi - Hangi öneri hangi kaynakları kullanıyor"""
+    proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE, related_name='references')
+    reference = models.ForeignKey(Reference, on_delete=models.CASCADE, related_name='proposal_usages')
+    page_number = models.CharField(max_length=50, blank=True, help_text="Atıfta kullanılan sayfa numarası - Örn: s.157")
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('proposal', 'reference')
+        ordering = ['added_at']
+
+    def __str__(self):
+        return f"{self.proposal.id} -> {self.reference.author} ({self.reference.year})"
+
+    def get_inline_citation(self):
+        """Metin içi alıntı: (Kant, 1789, s.157)"""
+        author_last = self.reference.author.split(',')[0] if ',' in self.reference.author else self.reference.author.split()[0]
+        citation = f"({author_last}, {self.reference.year}"
+        if self.page_number:
+            citation += f", {self.page_number}"
+        citation += ")"
+        return citation
+
+
+class ArticleReference(models.Model):
+    """Madde-Referans ilişkisi - Hangi madde hangi kaynakları kullanıyor"""
+    article = models.ForeignKey(DoctrineArticle, on_delete=models.CASCADE, related_name='references')
+    reference = models.ForeignKey(Reference, on_delete=models.CASCADE, related_name='article_usages')
+    page_number = models.CharField(max_length=50, blank=True, help_text="Atıfta kullanılan sayfa numarası")
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('article', 'reference')
+        ordering = ['added_at']
+
+    def __str__(self):
+        return f"{self.article.article_number} -> {self.reference.author} ({self.reference.year})"
+
+    def get_inline_citation(self):
+        """Metin içi alıntı: (Kant, 1789, s.157)"""
+        author_last = self.reference.author.split(',')[0] if ',' in self.reference.author else self.reference.author.split()[0]
+        citation = f"({author_last}, {self.reference.year}"
+        if self.page_number:
+            citation += f", {self.page_number}"
+        citation += ")"
+        return citation

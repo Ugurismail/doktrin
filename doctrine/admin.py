@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import DoctrineArticle, Proposal, Vote, Discussion, ArchivedProposal, ArticleTag, ArticleVersion
+from .models import (DoctrineArticle, Proposal, Vote, Discussion, ArchivedProposal,
+                     ArticleTag, ArticleVersion, Reference, ProposalReference, ArticleReference)
 
 @admin.register(DoctrineArticle)
 class DoctrineArticleAdmin(admin.ModelAdmin):
@@ -38,3 +39,22 @@ class ArticleTagAdmin(admin.ModelAdmin):
 class ArticleVersionAdmin(admin.ModelAdmin):
     list_display = ['article', 'version_number', 'changed_by_proposal', 'created_at']
     list_filter = ['created_at']
+
+@admin.register(Reference)
+class ReferenceAdmin(admin.ModelAdmin):
+    list_display = ['author', 'title', 'year', 'reference_type', 'created_by', 'is_verified', 'created_at']
+    list_filter = ['reference_type', 'is_verified', 'year', 'created_at']
+    search_fields = ['author', 'title', 'publisher']
+    readonly_fields = ['created_at', 'updated_at']
+
+@admin.register(ProposalReference)
+class ProposalReferenceAdmin(admin.ModelAdmin):
+    list_display = ['proposal', 'reference', 'page_number', 'added_at']
+    list_filter = ['added_at']
+    search_fields = ['reference__author', 'reference__title']
+
+@admin.register(ArticleReference)
+class ArticleReferenceAdmin(admin.ModelAdmin):
+    list_display = ['article', 'reference', 'page_number', 'added_at']
+    list_filter = ['added_at']
+    search_fields = ['reference__author', 'reference__title']

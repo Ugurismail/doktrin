@@ -863,3 +863,101 @@ def delete_draft(request, draft_id):
     draft.delete()
     messages.success(request, 'Taslak silindi')
     return redirect('doctrine:my_drafts')
+
+# ========================================
+# REFERENCE API ENDPOINTS
+# ========================================
+
+@login_required
+def reference_create(request):
+    """Yeni kaynak oluştur (AJAX)"""
+    import json
+    from django.http import JsonResponse
+    from .models import Reference
+    
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            
+            reference = Reference.objects.create(
+                created_by=request.user,
+                reference_type=data.get("reference_type", "BOOK"),
+                author=data["author"],
+                title=data["title"],
+                year=int(data["year"]),
+                publisher=data.get("publisher", ""),
+                city=data.get("city", ""),
+                url=data.get("url", ""),
+                notes=data.get("notes", "")
+            )
+            
+            return JsonResponse({
+                "success": True,
+                "reference": {
+                    "id": reference.id,
+                    "author": reference.author,
+                    "title": reference.title,
+                    "year": reference.year,
+                    "publisher": reference.publisher,
+                    "url": reference.url,
+                    "page_number": data.get("page_number", "")
+                }
+            })
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
+    
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+
+@login_required
+def reference_list(request):
+    """Tüm kaynakları listele (AJAX)"""
+    from django.http import JsonResponse
+    from .models import Reference
+    
+    references = Reference.objects.all().order_by("-created_at")[:100]
+    
+    data = {
+        "references": [
+            {
+                "id": ref.id,
+                "author": ref.author,
+                "title": ref.title,
+                "year": ref.year,
+                "reference_type": ref.get_reference_type_display(),
+                "publisher": ref.publisher,
+                "url": ref.url,
+                "created_by": ref.created_by.username,
+            }
+            for ref in references
+        ]
+    }
+    
+    return JsonResponse(data)
+
+
+@login_required
+def my_references(request):
+    """Kullanıcının kendi kaynakları (AJAX)"""
+    from django.http import JsonResponse
+    from .models import Reference
+    
+    references = Reference.objects.filter(created_by=request.user).order_by("-created_at")
+    
+    data = {
+        "references": [
+            {
+                "id": ref.id,
+                "author": ref.author,
+                "title": ref.title,
+                "year": ref.year,
+                "reference_type": ref.get_reference_type_display(),
+                "publisher": ref.publisher,
+                "url": ref.url,
+            }
+            for ref in references
+        ]
+    }
+    
+    return JsonResponse(data)
+

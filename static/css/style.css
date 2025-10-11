@@ -3090,3 +3090,231 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         gap: var(--space-sm);
     }
 }
+
+
+/* ========================================
+   REFERENCE SYSTEM STYLES
+   ======================================== */
+
+/* Reference Toolbar */
+.reference-toolbar {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+}
+
+/* Selected References Container */
+.selected-references {
+    margin-top: var(--space-lg);
+    padding: var(--space-md);
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.selected-references h4 {
+    margin: 0 0 var(--space-md) 0;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.selected-reference-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--space-sm);
+}
+
+.reference-number {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.selected-reference-item .reference-info {
+    flex: 1;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.selected-reference-item .reference-actions {
+    display: flex;
+    gap: var(--space-xs);
+}
+
+/* Reference List in Modal */
+.reference-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: var(--space-md);
+}
+
+.reference-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--space-sm);
+    background: white;
+    transition: all 0.2s;
+}
+
+.reference-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0,102,255,0.1);
+}
+
+.reference-item.selected {
+    background: var(--bg-light);
+    border-color: var(--success-color);
+}
+
+.reference-info {
+    flex: 1;
+}
+
+.reference-author {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.reference-title {
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.reference-publisher {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.reference-url {
+    font-size: 0.85rem;
+    margin-top: 4px;
+}
+
+.reference-url a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.reference-url a:hover {
+    text-decoration: underline;
+}
+
+.reference-actions {
+    display: flex;
+    gap: var(--space-xs);
+    flex-shrink: 0;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: var(--space-lg);
+}
+
+.tab-btn {
+    padding: var(--space-sm) var(--space-lg);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    margin-bottom: -2px;
+}
+
+.tab-btn:hover {
+    color: var(--primary-color);
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Form row for 2 columns */
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+}
+
+/* Badge */
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-success {
+    background: var(--success-bg);
+    color: var(--success-color);
+}
+
+/* Modal Large Size */
+.modal-lg {
+    max-width: 800px;
+    width: 90%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .reference-toolbar {
+        flex-direction: column;
+    }
+
+    .selected-reference-item {
+        flex-direction: column;
+    }
+
+    .reference-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .reference-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .form-row-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-lg {
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
