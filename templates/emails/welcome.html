@@ -1,0 +1,26 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+<h2>Hoş Geldiniz, {{ user.username }}!</h2>
+
+<p>Doktrin platformuna katıldığınız için teşekkür ederiz. Doğrudan demokrasi yolculuğunuz başladı!</p>
+
+<div class="info-box">
+    <strong>📍 Lokasyonunuz:</strong> {{ user.province }}, {{ user.district }}
+</div>
+
+<h3>Sonraki Adımlar:</h3>
+<ol>
+    <li><strong>Ekip Oluşturun veya Katılın:</strong> 3-15 kişilik bir ekip oluşturun veya mevcut bir ekibe katılın</li>
+    <li><strong>Örgütlenin:</strong> 3 ekip bir Takım, 3 takım bir Birlik oluşturur</li>
+    <li><strong>Oy Kullanın:</strong> Aktif önerilerde oy kullanarak kararları etkileyin</li>
+    <li><strong>Öneri Sunun:</strong> Takım seviyesine ulaştığınızda doktrin değişikliği önerebilirsiniz</li>
+</ol>
+
+<a href="{{ site_url }}" class="button">Platform'a Git</a>
+
+<p style="margin-top: 30px; color: #666; font-size: 14px;">
+    <strong>Sorularınız mı var?</strong><br>
+    <a href="{{ site_url }}/user-guide/">Kullanıcı Kılavuzu</a>'nu inceleyin veya ekip liderinize ulaşın.
+</p>
+{% endblock %}

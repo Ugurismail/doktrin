@@ -81,6 +81,7 @@ def register(request):
         # Email gönder
         from django.core.mail import send_mail
         from django.urls import reverse
+        from users.emails import send_welcome_email
 
         verification_url = request.build_absolute_uri(
             reverse('users:verify_email', args=[user.email_verification_token])
@@ -93,6 +94,9 @@ def register(request):
             recipient_list=[user.email],
             fail_silently=False,
         )
+
+        # Hoş geldiniz e-postası gönder
+        send_welcome_email(user)
 
         messages.success(request, 'Kayıt başarılı! Email adresinize doğrulama linki gönderildi.')
         return redirect('users:login')

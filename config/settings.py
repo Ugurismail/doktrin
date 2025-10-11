@@ -145,6 +145,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Development:
 # EMAIL_HOST_PASSWORD = 'your-password'
 DEFAULT_FROM_EMAIL = 'noreply@doktrin.com'
 
+# Site URL for emails
+SITE_URL = 'http://localhost:8000'  # Production'da değiştirilecek
+
 # Cron Jobs
 CRONJOBS = [
     # Her gece saat 3'te süresi dolmuş davet kodlarını temizle

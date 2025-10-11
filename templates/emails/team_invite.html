@@ -1,0 +1,35 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+<h2>Ekip Davet Kodu</h2>
+
+<p>Merhaba {{ user.username }},</p>
+
+<p>{{ team.display_name }} ekibine katılmak için davet kodu oluşturuldu!</p>
+
+<div class="info-box">
+    <h3 style="margin-top: 0;">Davet Kodu:</h3>
+    <p style="font-size: 24px; font-family: monospace; letter-spacing: 2px; font-weight: bold; color: #0066FF;">
+        {{ invite_code }}
+    </p>
+    <p style="margin-bottom: 0; font-size: 14px; color: #666;">
+        Bu kod {{ expiry_date|date:"d.m.Y" }} tarihine kadar geçerlidir.
+    </p>
+</div>
+
+<h3>Nasıl Kullanılır?</h3>
+<ol>
+    <li>Davet etmek istediğiniz kişiye bu kodu gönderin</li>
+    <li>Kişi platforma giriş yapsın</li>
+    <li>"Ekibe Katıl" sayfasına gitsin</li>
+    <li>Davet kodunu girsin</li>
+</ol>
+
+<a href="{{ site_url }}/organization/my-team/" class="button">Ekibime Git</a>
+
+<p style="margin-top: 30px; font-size: 14px; color: #666;">
+    <strong>📍 Ekip Bilgileri:</strong><br>
+    {{ team.district }}, {{ team.province }}<br>
+    Lider: {{ team.leader.username }}
+</p>
+{% endblock %}

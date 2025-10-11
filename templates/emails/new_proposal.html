@@ -1,0 +1,34 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+<h2>🗳️ Yeni Oylama Başladı!</h2>
+
+<p>Merhaba {{ user.username }},</p>
+
+<p>Örgütünüzde yeni bir öneri oylamaya açıldı:</p>
+
+<div class="info-box">
+    <h3 style="margin-top: 0;">{{ proposal.get_proposal_type_display }}</h3>
+    {% if proposal.related_article %}
+    <p><strong>İlgili Madde:</strong> {{ proposal.related_article.get_article_type_display }} {{ proposal.related_article.article_number }}</p>
+    {% endif %}
+    <p><strong>Öneren Seviye:</strong> {{ proposal.get_proposed_by_level_display }}</p>
+</div>
+
+<h3>Önerilen İçerik:</h3>
+<p style="background: #f8f9fa; padding: 15px; border-radius: 6px; white-space: pre-wrap;">{{ proposal.proposed_content|truncatewords:50 }}</p>
+
+<h3>Gerekçe:</h3>
+<p style="background: #f8f9fa; padding: 15px; border-radius: 6px; white-space: pre-wrap;">{{ proposal.justification|truncatewords:30 }}</p>
+
+<a href="{{ site_url }}/doctrine/proposal/{{ proposal.id }}/" class="button">Oyunuzu Kullanın</a>
+
+<p style="margin-top: 30px; font-size: 14px; color: #666;">
+    <strong>⏰ Bitiş Tarihi:</strong> {{ proposal.end_date|date:"d M Y, H:i" }}<br>
+    <strong>📊 Seçenekler:</strong> Kabul, Çekimser, Veto
+</p>
+
+<p style="font-size: 12px; color: #999;">
+    Oy kullanmak için ekibinize üye olmanız gerekmektedir.
+</p>
+{% endblock %}

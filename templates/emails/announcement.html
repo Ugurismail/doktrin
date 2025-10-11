@@ -1,0 +1,25 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+<h2>📢 Yeni Duyuru</h2>
+
+<p>Merhaba {{ user.username }},</p>
+
+<p>Örgütünüzden yeni bir duyuru var:</p>
+
+<div class="info-box">
+    <h3 style="margin-top: 0;">{{ announcement.title }}</h3>
+    <p style="margin-bottom: 0;"><strong>Seviye:</strong> {{ announcement.get_target_level_display }}</p>
+</div>
+
+<div style="background: #ffffff; padding: 20px; border: 1px solid #e5e5e5; border-radius: 6px; margin: 20px 0;">
+    <p style="white-space: pre-wrap; line-height: 1.8; margin: 0;">{{ announcement.content }}</p>
+</div>
+
+<a href="{{ site_url }}/organization/announcements/" class="button">Tüm Duyuruları Görüntüle</a>
+
+<p style="margin-top: 30px; font-size: 14px; color: #666;">
+    <strong>Gönderen:</strong> {{ announcement.created_by.username }}<br>
+    <strong>Tarih:</strong> {{ announcement.created_at|date:"d M Y, H:i" }}
+</p>
+{% endblock %}

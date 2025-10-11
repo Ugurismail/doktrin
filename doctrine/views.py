@@ -388,6 +388,11 @@ def create_proposal(request):
 
         notify_new_proposal(proposal, target_users)
 
+        # E-posta bildirimi gönder
+        from users.emails import send_new_proposal_email
+        for user in target_users:
+            send_new_proposal_email(user, proposal)
+
         # Aktivite oluştur
         Activity.objects.create(
             activity_type='proposal_created',

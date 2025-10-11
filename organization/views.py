@@ -70,12 +70,17 @@ def create_invite(request):
     
     if request.method == 'POST':
         code = str(uuid.uuid4())[:8].upper()
-        InviteCode.objects.create(
+        invite = InviteCode.objects.create(
             code=code,
             team=request.user.current_team,
             created_by=request.user,
             expires_at=datetime.now() + timedelta(days=7)
         )
+
+        # Ekip liderine davet kodu e-postası gönder
+        from users.emails import send_team_invite_email
+        send_team_invite_email(request.user, request.user.current_team, invite.code, invite.expires_at)
+
         messages.success(request, f'Davet kodu oluşturuldu: {code}')
         return redirect('organization:my_team')
     
@@ -1104,6 +1109,11 @@ def create_announcement(request):
             target_users = User.objects.filter(current_team__parent_squad__parent_union__parent_province_org_id=entity_id).exclude(id=user.id)
 
         notify_announcement(announcement, target_users)
+
+        # E-posta bildirimi gönder
+        from users.emails import send_announcement_email
+        for user in target_users:
+            send_announcement_email(user, announcement)
 
         messages.success(request, 'Duyuru başarıyla oluşturuldu.')
         return redirect('organization:view_announcements')
