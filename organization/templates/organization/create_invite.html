@@ -3,56 +3,60 @@
 {% block title %}Davet Kodu Oluştur - Doktrin Platformu{% endblock %}
 
 {% block content %}
-<a href="{% url 'organization:my_team' %}" style="color: #3498db; text-decoration: none;">← Ekibime Dön</a>
+<div class="container form-container">
+    <div class="back-link-container">
+        <a href="{% url 'organization:my_team' %}" class="back-link">← Ekibime Dön</a>
+    </div>
 
-<div class="card" style="max-width: 600px; margin: 2rem auto;">
-    <h1>Davet Kodu Oluştur</h1>
-    
-    <p style="margin-top: 1rem; color: #666;">
-        Yeni üyeleri ekibinize davet etmek için bir kod oluşturun. 
-        Kod 7 gün boyunca geçerli olacaktır.
-    </p>
-    
-    <form method="post" style="margin-top: 2rem;">
-        {% csrf_token %}
-        <p style="margin-bottom: 1rem;">
-            <strong>Ekip:</strong> {{ user.current_team.display_name }}
+    <div class="card">
+        <h1 class="page-title">Davet Kodu Oluştur</h1>
+
+        <p class="user-location-info">
+            Yeni üyeleri ekibinize davet etmek için bir kod oluşturun.
+            Kod 7 gün boyunca geçerli olacaktır.
         </p>
-        
-        <button type="submit" class="btn" style="width: 100%;">Davet Kodu Oluştur</button>
-    </form>
-</div>
 
-<div class="card" style="max-width: 600px; margin: 2rem auto;">
-    <h2>Mevcut Davet Kodları</h2>
-    
-    {% if user.current_team.invite_codes.all %}
-    <table style="width: 100%; margin-top: 1rem; border-collapse: collapse;">
-        <thead>
-            <tr style="background-color: #f8f9fa;">
-                <th style="padding: 0.5rem; text-align: left; border-bottom: 2px solid #dee2e6;">Kod</th>
-                <th style="padding: 0.5rem; text-align: left; border-bottom: 2px solid #dee2e6;">Durum</th>
-                <th style="padding: 0.5rem; text-align: left; border-bottom: 2px solid #dee2e6;">Bitiş</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for invite in user.current_team.invite_codes.all %}
-            <tr>
-                <td style="padding: 0.5rem; border-bottom: 1px solid #dee2e6; font-weight: bold;">{{ invite.code }}</td>
-                <td style="padding: 0.5rem; border-bottom: 1px solid #dee2e6;">
-                    {% if invite.is_used %}
-                        <span style="color: #95a5a6;">Kullanıldı</span>
-                    {% else %}
-                        <span style="color: #27ae60;">Aktif</span>
-                    {% endif %}
-                </td>
-                <td style="padding: 0.5rem; border-bottom: 1px solid #dee2e6;">{{ invite.expires_at|date:"d.m.Y" }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p style="color: #95a5a6; margin-top: 1rem;">Henüz davet kodu oluşturulmamış.</p>
-    {% endif %}
+        <form method="post" class="mt-lg">
+            {% csrf_token %}
+            <p class="mb-md">
+                <strong>Ekip:</strong> {{ user.current_team.display_name }}
+            </p>
+
+            <button type="submit" class="btn btn-primary btn-full-width">Davet Kodu Oluştur</button>
+        </form>
+    </div>
+
+    <div class="card mt-lg">
+        <h2 class="card-title">Mevcut Davet Kodları</h2>
+
+        {% if user.current_team.invite_codes.all %}
+        <table class="invite-table">
+            <thead>
+                <tr class="invite-table-header">
+                    <th class="invite-table-th">Kod</th>
+                    <th class="invite-table-th">Durum</th>
+                    <th class="invite-table-th">Bitiş</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invite in user.current_team.invite_codes.all %}
+                <tr>
+                    <td class="invite-table-td invite-code-text">{{ invite.code }}</td>
+                    <td class="invite-table-td">
+                        {% if invite.is_used %}
+                            <span class="status-used">Kullanıldı</span>
+                        {% else %}
+                            <span class="status-active">Aktif</span>
+                        {% endif %}
+                    </td>
+                    <td class="invite-table-td">{{ invite.expires_at|date:"d.m.Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-message">Henüz davet kodu oluşturulmamış.</p>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

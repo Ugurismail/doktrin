@@ -2828,3 +2828,128 @@ input[type="time"]::-webkit-calendar-picker-indicator {
         padding: 12px;
     }
 }
+
+/* =====================================
+   TEAM & INVITE FORM COMPONENTS (Phase 5)
+   ===================================== */
+
+/* User Location Info */
+.user-location-info {
+    margin-top: 1rem;
+    color: var(--text-secondary);
+}
+
+/* Info Box Warning */
+.info-box-warning {
+    background: #fff3cd;
+}
+
+/* Rules Box */
+.rules-box {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.rules-title {
+    margin-bottom: 0.5rem;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.rules-list {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.rules-list li {
+    margin-bottom: 0.5rem;
+}
+
+/* Form Label */
+.form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+/* Invite Code Input */
+.invite-code-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: var(--bg-secondary);
+    color: var(--text);
+}
+
+.invite-code-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* Invite Table */
+.invite-table {
+    width: 100%;
+    margin-top: 1rem;
+    border-collapse: collapse;
+}
+
+.invite-table-header {
+    background-color: #f8f9fa;
+}
+
+.invite-table-th {
+    padding: 0.5rem;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+.invite-table-td {
+    padding: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.invite-code-text {
+    font-weight: bold;
+    font-family: monospace;
+    letter-spacing: 1px;
+}
+
+/* Status Badges */
+.status-used {
+    color: #95a5a6;
+}
+
+.status-active {
+    color: #27ae60;
+    font-weight: 600;
+}
+
+/* Empty Message */
+.empty-message {
+    color: #95a5a6;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+/* Responsive for Team Forms */
+@media (max-width: 480px) {
+    .invite-table {
+        font-size: 14px;
+    }
+
+    .invite-table-th,
+    .invite-table-td {
+        padding: 0.4rem;
+    }
+
+    .invite-code-input {
+        font-size: 14px;
+    }
+}

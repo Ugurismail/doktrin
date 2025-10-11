@@ -3,41 +3,45 @@
 {% block title %}Ekip Oluştur - Doktrin Platformu{% endblock %}
 
 {% block content %}
-<a href="{% url 'organization:my_team' %}" style="color: #3498db; text-decoration: none;">← Geri Dön</a>
+<div class="container form-container">
+    <div class="back-link-container">
+        <a href="{% url 'organization:my_team' %}" class="back-link">← Geri Dön</a>
+    </div>
 
-<div class="card" style="max-width: 600px; margin: 2rem auto;">
-    <h1>Yeni Ekip Oluştur</h1>
-    
-    <p style="margin-top: 1rem; color: #666;">
-        <strong>İliniz:</strong> {{ user.province }}<br>
-        <strong>İlçeniz:</strong> {{ user.district }}
-    </p>
-    
-    <p style="margin-top: 1rem; padding: 1rem; background: #fff3cd; border-radius: 4px;">
-        Ekibiniz otomatik olarak "{{ user.district }} X" şeklinde numaralanacaktır. 
-        Ayrıca ekibinize özel bir isim de verebilirsiniz.
-    </p>
-    
-    <form method="post" style="margin-top: 2rem;">
-        {% csrf_token %}
-        
-        <div class="form-group">
-            <label for="custom_name">Ekip İsmi (Opsiyonel):</label>
-            <input type="text" id="custom_name" name="custom_name" placeholder="Örn: Boğalar, Aslanlar, vs.">
-            <small style="color: #666;">Boş bırakırsanız sadece resmi isim kullanılır.</small>
-        </div>
-        
-        <div style="background: #f8f9fa; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
-            <h3 style="margin-bottom: 0.5rem;">Ekip Kuralları:</h3>
-            <ul style="margin: 0; padding-left: 1.5rem;">
-                <li>Bir ekip 3-15 kişi arası olabilir</li>
-                <li>Siz otomatik olarak ekip lideri olursunuz</li>
-                <li>Ekip üyelerini davet kodu ile ekleyebilirsiniz</li>
-                <li>Aynı ildeki kullanıcıları ekibe davet edebilirsiniz</li>
-            </ul>
-        </div>
-        
-        <button type="submit" class="btn" style="width: 100%;">Ekip Oluştur</button>
-    </form>
+    <div class="card">
+        <h1 class="page-title">Yeni Ekip Oluştur</h1>
+
+        <p class="user-location-info">
+            <strong>İliniz:</strong> {{ user.province }}<br>
+            <strong>İlçeniz:</strong> {{ user.district }}
+        </p>
+
+        <p class="info-box info-box-warning">
+            Ekibiniz otomatik olarak "{{ user.district }} X" şeklinde numaralanacaktır.
+            Ayrıca ekibinize özel bir isim de verebilirsiniz.
+        </p>
+
+        <form method="post" class="mt-lg">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="custom_name">Ekip İsmi (Opsiyonel):</label>
+                <input type="text" id="custom_name" name="custom_name" placeholder="Örn: Boğalar, Aslanlar, vs.">
+                <small class="form-hint">Boş bırakırsanız sadece resmi isim kullanılır.</small>
+            </div>
+
+            <div class="rules-box">
+                <h3 class="rules-title">Ekip Kuralları:</h3>
+                <ul class="rules-list">
+                    <li>Bir ekip 3-15 kişi arası olabilir</li>
+                    <li>Siz otomatik olarak ekip lideri olursunuz</li>
+                    <li>Ekip üyelerini davet kodu ile ekleyebilirsiniz</li>
+                    <li>Aynı ildeki kullanıcıları ekibe davet edebilirsiniz</li>
+                </ul>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full-width">Ekip Oluştur</button>
+        </form>
+    </div>
 </div>
 {% endblock %}
