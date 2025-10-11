@@ -310,13 +310,15 @@ def create_proposal(request):
         user_level = 'SQUAD'
         if user_team.parent_squad.parent_union:
             user_level = 'UNION'
+    else:
+        # Ekip seviyesinde - En az 8 kişi olmalı
+        if user_team.member_count >= 8:
+            user_level = 'TEAM'
+        else:
+            messages.error(request, f'Öneri oluşturmak için ekibinizde en az 8 kişi olmalı. Şu anki üye sayısı: {user_team.member_count}')
+            return redirect('doctrine:doctrine_list')
 
-    # Ekipler öneri oluşturamaz (sadece takım ve üstü)
-    if not user_level:
-        messages.error(request, f'Öneri oluşturmak için bir Takıma bağlı olmalısınız. Şu an sadece Ekip üyesisiniz ({user_team.display_name}). Ekipler sadece oy kullanabilir.')
-        return redirect('doctrine:doctrine_list')
-
-    if user_level not in ['SQUAD', 'UNION', 'FOUNDER']:
+    if user_level not in ['TEAM', 'SQUAD', 'UNION', 'FOUNDER']:
         messages.error(request, f'Öneri oluşturma yetkiniz yok. Seviyeniz: {user_level}')
         return redirect('doctrine:doctrine_list')
     
@@ -352,6 +354,8 @@ def create_proposal(request):
         entity_id = None
         if user_level == 'FOUNDER':
             entity_id = 0  # Kurucular için özel ID
+        elif user_level == 'TEAM':
+            entity_id = user_team.id  # Ekip ID'si
         elif user_level == 'SQUAD':
             entity_id = user_team.parent_squad.id
         elif user_level == 'UNION':
@@ -379,6 +383,8 @@ def create_proposal(request):
 
         if user_level == 'FOUNDER':
             target_users = User.objects.filter(is_active=True).exclude(id=request.user.id)
+        elif user_level == 'TEAM':
+            target_users = User.objects.filter(current_team_id=entity_id).exclude(id=request.user.id)
         elif user_level == 'SQUAD':
             target_users = User.objects.filter(current_team__parent_squad_id=entity_id).exclude(id=request.user.id)
         elif user_level == 'UNION':

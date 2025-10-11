@@ -127,6 +127,7 @@ class Proposal(models.Model):
     ]
     
     PROPOSER_LEVEL_CHOICES = [
+        ('TEAM', 'Ekip'),
         ('SQUAD', 'Takım'),
         ('UNION', 'Birlik'),
         ('PROVINCE_ORG', 'İl Örgütü'),
