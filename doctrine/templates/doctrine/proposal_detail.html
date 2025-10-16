@@ -110,6 +110,24 @@
             </p>
         </div>
         {% endif %}
+
+        {% if proposal_references %}
+        <div class="proposal-content-section mt-lg">
+            <h3 class="proposal-content-title">📚 Kaynakça</h3>
+            <div class="references-minimal">
+                {% for prop_ref in proposal_references %}
+                <div class="ref-min">
+                    <span class="ref-num">[{{ forloop.counter }}]</span>
+                    <span class="ref-text">
+                        {{ prop_ref.reference.author }} ({{ prop_ref.reference.year }}). {{ prop_ref.reference.title }}.
+                        {% if prop_ref.page_number %} {{ prop_ref.page_number }}.{% endif %}
+                        {% if prop_ref.reference.url %} <a href="{{ prop_ref.reference.url }}" target="_blank">↗</a>{% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Voting Section -->

@@ -16,6 +16,52 @@
             Kod 7 gün boyunca geçerli olacaktır.
         </p>
 
+        {% if new_invite %}
+        <div class="new-invite-box" style="background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 8px; padding: 24px; margin: 20px 0;">
+            <h2 style="color: #1e40af; margin: 0 0 16px 0; font-size: 1.2em;">✅ Davet Kodu Oluşturuldu!</h2>
+
+            <div style="background: white; border-radius: 6px; padding: 16px; margin-bottom: 16px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #374151;">Davet Kodu:</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="inviteCode" value="{{ new_invite.code }}" readonly
+                           style="flex: 1; padding: 12px; font-size: 1.4em; font-weight: bold; text-align: center; letter-spacing: 2px; border: 2px solid #e5e7eb; border-radius: 6px; background: #f9fafb;">
+                    <button onclick="copyInviteCode()" class="btn btn-secondary" style="white-space: nowrap;">
+                        📋 Kopyala
+                    </button>
+                </div>
+            </div>
+
+            <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 4px; margin-bottom: 12px;">
+                <p style="margin: 0; color: #92400e;">
+                    <strong>⏰ Geçerlilik Süresi:</strong> {{ new_invite.expires_at|date:"d.m.Y H:i" }} tarihine kadar (7 gün)
+                </p>
+            </div>
+
+            <div style="color: #6b7280; font-size: 0.9em;">
+                <p style="margin: 8px 0;">📤 Bu kodu paylaşmak istediğiniz kişiye gönderin.</p>
+                <p style="margin: 8px 0;">⚠️ Kod yalnızca bir kez kullanılabilir.</p>
+                <p style="margin: 8px 0;">👥 Ekibinize katılmak isteyen kişi bu kodu "Ekibe Katıl" sayfasında kullanabilir.</p>
+            </div>
+        </div>
+
+        <script>
+        function copyInviteCode() {
+            const codeInput = document.getElementById('inviteCode');
+            codeInput.select();
+            codeInput.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✓ Kopyalandı!';
+            btn.style.background = '#10b981';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = '';
+            }, 2000);
+        }
+        </script>
+        {% else %}
         <form method="post" class="mt-lg">
             {% csrf_token %}
             <p class="mb-md">
@@ -24,6 +70,7 @@
 
             <button type="submit" class="btn btn-primary btn-full-width">Davet Kodu Oluştur</button>
         </form>
+        {% endif %}
     </div>
 
     <div class="card mt-lg">

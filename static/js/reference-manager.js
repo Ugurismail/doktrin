@@ -39,10 +39,10 @@ function closeAllReferencesModal() {
 }
 
 // Tab switching
-function switchTab(tabName) {
+function switchReferenceTab(tabName) {
     const newTab = document.getElementById('newReferenceTab');
     const existingTab = document.getElementById('existingReferenceTab');
-    const tabs = document.querySelectorAll('.tab-btn');
+    const tabs = document.querySelectorAll('.reference-modal .tab-btn');
 
     if (tabName === 'new') {
         newTab.classList.add('active');
@@ -112,7 +112,6 @@ function saveNewReference() {
         city: document.getElementById('ref_city').value.trim(),
         url: document.getElementById('ref_url').value.trim(),
         notes: document.getElementById('ref_notes').value.trim(),
-        page_number: document.getElementById('ref_page').value.trim(),
     };
 
     fetch('/doctrine/api/references/create/', {
@@ -128,9 +127,15 @@ function saveNewReference() {
         if (data.success) {
             addReferenceToSelected(data.reference);
             closeReferenceModal();
-            alert('✓ Kaynak başarıyla eklendi!');
+            if (window.showToast) {
+                window.showToast('✓ Kaynak başarıyla eklendi!', 'success', 3000);
+            }
         } else {
-            alert('Hata: ' + (data.error || 'Bilinmeyen hata'));
+            if (window.showToast) {
+                window.showToast('Hata: ' + (data.error || 'Bilinmeyen hata'), 'error', 3000);
+            } else {
+                alert('Hata: ' + (data.error || 'Bilinmeyen hata'));
+            }
         }
     })
     .catch(error => {
@@ -149,26 +154,28 @@ function displayReferenceList(references, containerId, showActions) {
         return;
     }
 
+    // Modal içindeki "Mevcut Kaynak Seç" sekmesi mi?
+    const isSelectionMode = containerId === 'referenceList';
+
     let html = '';
     references.forEach(ref => {
         const isSelected = selectedReferences.some(r => r.id === ref.id);
         html += `
-            <div class="reference-item ${isSelected ? 'selected' : ''}" data-ref-id="${ref.id}">
-                <div class="reference-info">
-                    <div class="reference-author">${escapeHtml(ref.author)} (${ref.year})</div>
-                    <div class="reference-title">${escapeHtml(ref.title)}</div>
-                    ${ref.publisher ? `<div class="reference-publisher">${escapeHtml(ref.publisher)}</div>` : ''}
-                    ${ref.url ? `<div class="reference-url"><a href="${escapeHtml(ref.url)}" target="_blank">🔗 Link</a></div>` : ''}
-                    ${ref.created_by ? `<div class="reference-meta">Ekleyen: ${escapeHtml(ref.created_by)}</div>` : ''}
+            <div class="reference-item-compact ${isSelected ? 'selected' : ''}" data-ref-id="${ref.id}">
+                <div class="reference-info-compact">
+                    <strong>${escapeHtml(ref.author)}</strong> (${ref.year}). <em>${escapeHtml(ref.title)}</em>
+                    ${ref.publisher ? ` - ${escapeHtml(ref.publisher)}` : ''}
                 </div>
-                <div class="reference-actions">
-                    ${!isSelected ? `
-                        <button type="button" class="btn btn-sm btn-primary" onclick="selectReference(${ref.id})">
-                            Seç
-                        </button>
-                    ` : `
-                        <span class="badge badge-success">✓ Seçili</span>
-                    `}
+                <div class="reference-actions-compact">
+                    ${isSelectionMode ? (
+                        !isSelected ? `
+                            <button type="button" class="btn btn-sm btn-primary" onclick="selectReference(${ref.id})">
+                                Seç
+                            </button>
+                        ` : `
+                            <span class="badge badge-success">✓ Seçili</span>
+                        `
+                    ) : ''}
                     ${showActions ? `
                         <button type="button" class="btn btn-sm btn-secondary" onclick="insertCitation(${ref.id})">
                             Atıf Ekle
@@ -187,6 +194,11 @@ function selectReference(refId) {
     const ref = allReferences.find(r => r.id === refId);
     if (ref) {
         addReferenceToSelected(ref);
+        // Toast göster
+        if (window.showToast) {
+            window.showToast('✓ Kaynak seçildi', 'success', 2000);
+        }
+        // Modal'ları kapat
         closeReferenceModal();
         closeAllReferencesModal();
     }
@@ -260,7 +272,7 @@ function updateHiddenInput() {
     }
 }
 
-// Atıf ekle (metin içine)
+// Atıf ekle (metin içine) - Sayfa numarası opsiyonel modal ile sor
 function insertCitation(refId) {
     const ref = allReferences.find(r => r.id === refId);
     if (!ref) return;
@@ -268,7 +280,10 @@ function insertCitation(refId) {
     const textarea = document.getElementById('justification');
     if (!textarea) return;
 
-    const citation = getCitationText(ref);
+    // Sayfa numarası sor (opsiyonel)
+    const pageNum = prompt('Sayfa numarası (opsiyonel, örn: s.157):', '');
+
+    const citation = getCitationTextWithPage(ref, pageNum);
 
     // Cursor pozisyonuna ekle
     const startPos = textarea.selectionStart;
@@ -279,6 +294,11 @@ function insertCitation(refId) {
     textarea.value = textBefore + citation + textAfter;
     textarea.selectionStart = textarea.selectionEnd = startPos + citation.length;
     textarea.focus();
+
+    // Toast bildirimi göster
+    if (window.showToast) {
+        window.showToast('✓ Atıf eklendi', 'success', 2000);
+    }
 }
 
 function insertCitationById(refId) {
@@ -294,6 +314,17 @@ function getCitationText(ref) {
     let citation = `(${authorLast}, ${ref.year}`;
     if (ref.page_number) {
         citation += `, ${ref.page_number}`;
+    }
+    citation += ')';
+    return citation;
+}
+
+// Atıf metnini sayfa numarasıyla oluştur
+function getCitationTextWithPage(ref, pageNum) {
+    const authorLast = ref.author.includes(',') ? ref.author.split(',')[0].trim() : ref.author.split(' ')[0];
+    let citation = `(${authorLast}, ${ref.year}`;
+    if (pageNum && pageNum.trim() !== '') {
+        citation += `, ${pageNum.trim()}`;
     }
     citation += ')';
     return citation;

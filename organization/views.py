@@ -67,7 +67,8 @@ def create_invite(request):
     if not request.user.current_team:
         messages.error(request, 'Önce bir ekibe katılmalısınız.')
         return redirect('organization:my_team')
-    
+
+    new_invite = None
     if request.method == 'POST':
         code = str(uuid.uuid4())[:8].upper()
         invite = InviteCode.objects.create(
@@ -77,14 +78,13 @@ def create_invite(request):
             expires_at=datetime.now() + timedelta(days=7)
         )
 
-        # Ekip liderine davet kodu e-postası gönder
-        from users.emails import send_team_invite_email
-        send_team_invite_email(request.user, request.user.current_team, invite.code, invite.expires_at)
+        new_invite = invite
+        messages.success(request, 'Davet kodu başarıyla oluşturuldu!')
 
-        messages.success(request, f'Davet kodu oluşturuldu: {code}')
-        return redirect('organization:my_team')
-    
-    return render(request, 'organization/create_invite.html')
+    context = {
+        'new_invite': new_invite
+    }
+    return render(request, 'organization/create_invite.html', context)
 
 @login_required
 def my_squad(request):

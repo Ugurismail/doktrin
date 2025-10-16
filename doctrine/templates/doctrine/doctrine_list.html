@@ -843,16 +843,16 @@
 
     <!-- Tabs -->
     <div class="doctrine-tabs">
-        <button class="doctrine-tab active" onclick="switchTab('laws')">
+        <button class="doctrine-tab active" onclick="switchTab('laws', this)">
             📜 Yasalar
         </button>
-        <button class="doctrine-tab" onclick="switchTab('foundation')">
+        <button class="doctrine-tab" onclick="switchTab('foundation', this)">
             ⭐ İlkeler
         </button>
-        <button class="doctrine-tab" onclick="switchTab('proposals')">
+        <button class="doctrine-tab" onclick="switchTab('proposals', this)">
             🗳️ Aktif Oylamalar <span class="tab-badge">{{ active_proposals.count }}</span>
         </button>
-        <button class="doctrine-tab" onclick="switchTab('archive')">
+        <button class="doctrine-tab" onclick="switchTab('archive', this)">
             📦 Arşiv
         </button>
     </div>
@@ -1201,9 +1201,13 @@
 </div>
 
 <script>
-function switchTab(tabName) {
+function switchTab(tabName, button) {
+    console.log('switchTab called:', tabName);
+
     // Hide all tabs
-    document.querySelectorAll('.doctrine-tab-content').forEach(tab => {
+    const allTabs = document.querySelectorAll('.doctrine-tab-content');
+    console.log('Found tabs:', allTabs.length);
+    allTabs.forEach(tab => {
         tab.classList.remove('active');
     });
 
@@ -1213,11 +1217,26 @@ function switchTab(tabName) {
     });
 
     // Show selected tab
-    document.getElementById(tabName + '-tab').classList.add('active');
+    const targetTab = document.getElementById(tabName + '-tab');
+    console.log('Target tab:', targetTab);
+    if (targetTab) {
+        targetTab.classList.add('active');
+        console.log('Tab activated:', tabName);
+    } else {
+        console.error('Tab not found:', tabName + '-tab');
+    }
 
-    // Activate button
-    event.target.classList.add('active');
+    // Activate clicked button
+    if (button) {
+        button.classList.add('active');
+        console.log('Button activated');
+    }
 }
+
+// Test on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, tabs found:', document.querySelectorAll('.doctrine-tab-content').length);
+});
 
 </script>
 

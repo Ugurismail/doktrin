@@ -60,8 +60,16 @@ def prediction_list(request):
     # Aktif tahminler
     active_predictions = Prediction.objects.filter(status='ACTIVE').select_related('created_by').order_by('-created_at')
 
-    # Süresi dolmuş tahminler
-    expired_predictions = Prediction.objects.filter(status='EXPIRED').select_related('created_by').order_by('-deadline')[:10]
+    # Süresi dolmuş tahminler - sadece doğrulama süresi devam edenler
+    from django.utils import timezone
+    from datetime import timedelta
+
+    # 3 gün önce deadline'ı geçmiş olanları hariç tut
+    verification_cutoff = timezone.now() - timedelta(days=3)
+    expired_predictions = Prediction.objects.filter(
+        status='EXPIRED',
+        deadline__gte=verification_cutoff  # Doğrulama süresi henüz dolmamış
+    ).select_related('created_by').order_by('-deadline')[:10]
 
     # Doğrulanmış tahminler
     verified_predictions = Prediction.objects.filter(status='VERIFIED').select_related('created_by').order_by('-created_at')[:10]
@@ -241,6 +249,11 @@ def vote_prediction(request, prediction_id):
     # Sadece süresi dolmuş tahminlere oy verilebilir
     if prediction.status != 'EXPIRED':
         messages.error(request, 'Bu tahminin süresi henüz dolmadı.')
+        return redirect('predictions:prediction_detail', prediction_id=prediction.id)
+
+    # Doğrulama süresi dolmuş mu kontrol et
+    if not prediction.can_be_verified:
+        messages.error(request, 'Bu tahminin doğrulama süresi dolmuş (3 gün).')
         return redirect('predictions:prediction_detail', prediction_id=prediction.id)
 
     if request.method == 'POST':

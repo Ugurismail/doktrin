@@ -4,6 +4,18 @@
 
 {% block content %}
 
+<style>
+/* Takvim ikonu gündüz modunda görünür olsun */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+    cursor: pointer;
+}
+
+[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+</style>
+
 <div style="max-width: 800px; margin: 0 auto; padding: var(--space-lg) var(--space-md);">
     <div style="margin-bottom: var(--space-lg);">
         <h1 style="font-size: 32px; font-weight: 600; margin-bottom: var(--space-sm);">Tahmin Oluştur</h1>

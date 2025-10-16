@@ -5,14 +5,26 @@
 {% block content %}
 
 <div style="max-width: 800px; margin: 0 auto; padding: var(--space-lg) var(--space-md);">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
         <h1 style="font-size: 32px; font-weight: 600;">Bildirimler</h1>
-        {% if notifications %}
-        <form method="post" action="{% url 'notifications:mark_all_as_read' %}" style="margin: 0;">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-secondary">Tümünü Okundu İşaretle</button>
-        </form>
-        {% endif %}
+        <div style="display: flex; gap: 8px;">
+            {% if notifications %}
+            <form method="post" action="{% url 'notifications:mark_all_as_read' %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-secondary">Tümünü Okundu İşaretle</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filtre Butonları -->
+    <div style="margin-bottom: var(--space-lg); display: flex; gap: 8px;">
+        <a href="?show_read=false" class="btn {% if not show_read %}btn-primary{% else %}btn-secondary{% endif %}">
+            🔔 Okunmamış ({{ unread_count }})
+        </a>
+        <a href="?show_read=true" class="btn {% if show_read %}btn-primary{% else %}btn-secondary{% endif %}">
+            📖 Tümü (Son 30 gün)
+        </a>
     </div>
 
     {% if notifications %}

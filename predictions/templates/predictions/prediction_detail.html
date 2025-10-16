@@ -79,6 +79,13 @@
                     <p style="text-align: center; color: var(--text-secondary); padding: var(--space-lg); background: var(--bg-secondary); border-radius: 12px;">
                         Kendi tahmininize oy veremezsiniz. Diğer kullanıcılar oylamaya katılabilir.
                     </p>
+                    {% elif user_vote %}
+                    <div style="text-align: center; padding: var(--space-lg); background: var(--bg-secondary); border-radius: 12px; border: 2px solid var(--border);">
+                        <p style="color: var(--text); font-weight: 500; margin-bottom: 8px;">✓ Oyunuzu Kullandınız</p>
+                        <p style="color: var(--text-secondary); font-size: 14px;">
+                            Seçiminiz: <strong style="color: var(--accent);">{{ user_vote.get_vote_display }}</strong>
+                        </p>
+                    </div>
                     {% else %}
                     <div class="button-group">
                         <form method="post" action="{% url 'predictions:vote_prediction' prediction.id %}" style="flex: 1; margin: 0;">

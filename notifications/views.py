@@ -8,16 +8,46 @@ from .models import Notification
 def notification_list(request):
     """Kullanıcının bildirimlerini listele"""
     from django.core.paginator import Paginator
+    from django.utils import timezone
+    from datetime import timedelta
 
-    all_notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    # Sadece okunmamış bildirimleri göster
+    show_read = request.GET.get('show_read', 'false') == 'true'
+
+    if show_read:
+        # Tüm bildirimleri göster (son 30 gün)
+        cutoff_date = timezone.now() - timedelta(days=30)
+        all_notifications = Notification.objects.filter(
+            user=request.user,
+            created_at__gte=cutoff_date
+        ).order_by('-created_at')
+    else:
+        # Sadece okunmamış bildirimleri göster
+        all_notifications = Notification.objects.filter(
+            user=request.user,
+            is_read=False
+        ).order_by('-created_at')
+
+    # 30 günden eski okunmuş bildirimleri otomatik temizle
+    old_cutoff = timezone.now() - timedelta(days=30)
+    Notification.objects.filter(
+        user=request.user,
+        is_read=True,
+        created_at__lt=old_cutoff
+    ).delete()
 
     # Pagination: 50 bildirim per sayfa
     paginator = Paginator(all_notifications, 50)
     page_number = request.GET.get('page', 1)
     notifications = paginator.get_page(page_number)
 
+    # Okunmamış sayısı
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+
     return render(request, 'notifications/notification_list.html', {
-        'notifications': notifications
+        'notifications': notifications,
+        'unread_count': unread_count,
+        'show_read': show_read
     })
 
 

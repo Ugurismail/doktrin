@@ -3,10 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
-from .models import DoctrineArticle, Proposal, Vote, Discussion, DiscussionVote, Activity, ArticleTag, ProposalDraft
+from .models import DoctrineArticle, Proposal, Vote, Discussion, DiscussionVote, Activity, ArticleTag, ProposalDraft, Reference, ProposalReference, ArticleReference
 from .vote_calculator import calculate_votes_with_multipliers
 from notifications.utils import notify_comment_reply
 from config.rate_limit import rate_limit
+import json
 
 
 def doctrine_list(request):
@@ -215,10 +216,14 @@ def proposal_detail(request, proposal_id):
             messages.success(request, 'Yorumunuz eklendi!')
             return redirect('doctrine:proposal_detail', proposal_id=proposal_id)
 
+    # Öneriyle ilişkili kaynakları al
+    proposal_references = ProposalReference.objects.filter(proposal=proposal).select_related('reference')
+
     context = {
         'proposal': proposal,
         'discussions': discussions,
         'user_vote': user_vote,
+        'proposal_references': proposal_references,
     }
     return render(request, 'doctrine/proposal_detail.html', context)
 
@@ -377,6 +382,26 @@ def create_proposal(request):
             proposal.proposed_tags = ','.join(selected_tags)  # Etiket ID'lerini virgülle ayırarak sakla
             proposal.save()
 
+        # Kaynakları kaydet
+        selected_references_json = request.POST.get('selected_references', '[]')
+        try:
+            selected_references = json.loads(selected_references_json)
+            for ref_data in selected_references:
+                ref_id = ref_data.get('id')
+                page_number = ref_data.get('page_number', '')
+                if ref_id:
+                    try:
+                        reference = Reference.objects.get(id=ref_id)
+                        ProposalReference.objects.create(
+                            proposal=proposal,
+                            reference=reference,
+                            page_number=page_number
+                        )
+                    except Reference.DoesNotExist:
+                        pass  # Kaynak bulunamadı, devam et
+        except json.JSONDecodeError:
+            pass  # JSON parse hatası, devam et
+
         # Bildirim gönder - İlgili seviyedeki tüm üyelere
         from notifications.utils import notify_new_proposal
         from users.models import User
@@ -443,60 +468,69 @@ def vote_discussion(request, discussion_id):
         else:
             return redirect('doctrine:doctrine_list')
 
-    if request.method == 'POST':
-        vote_type = request.POST.get('vote_type')  # 'UP' veya 'DOWN'
+    if request.method != 'POST':
+        # GET request - hata, sadece POST kabul edilir
+        messages.error(request, 'Geçersiz istek.')
+        if discussion.proposal:
+            return redirect('doctrine:proposal_detail', proposal_id=discussion.proposal.id)
+        elif discussion.article:
+            return redirect('doctrine:article_detail', article_id=discussion.article.id)
+        else:
+            return redirect('doctrine:doctrine_list')
 
-        if vote_type not in ['UP', 'DOWN']:
-            messages.error(request, 'Geçersiz oy tipi!')
-            if discussion.proposal:
-                return redirect('doctrine:proposal_detail', proposal_id=discussion.proposal.id)
-            elif discussion.article:
-                return redirect('doctrine:article_detail', article_id=discussion.article.id)
-            else:
-                return redirect('doctrine:doctrine_list')
+    vote_type = request.POST.get('vote_type')  # 'UP' veya 'DOWN'
 
-        # Mevcut oyu kontrol et
-        try:
-            existing_vote = DiscussionVote.objects.get(discussion=discussion, user=request.user)
+    if vote_type not in ['UP', 'DOWN']:
+        messages.error(request, 'Geçersiz oy tipi!')
+        if discussion.proposal:
+            return redirect('doctrine:proposal_detail', proposal_id=discussion.proposal.id)
+        elif discussion.article:
+            return redirect('doctrine:article_detail', article_id=discussion.article.id)
+        else:
+            return redirect('doctrine:doctrine_list')
 
-            # Aynı oy ise iptal et
-            if existing_vote.vote_type == vote_type:
-                # Oy sayacını güncelle
-                if vote_type == 'UP':
-                    discussion.upvotes -= 1
-                else:
-                    discussion.downvotes -= 1
-                existing_vote.delete()
-                messages.success(request, 'Oyunuz iptal edildi.')
-            else:
-                # Farklı oy ise değiştir
-                if existing_vote.vote_type == 'UP':
-                    discussion.upvotes -= 1
-                    discussion.downvotes += 1
-                else:
-                    discussion.downvotes -= 1
-                    discussion.upvotes += 1
+    # Mevcut oyu kontrol et
+    try:
+        existing_vote = DiscussionVote.objects.get(discussion=discussion, user=request.user)
 
-                existing_vote.vote_type = vote_type
-                existing_vote.save()
-                messages.success(request, 'Oyunuz güncellendi.')
-
-        except DiscussionVote.DoesNotExist:
-            # Yeni oy
-            DiscussionVote.objects.create(
-                discussion=discussion,
-                user=request.user,
-                vote_type=vote_type
-            )
-
+        # Aynı oy ise iptal et
+        if existing_vote.vote_type == vote_type:
+            # Oy sayacını güncelle
             if vote_type == 'UP':
-                discussion.upvotes += 1
+                discussion.upvotes -= 1
             else:
+                discussion.downvotes -= 1
+            existing_vote.delete()
+            messages.success(request, 'Oyunuz iptal edildi.')
+        else:
+            # Farklı oy ise değiştir
+            if existing_vote.vote_type == 'UP':
+                discussion.upvotes -= 1
                 discussion.downvotes += 1
+            else:
+                discussion.downvotes -= 1
+                discussion.upvotes += 1
 
-            messages.success(request, 'Oyunuz kaydedildi.')
+            existing_vote.vote_type = vote_type
+            existing_vote.save()
+            messages.success(request, 'Oyunuz güncellendi.')
 
-        discussion.save()
+    except DiscussionVote.DoesNotExist:
+        # Yeni oy
+        DiscussionVote.objects.create(
+            discussion=discussion,
+            user=request.user,
+            vote_type=vote_type
+        )
+
+        if vote_type == 'UP':
+            discussion.upvotes += 1
+        else:
+            discussion.downvotes += 1
+
+        messages.success(request, 'Oyunuz kaydedildi.')
+
+    discussion.save()
 
     # Explicit redirect - proposal veya article'a geri dön
     if discussion.proposal:
@@ -840,7 +874,7 @@ def load_proposal_draft(request, draft_id):
 
     # Öneri türüne göre doğru forma yönlendir
     if draft.proposal_type == 'NEW_ARTICLE':
-        return redirect(f'/doctrine/propose/new/?draft_id={draft.id}')
+        return redirect(f'/doctrine/proposal/create/?draft_id={draft.id}')
     elif draft.proposal_type == 'AMEND_ARTICLE' and draft.related_article:
         return redirect(f'/doctrine/article/{draft.related_article.id}/propose/modify/?draft_id={draft.id}')
     elif draft.proposal_type == 'REPEAL_ARTICLE' and draft.related_article:

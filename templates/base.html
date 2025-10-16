@@ -10,7 +10,7 @@
     <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
     <link rel="apple-touch-icon" href="{% static 'images/favicon.svg' %}">
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=4">
 </head>
 <body>
     <header>
@@ -85,6 +85,8 @@
 
     <main>
         {% if messages %}
+            <!-- Mesaj sayfalarında bildirimleri gösterme -->
+            {% if "/organization/messages/" not in request.path %}
             <div class="container">
                 <div class="messages" id="django-messages">
                     {% for message in messages %}
@@ -94,6 +96,7 @@
                     {% endfor %}
                 </div>
             </div>
+            {% endif %}
         {% endif %}
 
         {% block content %}
@@ -103,6 +106,9 @@
     <footer>
         <p>© 2025 Doktrin Platform</p>
     </footer>
+
+    <!-- Reference Manager Script -->
+    <script src="{% static 'js/reference-manager.js' %}"></script>
 
     <script>
         // Global UX Helper Functions

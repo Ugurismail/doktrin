@@ -124,6 +124,20 @@
 <script>
 let currentDraftId = null;
 
+// Form submit edilirken kaynakları güncelle
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[method="post"]');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Kaynakları hidden input'a kaydet
+            if (typeof updateHiddenInput === 'function') {
+                updateHiddenInput();
+            }
+            console.log('Form submit - selected_references:', document.getElementById('selected_references').value);
+        });
+    }
+});
+
 function toggleArticleSelect() {
     const proposalType = document.getElementById('proposal_type').value;
     const articleDiv = document.getElementById('article_select_div');
@@ -213,8 +227,8 @@ function saveDraft() {
         </div>
         <div class="modal-body">
             <div class="tabs">
-                <button type="button" class="tab-btn active" onclick="switchTab('new')">Yeni Kaynak Oluştur</button>
-                <button type="button" class="tab-btn" onclick="switchTab('existing')">Mevcut Kaynak Seç</button>
+                <button type="button" class="tab-btn active" onclick="switchReferenceTab('new')">Yeni Kaynak Oluştur</button>
+                <button type="button" class="tab-btn" onclick="switchReferenceTab('existing')">Mevcut Kaynak Seç</button>
             </div>
 
             <!-- Yeni Kaynak Oluştur Tab -->
@@ -241,15 +255,10 @@ function saveDraft() {
                         <label for="ref_title">Eser Başlığı *</label>
                         <input type="text" id="ref_title" placeholder="Örn: Praktik Aklın Eleştirisi" required>
                     </div>
-                    <div class="form-row-2">
-                        <div class="form-group">
-                            <label for="ref_year">Yayın Yılı *</label>
-                            <input type="number" id="ref_year" min="1000" max="2100" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="ref_page">Sayfa Numarası</label>
-                            <input type="text" id="ref_page" placeholder="Örn: s.157 veya s.157-189">
-                        </div>
+                    <div class="form-group">
+                        <label for="ref_year">Yayın Yılı *</label>
+                        <input type="number" id="ref_year" min="1000" max="2100" required>
+                        <small class="form-hint">Sayfa numarası atıf eklerken sorulacak</small>
                     </div>
                     <div class="form-row-2">
                         <div class="form-group">
