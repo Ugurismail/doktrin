@@ -193,6 +193,83 @@
             </div>
         </div>
 
+        <!-- Detaylı Oy Dağılımı -->
+        {% if vote_breakdown %}
+        <details style="margin-top: 1rem; padding: 1rem; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color);">
+            <summary style="cursor: pointer; font-weight: 600; color: var(--text-primary); user-select: none;">
+                📊 Detaylı Oy Dağılımı
+            </summary>
+            <div style="margin-top: 1rem; font-size: 0.9rem;">
+                <h4 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Oy Kaynakları:</h4>
+                <div style="display: grid; gap: 0.5rem; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
+                        <span>🗳️ Direkt Oylar:</span>
+                        <strong>{{ vote_breakdown.direct_votes }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
+                        <span>👥 Delege Oyları:</span>
+                        <strong>{{ vote_breakdown.delegate_votes }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
+                        <span>👔 Ekip Lideri Otomatik Oyları:</span>
+                        <strong>{{ vote_breakdown.team_leader_votes }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
+                        <span>⚡ Takım Lideri Otomatik Oyları:</span>
+                        <strong>{{ vote_breakdown.squad_leader_votes }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
+                        <span>🎖️ Birlik Lideri Otomatik Oyları:</span>
+                        <strong>{{ vote_breakdown.union_leader_votes }}</strong>
+                    </div>
+                </div>
+
+                <h4 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Oy Ağırlıkları (Çarpan Öncesi):</h4>
+                <div style="display: grid; gap: 0.5rem; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--success-bg); border-radius: 4px;">
+                        <span style="color: var(--success-text);">✓ Kabul (Ağırlıklı):</span>
+                        <strong style="color: var(--success-text);">{{ vote_breakdown.total_yes }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--warning-bg); border-radius: 4px;">
+                        <span style="color: var(--warning-text);">⊘ Çekimser (Ağırlıklı):</span>
+                        <strong style="color: var(--warning-text);">{{ vote_breakdown.total_abstain }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--danger-bg); border-radius: 4px;">
+                        <span style="color: var(--danger-text);">✗ Veto (Ağırlıklı):</span>
+                        <strong style="color: var(--danger-text);">{{ vote_breakdown.total_veto }}</strong>
+                    </div>
+                </div>
+
+                <h4 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Çarpan Etkisi:</h4>
+                <div style="display: grid; gap: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--accent-bg); border-radius: 4px;">
+                        <span style="color: var(--accent-text);">⚡ Çarpan Bonusu:</span>
+                        <strong style="color: var(--accent-text);">+{{ vote_breakdown.multiplier_bonus }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--success-bg); border-radius: 4px; border: 2px solid var(--success-color);">
+                        <span style="color: var(--success-text); font-weight: 600;">✓ Final Kabul:</span>
+                        <strong style="color: var(--success-text); font-size: 1.1rem;">{{ vote_breakdown.final_yes }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--warning-bg); border-radius: 4px; border: 2px solid var(--warning-color);">
+                        <span style="color: var(--warning-text); font-weight: 600;">⊘ Final Çekimser:</span>
+                        <strong style="color: var(--warning-text); font-size: 1.1rem;">{{ vote_breakdown.final_abstain }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--danger-bg); border-radius: 4px; border: 2px solid var(--danger-color);">
+                        <span style="color: var(--danger-text); font-weight: 600;">✗ Final Veto:</span>
+                        <strong style="color: var(--danger-text); font-size: 1.1rem;">{{ vote_breakdown.final_veto }}</strong>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem; padding: 0.75rem; background: var(--info-bg); border-left: 4px solid var(--info-color); border-radius: 4px;">
+                    <p style="margin: 0; font-size: 0.85rem; color: var(--info-text);">
+                        💡 <strong>Not:</strong> Çarpan bonusu, örgütlerin (ekip/takım/birlik) liderleri ve tüm alt liderleri aynı fikirde olduğunda uygulanır.
+                        Ekipler x2, Takımlar x4, Birlikler x8 çarpan alır.
+                    </p>
+                </div>
+            </div>
+        </details>
+        {% endif %}
+
         <!-- Vote Buttons -->
         {% if proposal.status == 'ACTIVE' %}
         <div class="vote-buttons-grid">

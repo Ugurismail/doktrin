@@ -269,6 +269,10 @@ def proposal_detail(request, proposal_id):
     # Öneriyle ilişkili kaynakları al
     proposal_references = ProposalReference.objects.filter(proposal=proposal).select_related('reference')
 
+    # Oy dağılımı breakdown'unu al
+    from .vote_calculator import get_vote_breakdown
+    vote_breakdown = get_vote_breakdown(proposal)
+
     context = {
         'proposal': proposal,
         'discussions': discussions,
@@ -276,6 +280,7 @@ def proposal_detail(request, proposal_id):
         'effective_vote': effective_vote,
         'vote_source': vote_source,
         'proposal_references': proposal_references,
+        'vote_breakdown': vote_breakdown,
     }
     return render(request, 'doctrine/proposal_detail.html', context)
 
