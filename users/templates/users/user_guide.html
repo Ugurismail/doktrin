@@ -374,33 +374,87 @@
                 </div>
 
                 <h3>Oy Değiştirme</h3>
-                <div class="warning-box">
-                    <strong>⚠️ Önemli Kural:</strong> Oyunuzu verdikten sonra <strong>24 saat</strong> içinde
-                    değiştiremezsiniz. Bu kural, düşünceli oy kullanmayı teşvik eder.
+                <div class="success-box">
+                    <strong>✅ Yeni Sistem:</strong> Oyunuzu <strong>son ana kadar</strong> değiştirebilirsiniz!
+                    24 saat kısıtlaması kaldırıldı.
                 </div>
 
-                <h3>Çarpan Sistemi</h3>
-                <p>Oy birliği durumunda toplam oy ağırlığınız artar:</p>
+                <h3>Lider Oy Ağırlığı</h3>
+                <p>Liderlik pozisyonunuza göre oyunuz farklı ağırlığa sahiptir:</p>
 
                 <div class="code-block">
-<strong>Oy Çarpanları:</strong>
-• Ekip tam oy birliği: x2 çarpan
-• Takım liderleri oy birliği (min 3 lider): Takımın TOPLAM oyu x4
-• Birlik liderleri oy birliği (min 3 lider): Birliğin TOPLAM oyu x8
+<strong>Lider Oy Ağırlıkları:</strong>
+• Normal Üye: 1 oy
+• Takım Lideri: 2 oy
+• Birlik Lideri: 3 oy
+• İl Lideri: 4 oy
 
 <strong>Önemli:</strong>
-- Sadece ÇOĞUNLUK çarpan alır, azınlık x1 kalır
-- Çekimser oylar pozitif tarafa eklenir ancak çarpan etkisi yaratmaz
+- Lider ağırlığı tüm oylarda geçerlidir
+- Birlik lideri takım lideri olmasa bile 3 oy ağırlığına sahiptir
+                </div>
+
+                <h3>Otomatik Oy Kullandırma</h3>
+                <p>Liderler oy verdiğinde, oy vermemiş üyelere otomatik oy uygulanır:</p>
+
+                <ul>
+                    <li><strong>Ekip Lideri</strong> oy verdiğinde → Oy vermemiş ekip üyeler  liderle aynı oyu verir</li>
+                    <li><strong>Takım Lideri</strong> oy verdiğinde → Oy vermemiş takım üyeleri liderle aynı oyu verir</li>
+                    <li><strong>Birlik Lideri</strong> oy verdiğinde → Oy vermemiş birlik üyeleri liderle aynı oyu verir</li>
+                </ul>
+
+                <div class="info-box">
+                    <strong>💡 Önemli:</strong>
+                    <ul style="margin-bottom: 0;">
+                        <li>Kendi oyunuzu vermişseniz, lider oyundan etkilenmezsiniz</li>
+                        <li>İstediğiniz zaman kendi oyunuzu kullanarak lider oyunu geçersiz kılabilirsiniz</li>
+                        <li>Delege sistemi hala çalışır - delegeniz oysa, o oy geçerlidir</li>
+                    </ul>
+                </div>
+
+                <h3>YENİ Çarpan Sistemi</h3>
+                <p>Organizasyonların tüm liderleri aynı fikirde olduğunda çarpan alır:</p>
+
+                <div class="code-block">
+<strong>Çarpan Kuralları:</strong>
+• Ekip çarpanı (x2): Sadece standalone ekipler (takıma bağlı olmayan)
+  ├─ Ekip lideri oy vermiş olmalı
+  └─ Çarpan tüm ekip oylarına uygulanır
+
+• Takım çarpanı (x4): Sadece standalone takımlar (birliğe bağlı olmayan)
+  ├─ Takım lideri oy vermiş olmalı
+  ├─ TÜM ekip liderleri oy vermiş olmalı
+  ├─ TÜM ekip liderleri aynı oyu vermiş olmalı
+  ├─ Ekip liderleri takım lideriyle aynı fikirde olmalı
+  └─ Çarpan tüm takım oylarına uygulanır
+
+• Birlik çarpanı (x8): Tüm birlikler
+  ├─ Birlik lideri oy vermiş olmalı
+  ├─ TÜM takım liderleri oy vermiş olmalı
+  ├─ TÜM takım liderleri aynı oyu vermiş olmalı
+  ├─ Takım liderleri birlik lideriyle aynı fikirde olmalı
+  └─ Çarpan tüm birlik oylarına uygulanır
+
+<strong>Önemli:</strong>
+- Nested organizasyonlar üst seviye çarpanı alır (örn: birlik içindeki takım x4 almaz, x8 alır)
+- Çekimser oylar çarpan almaz, çoğunluğa eklenir
+- Eşitlik durumunda çekimser oylar EVET'e eklenir
                 </div>
 
                 <h3>Öneri Sonuçlanması</h3>
                 <p>Oylama süresi (14 gün) bittiğinde:</p>
                 <ul>
-                    <li><strong>Kabul:</strong> %75+ Kabul oyu ise öneri geçer</li>
-                    <li><strong>Çekimser Oylar:</strong> Ham oy olarak pozitif tarafa eklenir (çarpan yok)</li>
-                    <li><strong>Red:</strong> %75 eşiğine ulaşılmazsa reddedilir</li>
-                    <li><strong>Oy Değişikliği:</strong> İlk oydan 24 saat sonra değiştirilebilir</li>
+                    <li><strong>Program Yasası:</strong> Toplam üyelerin %75+ EVET oyu ise geçer</li>
+                    <li><strong>İlke (Foundation Law):</strong> Toplam üyelerin %85+ EVET oyu ise geçer</li>
+                    <li><strong>Çekimser Oylar:</strong> İlk çarpan hesaplanır, sonra çekimserler çoğunluğa eklenir</li>
+                    <li><strong>Red:</strong> Eşik değerine ulaşılmazsa öneri reddedilir</li>
+                    <li><strong>Oy Değişikliği:</strong> Son ana kadar oyunuzu değiştirebilirsiniz</li>
                 </ul>
+
+                <div class="warning-box">
+                    <strong>⚠️ 60 Günlük İnaktivite Kuralı:</strong> Son 60 gün içinde direkt oy vermemiş kullanıcılar
+                    sistemden otomatik olarak silinir. Lider üzerinden verilen otomatik oylar sayılmaz. Kurucu üyeler bu kuraldan muaftır.
+                </div>
 
                 <div class="success-box">
                     <strong>✅ Kabul Edilen Öneriler:</strong>
