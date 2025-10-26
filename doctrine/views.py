@@ -194,11 +194,21 @@ def proposal_detail(request, proposal_id):
     discussions = paginator.get_page(page_number)
 
     user_vote = None
+    effective_vote = None
+    vote_source = None  # 'own', 'delegate', 'leader'
 
     try:
         user_vote = Vote.objects.get(proposal=proposal, user=request.user)
+        effective_vote = user_vote
+        vote_source = 'own'
     except Vote.DoesNotExist:
-        pass
+        # Kendi oyu yok, etkili oyu bul
+        effective_vote = request.user.get_effective_vote_for(proposal)
+        if effective_vote:
+            if request.user.vote_delegate and effective_vote.user == request.user.vote_delegate:
+                vote_source = 'delegate'
+            else:
+                vote_source = 'leader'
 
     if request.method == 'POST' and 'comment' in request.POST:
         comment_text = request.POST.get('comment', '').strip()
@@ -232,6 +242,8 @@ def proposal_detail(request, proposal_id):
         'proposal': proposal,
         'discussions': discussions,
         'user_vote': user_vote,
+        'effective_vote': effective_vote,
+        'vote_source': vote_source,
         'proposal_references': proposal_references,
     }
     return render(request, 'doctrine/proposal_detail.html', context)

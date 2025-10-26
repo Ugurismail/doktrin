@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block title %}Oy Delegasyonu - Doktrin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="page-title">⚡ Oy Delegasyonu</h1>
+
+    <div class="info-box">
+        <h3>🤝 Liquid Democracy - Oy Delegasyonu Nedir?</h3>
+        <p>
+            <strong>Oy delegasyonu</strong> sistemi, oylarınızı güvendiğiniz bir kişiye devretmenize olanak tanır.
+            Bu sayede her konuyla ilgili uzman olmak zorunda kalmadan, güvendiğiniz kişilerin bilgisinden faydalanabilirsiniz.
+        </p>
+
+        <h4>Nasıl Çalışır?</h4>
+        <ul>
+            <li>✅ <strong>Kendi oyunuz her zaman önceliklidir.</strong> Bir öneri için oy kullandığınızda, delegasyon geçersiz olur.</li>
+            <li>👥 <strong>Delege seçmezseniz:</strong> Ekip liderinizin oyuyla birlikte oy kullanmış olursunuz.</li>
+            <li>⚡ <strong>Delege seçerseniz:</strong> Oy kullanmadığınız önerilerde, delegenizin oyu sizin oyunuz olur.</li>
+            <li>🔄 <strong>İstediğiniz zaman değiştirebilirsiniz.</strong></li>
+        </ul>
+    </div>
+
+    {% if current_delegate %}
+    <div class="card highlight-card">
+        <h3>✅ Mevcut Delegeniz</h3>
+        <div class="user-item">
+            <div class="user-info">
+                <span class="user-name">{{ current_delegate.username }}</span>
+                {% if current_delegate.current_team %}
+                <span class="user-meta">{{ current_delegate.current_team.display_name }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if delegation_chain %}
+        <div class="delegation-chain">
+            <h4>Delegasyon Zinciri:</h4>
+            <p class="delegation-path">
+                {{ user.username }}
+                {% for delegate in delegation_chain %}
+                    → {{ delegate.username }}
+                {% endfor %}
+            </p>
+            <small class="form-hint">Delegeniz de oylarını başkasına devretmişse, zincirdeki son kişinin oyu geçerli olur.</small>
+        </div>
+        {% endif %}
+
+        <form method="post" style="margin-top: 1rem;">
+            {% csrf_token %}
+            <input type="hidden" name="delegate_id" value="none">
+            <button type="submit" class="btn-secondary">Delegasyonu Kaldır</button>
+        </form>
+    </div>
+    {% else %}
+    <div class="card">
+        <h3>ℹ️ Delegasyon Durumunuz</h3>
+        <p>Şu anda bir delege seçmediniz.</p>
+        {% if team_leader and team_leader != user %}
+        <div class="alert-info">
+            <strong>Varsayılan:</strong> Oy kullanmadığınız önerilerde ekip lideriniz
+            <strong>{{ team_leader.username }}</strong>'in oyuyla birlikte oy kullanmış olursunuz.
+        </div>
+        {% else %}
+        <div class="alert-warning">
+            <strong>Uyarı:</strong> Bir ekibe üye değilsiniz veya siz ekip liderisiniz.
+            Oy kullanmadığınız önerilerde oyunuz sayılmayacaktır.
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if delegators %}
+    <div class="card">
+        <h3>👥 Size Delege Eden Kullanıcılar ({{ delegators.count }})</h3>
+        <div class="user-list">
+            {% for delegator in delegators %}
+            <div class="user-item">
+                <span class="user-name">{{ delegator.username }}</span>
+                {% if delegator.current_team %}
+                <span class="user-meta">{{ delegator.current_team.display_name }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <small class="form-hint">Bu kullanıcılar oy kullanmadıkları önerilerde sizin oyunuzu kullanacaklar.</small>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <h3>🎯 Delege Seç</h3>
+
+        {% if potential_delegates %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="delegate_id">Ekibinizden bir kişi seçin:</label>
+                <select name="delegate_id" id="delegate_id" class="form-control" required>
+                    <option value="">-- Delege seçin --</option>
+                    {% for delegate in potential_delegates %}
+                    <option value="{{ delegate.id }}"
+                        {% if current_delegate and delegate.id == current_delegate.id %}selected{% endif %}>
+                        {{ delegate.username }}
+                        {% if delegate.current_team %}({{ delegate.current_team.display_name }}){% endif %}
+                        {% if delegate == team_leader %} - Ekip Lideri{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+                <small class="form-hint">
+                    Sadece kendi ekibinizdeki kişilere delege olabilirsiniz.
+                </small>
+            </div>
+
+            <button type="submit" class="btn-primary">Delegeyi Kaydet</button>
+        </form>
+        {% else %}
+        <div class="alert-warning">
+            <p>Bir ekibe üye değilsiniz. Delege seçebilmek için önce bir ekibe katılmanız gerekiyor.</p>
+            <a href="{% url 'organization:my_team' %}" class="btn-primary">Ekibime Git</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h3>💡 İpuçları</h3>
+        <ul class="tips-list">
+            <li>🎯 <strong>Uzmanlığa göre seçin:</strong> Farklı konularda uzman kişilere delege olabilirsiniz (ancak şu anda sadece tek delege seçilebiliyor).</li>
+            <li>📊 <strong>Aktif kullanıcıları tercih edin:</strong> Düzenli oy kullanan kişileri delege olarak seçmek daha etkilidir.</li>
+            <li>🔄 <strong>Delegenizi takip edin:</strong> Delegenizin nasıl oy kullandığını kontrol edebilirsiniz.</li>
+            <li>⚡ <strong>Kendi oyunuz her zaman önceliklidir:</strong> Önemli gördüğünüz konularda kendi oyunuzu kullanın!</li>
+        </ul>
+    </div>
+</div>
+
+<style>
+.highlight-card {
+    border-left: 4px solid var(--accent-color);
+    background-color: rgba(52, 152, 219, 0.05);
+}
+
+.user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.user-name {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.user-meta {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.delegation-chain {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+}
+
+.delegation-path {
+    font-family: monospace;
+    font-size: 0.95rem;
+    color: var(--accent-color);
+    margin: 0.5rem 0;
+}
+
+.alert-info {
+    padding: 1rem;
+    background-color: rgba(52, 152, 219, 0.1);
+    border-left: 4px solid #3498db;
+    border-radius: 4px;
+    margin: 1rem 0;
+}
+
+.alert-warning {
+    padding: 1rem;
+    background-color: rgba(241, 196, 15, 0.1);
+    border-left: 4px solid #f1c40f;
+    border-radius: 4px;
+    margin: 1rem 0;
+}
+
+.tips-list {
+    list-style: none;
+    padding: 0;
+}
+
+.tips-list li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.tips-list li:last-child {
+    border-bottom: none;
+}
+</style>
+{% endblock %}

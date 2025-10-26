@@ -259,3 +259,64 @@ def user_profile(request, username):
 def user_guide(request):
     """Kullanım Kılavuzu - Tüm sistem özellikleri"""
     return render(request, 'users/user_guide.html')
+
+
+@login_required
+def vote_delegation(request):
+    """Oy delegasyonu ayarları"""
+    if request.method == 'POST':
+        delegate_id = request.POST.get('delegate_id')
+
+        if delegate_id == 'none':
+            # Delegasyonu kaldır
+            request.user.vote_delegate = None
+            request.user.save()
+            messages.success(request, 'Oy delegasyonu kaldırıldı. Artık kendi oyunuzu kullanacaksınız veya ekip liderinizin oyuyla birlikte oy kullanacaksınız.')
+        elif delegate_id:
+            try:
+                delegate = User.objects.get(id=delegate_id)
+
+                # Kendi kendine delege olamaz
+                if delegate == request.user:
+                    messages.error(request, 'Kendi kendinize delege olamazsınız!')
+                    return redirect('users:vote_delegation')
+
+                # Sonsuz döngü kontrolü
+                if request.user in delegate.get_delegation_chain():
+                    messages.error(request, 'Bu delegasyon sonsuz döngü oluşturur!')
+                    return redirect('users:vote_delegation')
+
+                request.user.vote_delegate = delegate
+                request.user.save()
+                messages.success(request, f'Oylarınız {delegate.username} kullanıcısına devredildi!')
+
+            except User.DoesNotExist:
+                messages.error(request, 'Kullanıcı bulunamadı!')
+
+        return redirect('users:vote_delegation')
+
+    # Ekip üyeleri (delege olabilir)
+    potential_delegates = []
+    if request.user.current_team:
+        potential_delegates = request.user.current_team.members.exclude(id=request.user.id)
+
+    # Bana delege eden kullanıcılar
+    delegators = request.user.delegated_voters.all()
+
+    # Delegasyon zinciri
+    delegation_chain = request.user.get_delegation_chain()
+
+    # Ekip lideri
+    team_leader = None
+    if request.user.current_team and request.user.current_team.leader:
+        team_leader = request.user.current_team.leader
+
+    context = {
+        'current_delegate': request.user.vote_delegate,
+        'potential_delegates': potential_delegates,
+        'delegators': delegators,
+        'delegation_chain': delegation_chain,
+        'team_leader': team_leader,
+    }
+
+    return render(request, 'users/vote_delegation.html', context)

@@ -141,11 +141,33 @@
         {% if user_vote %}
         <div class="user-vote-display">
             <p class="user-vote-title">
-                Sizin Oyunuz: {{ user_vote.get_vote_choice_display }}
+                ✅ Sizin Oyunuz: {{ user_vote.get_vote_choice_display }}
             </p>
             <p class="user-vote-date">
                 {{ user_vote.voted_at|date:"d M Y, H:i" }}
             </p>
+        </div>
+        {% elif effective_vote %}
+        <div class="user-vote-display delegated-vote">
+            <p class="user-vote-title">
+                {% if vote_source == 'delegate' %}
+                ⚡ Delege Oyunuz: {{ effective_vote.get_vote_choice_display }}
+                {% elif vote_source == 'leader' %}
+                👥 Lider Oyunuz: {{ effective_vote.get_vote_choice_display }}
+                {% endif %}
+            </p>
+            <p class="user-vote-date">
+                {{ effective_vote.user.username }} tarafından
+                {{ effective_vote.voted_at|date:"d M Y, H:i" }} tarihinde kullanıldı
+            </p>
+            <small class="delegation-hint">
+                {% if vote_source == 'delegate' %}
+                Kendi oyunuzu kullanarak bu delegasyonu geçersiz kılabilirsiniz.
+                {% elif vote_source == 'leader' %}
+                Ekip lideriniz {{ effective_vote.user.username }} sizin adınıza oy kullandı.
+                Kendi oyunuzu kullanarak bunu değiştirebilirsiniz.
+                {% endif %}
+            </small>
         </div>
         {% endif %}
 
@@ -322,5 +344,20 @@ document.addEventListener('DOMContentLoaded', function() {
     proposedEl.innerHTML = proposedHTML;
 });
 </script>
+
+<style>
+.delegated-vote {
+    background-color: rgba(52, 152, 219, 0.1);
+    border-left: 4px solid #3498db;
+}
+
+.delegation-hint {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+</style>
 
 {% endblock %}

@@ -12,4 +12,5 @@ urlpatterns = [
     path('user/<str:username>/', views.user_profile, name='user_profile'),
     path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
     path('guide/', views.user_guide, name='user_guide'),
+    path('vote-delegation/', views.vote_delegation, name='vote_delegation'),
 ]
