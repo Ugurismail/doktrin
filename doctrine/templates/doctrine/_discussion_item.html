@@ -51,10 +51,26 @@
 
     <!-- Nested replies -->
     {% if discussion.replies.all %}
-    <div class="discussion-replies">
-        {% for reply in discussion.replies.all %}
-            {% include "doctrine/_discussion_item.html" with discussion=reply depth=depth|add:1 %}
-        {% endfor %}
+    <div class="discussion-replies" id="replies-{{ discussion.id }}">
+        {% with replies=discussion.replies.all %}
+            {% with total_replies=replies.count %}
+                {% for reply in replies|slice:":3" %}
+                    {% include "doctrine/_discussion_item.html" with discussion=reply depth=depth|add:1 %}
+                {% endfor %}
+
+                {% if total_replies > 3 %}
+                <div class="show-more-replies" id="hidden-replies-{{ discussion.id }}" style="display: none;">
+                    {% for reply in replies|slice:"3:" %}
+                        {% include "doctrine/_discussion_item.html" with discussion=reply depth=depth|add:1 %}
+                    {% endfor %}
+                </div>
+
+                <button class="btn-show-more" onclick="toggleReplies({{ discussion.id }}, {{ total_replies }})" id="show-more-btn-{{ discussion.id }}">
+                    ↓ {{ total_replies|add:"-3" }} yanıt daha göster
+                </button>
+                {% endif %}
+            {% endwith %}
+        {% endwith %}
     </div>
     {% endif %}
 </div>

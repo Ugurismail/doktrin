@@ -31,4 +31,7 @@ urlpatterns = [
 
     # Reference Pages
     path('references/', views.references_list, name='references_list'),
+
+    # Mention Autocomplete
+    path('api/mention-suggestions/', views.get_mention_suggestions, name='mention_suggestions'),
 ]

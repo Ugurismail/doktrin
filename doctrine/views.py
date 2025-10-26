@@ -1254,3 +1254,53 @@ def reference_update(request, ref_id):
         return JsonResponse({'success': False, 'error': 'Kaynak bulunamadı'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def get_mention_suggestions(request):
+    """@mention için kullanıcı önerileri (autocomplete)"""
+    from django.http import JsonResponse
+
+    query = request.GET.get('q', '').strip()
+
+    if len(query) < 1:
+        return JsonResponse({'suggestions': []})
+
+    # Önce ekip üyeleri, sonra tüm kullanıcılar
+    suggestions = []
+
+    # Ekip üyeleri (öncelikli)
+    if request.user.current_team:
+        team_members = User.objects.filter(
+            current_team=request.user.current_team
+        ).filter(
+            username__istartswith=query
+        ).exclude(
+            id=request.user.id
+        ).values('username', 'id')[:5]
+
+        for member in team_members:
+            suggestions.append({
+                'username': member['username'],
+                'id': member['id'],
+                'type': 'team'
+            })
+
+    # Diğer kullanıcılar (eğer yeterli sonuç yoksa)
+    if len(suggestions) < 5:
+        other_users = User.objects.filter(
+            username__istartswith=query
+        ).exclude(
+            id=request.user.id
+        ).exclude(
+            id__in=[s['id'] for s in suggestions]
+        ).values('username', 'id')[:5 - len(suggestions)]
+
+        for user in other_users:
+            suggestions.append({
+                'username': user['username'],
+                'id': user['id'],
+                'type': 'other'
+            })
+
+    return JsonResponse({'suggestions': suggestions})

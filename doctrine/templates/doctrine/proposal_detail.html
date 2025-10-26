@@ -463,6 +463,90 @@ document.addEventListener('DOMContentLoaded', function() {
 .mention:hover {
     background: rgba(52, 152, 219, 0.25);
 }
+
+/* Show More Replies Button */
+.btn-show-more {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 0.75rem;
+    background: rgba(52, 152, 219, 0.1);
+    color: var(--accent-color);
+    border: 2px dashed var(--accent-color);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-show-more:hover {
+    background: rgba(52, 152, 219, 0.2);
+    border-style: solid;
+}
+
+.show-more-replies {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 5000px;
+    }
+}
+
+/* Mention Autocomplete Styles */
+.mention-autocomplete {
+    display: none;
+    position: absolute;
+    background: white;
+    border: 2px solid var(--accent-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 0.25rem;
+    min-width: 200px;
+}
+
+.mention-suggestion-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.15s;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.mention-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.mention-suggestion-item:hover,
+.mention-suggestion-item.selected {
+    background: rgba(52, 152, 219, 0.1);
+}
+
+.mention-suggestion-username {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.mention-suggestion-badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    background: var(--accent-color);
+    color: white;
+    border-radius: 12px;
+    font-weight: 600;
+}
 </style>
 
 <script>
@@ -480,6 +564,183 @@ function toggleReplyForm(commentId) {
         }
     }
 }
+
+function toggleReplies(commentId, totalReplies) {
+    const hiddenReplies = document.getElementById('hidden-replies-' + commentId);
+    const button = document.getElementById('show-more-btn-' + commentId);
+
+    if (hiddenReplies && button) {
+        if (hiddenReplies.style.display === 'none') {
+            hiddenReplies.style.display = 'block';
+            button.textContent = '↑ Yanıtları gizle';
+        } else {
+            hiddenReplies.style.display = 'none';
+            const hiddenCount = totalReplies - 3;
+            button.textContent = '↓ ' + hiddenCount + ' yanıt daha göster';
+        }
+    }
+}
+
+// @Mention Autocomplete
+(function() {
+    let currentTextarea = null;
+    let currentSuggestions = [];
+    let selectedIndex = -1;
+
+    // Her textarea için event listener ekle
+    document.addEventListener('focusin', function(e) {
+        if (e.target.tagName === 'TEXTAREA' && e.target.name === 'comment') {
+            initMentionAutocomplete(e.target);
+        }
+    });
+
+    function initMentionAutocomplete(textarea) {
+        currentTextarea = textarea;
+
+        // Autocomplete container oluştur
+        let autocompleteDiv = document.getElementById('mention-autocomplete-' + textarea.id);
+        if (!autocompleteDiv) {
+            autocompleteDiv = document.createElement('div');
+            autocompleteDiv.id = 'mention-autocomplete-' + textarea.id;
+            autocompleteDiv.className = 'mention-autocomplete';
+            textarea.parentNode.insertBefore(autocompleteDiv, textarea.nextSibling);
+        }
+
+        // Input event
+        textarea.addEventListener('input', function(e) {
+            handleInput(textarea, autocompleteDiv);
+        });
+
+        // Keyboard navigation
+        textarea.addEventListener('keydown', function(e) {
+            if (autocompleteDiv.style.display === 'block') {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedIndex = Math.min(selectedIndex + 1, currentSuggestions.length - 1);
+                    updateSelection(autocompleteDiv);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedIndex = Math.max(selectedIndex - 1, -1);
+                    updateSelection(autocompleteDiv);
+                } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                    e.preventDefault();
+                    selectSuggestion(textarea, autocompleteDiv, currentSuggestions[selectedIndex]);
+                } else if (e.key === 'Escape') {
+                    autocompleteDiv.style.display = 'none';
+                }
+            }
+        });
+
+        // Click outside to close
+        document.addEventListener('click', function(e) {
+            if (!autocompleteDiv.contains(e.target) && e.target !== textarea) {
+                autocompleteDiv.style.display = 'none';
+            }
+        });
+    }
+
+    function handleInput(textarea, autocompleteDiv) {
+        const text = textarea.value;
+        const cursorPos = textarea.selectionStart;
+        const textBeforeCursor = text.substring(0, cursorPos);
+
+        // @ işaretini bul
+        const atMatch = textBeforeCursor.match(/@(\w*)$/);
+
+        if (atMatch) {
+            const query = atMatch[1];
+
+            // En az 0 karakter (@ yazınca hemen göster)
+            if (query.length >= 0) {
+                fetchSuggestions(query, textarea, autocompleteDiv);
+            }
+        } else {
+            autocompleteDiv.style.display = 'none';
+        }
+    }
+
+    function fetchSuggestions(query, textarea, autocompleteDiv) {
+        fetch(`/doctrine/api/mention-suggestions/?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                currentSuggestions = data.suggestions || [];
+                selectedIndex = -1;
+
+                if (currentSuggestions.length > 0) {
+                    renderSuggestions(autocompleteDiv, currentSuggestions, textarea);
+                    autocompleteDiv.style.display = 'block';
+                } else {
+                    autocompleteDiv.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Mention suggestions error:', error);
+            });
+    }
+
+    function renderSuggestions(container, suggestions, textarea) {
+        container.innerHTML = '';
+
+        suggestions.forEach((suggestion, index) => {
+            const item = document.createElement('div');
+            item.className = 'mention-suggestion-item';
+            if (index === selectedIndex) {
+                item.classList.add('selected');
+            }
+
+            const username = document.createElement('span');
+            username.className = 'mention-suggestion-username';
+            username.textContent = '@' + suggestion.username;
+
+            const badge = document.createElement('span');
+            badge.className = 'mention-suggestion-badge';
+            badge.textContent = suggestion.type === 'team' ? 'Ekip' : '';
+
+            item.appendChild(username);
+            if (suggestion.type === 'team') {
+                item.appendChild(badge);
+            }
+
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                selectSuggestion(textarea, container, suggestion);
+            });
+
+            container.appendChild(item);
+        });
+    }
+
+    function updateSelection(container) {
+        const items = container.querySelectorAll('.mention-suggestion-item');
+        items.forEach((item, index) => {
+            if (index === selectedIndex) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+    }
+
+    function selectSuggestion(textarea, container, suggestion) {
+        const text = textarea.value;
+        const cursorPos = textarea.selectionStart;
+        const textBeforeCursor = text.substring(0, cursorPos);
+        const textAfterCursor = text.substring(cursorPos);
+
+        // @ işaretinden sonrasını replace et
+        const newTextBefore = textBeforeCursor.replace(/@(\w*)$/, '@' + suggestion.username + ' ');
+        textarea.value = newTextBefore + textAfterCursor;
+
+        // Cursor'u doğru yere koy
+        const newCursorPos = newTextBefore.length;
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+        textarea.focus();
+
+        // Autocomplete'i kapat
+        container.style.display = 'none';
+    }
+})();
 </script>
 
 {% endblock %}
