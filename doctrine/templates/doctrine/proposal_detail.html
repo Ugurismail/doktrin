@@ -175,21 +175,48 @@
         <div class="vote-stats-grid">
             <div class="vote-stat-box-yes">
                 <h3 class="vote-stat-number-yes">
-                    {{ proposal.vote_yes_count }}
+                    {% if vote_breakdown %}
+                        {{ vote_breakdown.final_yes|floatformat:0 }}
+                    {% else %}
+                        {{ proposal.vote_yes_count }}
+                    {% endif %}
                 </h3>
                 <p class="vote-stat-label">Kabul</p>
+                {% if vote_breakdown and vote_breakdown.final_yes != vote_breakdown.total_yes %}
+                    <small style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; display: block;">
+                        (Çarpansız: {{ vote_breakdown.total_yes|floatformat:0 }})
+                    </small>
+                {% endif %}
             </div>
             <div class="vote-stat-box-abstain">
                 <h3 class="vote-stat-number-abstain">
-                    {{ proposal.vote_abstain_count }}
+                    {% if vote_breakdown %}
+                        {{ vote_breakdown.final_abstain|floatformat:0 }}
+                    {% else %}
+                        {{ proposal.vote_abstain_count }}
+                    {% endif %}
                 </h3>
                 <p class="vote-stat-label">Çekimser</p>
+                {% if vote_breakdown and vote_breakdown.final_abstain != vote_breakdown.total_abstain %}
+                    <small style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; display: block;">
+                        (Çarpansız: {{ vote_breakdown.total_abstain|floatformat:0 }})
+                    </small>
+                {% endif %}
             </div>
             <div class="vote-stat-box-veto">
                 <h3 class="vote-stat-number-veto">
-                    {{ proposal.vote_veto_count }}
+                    {% if vote_breakdown %}
+                        {{ vote_breakdown.final_veto|floatformat:0 }}
+                    {% else %}
+                        {{ proposal.vote_veto_count }}
+                    {% endif %}
                 </h3>
                 <p class="vote-stat-label">Veto</p>
+                {% if vote_breakdown and vote_breakdown.final_veto != vote_breakdown.total_veto %}
+                    <small style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; display: block;">
+                        (Çarpansız: {{ vote_breakdown.total_veto|floatformat:0 }})
+                    </small>
+                {% endif %}
             </div>
         </div>
 
@@ -200,28 +227,60 @@
                 📊 Detaylı Oy Dağılımı
             </summary>
             <div style="margin-top: 1rem; font-size: 0.9rem;">
-                <h4 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Oy Kaynakları:</h4>
-                <div style="display: grid; gap: 0.5rem; margin-bottom: 1rem;">
-                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
-                        <span>🗳️ Direkt Oylar:</span>
-                        <strong>{{ vote_breakdown.direct_votes }}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
-                        <span>👥 Delege Oyları:</span>
-                        <strong>{{ vote_breakdown.delegate_votes }}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
-                        <span>👔 Ekip Lideri Otomatik Oyları:</span>
-                        <strong>{{ vote_breakdown.team_leader_votes }}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
-                        <span>⚡ Takım Lideri Otomatik Oyları:</span>
-                        <strong>{{ vote_breakdown.squad_leader_votes }}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
-                        <span>🎖️ Birlik Lideri Otomatik Oyları:</span>
-                        <strong>{{ vote_breakdown.union_leader_votes }}</strong>
-                    </div>
+                <h4 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Oy Kaynakları ve Dağılımı:</h4>
+
+                <!-- Tablo başlıkları -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 0.5rem; padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; font-weight: 600; margin-bottom: 0.5rem;">
+                    <div>Kaynak</div>
+                    <div style="text-align: center; color: var(--success-color);">✓ Kabul</div>
+                    <div style="text-align: center; color: var(--warning-color);">⊘ Çekimser</div>
+                    <div style="text-align: center; color: var(--danger-color);">✗ Veto</div>
+                    <div style="text-align: center;">Toplam</div>
+                </div>
+
+                <!-- Direkt Oylar -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 0.5rem; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; margin-bottom: 0.25rem;">
+                    <div>🗳️ Direkt Oylar</div>
+                    <div style="text-align: center; color: var(--success-color);">{{ vote_breakdown.direct_yes }}</div>
+                    <div style="text-align: center; color: var(--warning-color);">{{ vote_breakdown.direct_abstain }}</div>
+                    <div style="text-align: center; color: var(--danger-color);">{{ vote_breakdown.direct_veto }}</div>
+                    <div style="text-align: center;"><strong>{{ vote_breakdown.direct_votes }}</strong></div>
+                </div>
+
+                <!-- Delege Oyları -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 0.5rem; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; margin-bottom: 0.25rem;">
+                    <div>👥 Delege Oyları</div>
+                    <div style="text-align: center; color: var(--success-color);">{{ vote_breakdown.delegate_yes }}</div>
+                    <div style="text-align: center; color: var(--warning-color);">{{ vote_breakdown.delegate_abstain }}</div>
+                    <div style="text-align: center; color: var(--danger-color);">{{ vote_breakdown.delegate_veto }}</div>
+                    <div style="text-align: center;"><strong>{{ vote_breakdown.delegate_votes }}</strong></div>
+                </div>
+
+                <!-- Ekip Lideri Otomatik -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 0.5rem; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; margin-bottom: 0.25rem;">
+                    <div>👔 Ekip Lideri Otomatik</div>
+                    <div style="text-align: center; color: var(--success-color);">{{ vote_breakdown.team_leader_yes }}</div>
+                    <div style="text-align: center; color: var(--warning-color);">{{ vote_breakdown.team_leader_abstain }}</div>
+                    <div style="text-align: center; color: var(--danger-color);">{{ vote_breakdown.team_leader_veto }}</div>
+                    <div style="text-align: center;"><strong>{{ vote_breakdown.team_leader_votes }}</strong></div>
+                </div>
+
+                <!-- Takım Lideri Otomatik -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 0.5rem; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; margin-bottom: 0.25rem;">
+                    <div>⚡ Takım Lideri Otomatik</div>
+                    <div style="text-align: center; color: var(--success-color);">{{ vote_breakdown.squad_leader_yes }}</div>
+                    <div style="text-align: center; color: var(--warning-color);">{{ vote_breakdown.squad_leader_abstain }}</div>
+                    <div style="text-align: center; color: var(--danger-color);">{{ vote_breakdown.squad_leader_veto }}</div>
+                    <div style="text-align: center;"><strong>{{ vote_breakdown.squad_leader_votes }}</strong></div>
+                </div>
+
+                <!-- Birlik Lideri Otomatik -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 0.5rem; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; margin-bottom: 1rem;">
+                    <div>🎖️ Birlik Lideri Otomatik</div>
+                    <div style="text-align: center; color: var(--success-color);">{{ vote_breakdown.union_leader_yes }}</div>
+                    <div style="text-align: center; color: var(--warning-color);">{{ vote_breakdown.union_leader_abstain }}</div>
+                    <div style="text-align: center; color: var(--danger-color);">{{ vote_breakdown.union_leader_veto }}</div>
+                    <div style="text-align: center;"><strong>{{ vote_breakdown.union_leader_votes }}</strong></div>
                 </div>
 
                 <h4 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Oy Ağırlıkları (Çarpan Öncesi):</h4>

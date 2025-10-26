@@ -378,6 +378,22 @@ def get_vote_breakdown(proposal):
         'total_veto': 0,
         'total_abstain': 0,
         'multiplier_bonus': 0,
+        # Oy kaynağı başına dağılım
+        'direct_yes': 0,
+        'direct_abstain': 0,
+        'direct_veto': 0,
+        'delegate_yes': 0,
+        'delegate_abstain': 0,
+        'delegate_veto': 0,
+        'team_leader_yes': 0,
+        'team_leader_abstain': 0,
+        'team_leader_veto': 0,
+        'squad_leader_yes': 0,
+        'squad_leader_abstain': 0,
+        'squad_leader_veto': 0,
+        'union_leader_yes': 0,
+        'union_leader_abstain': 0,
+        'union_leader_veto': 0,
     }
 
     for user in all_users:
@@ -388,6 +404,9 @@ def get_vote_breakdown(proposal):
 
             # Toplama ekle
             breakdown[f"total_{vote['choice'].lower()}"] += vote['weight']
+
+            # Kaynak ve oy türüne göre dağılımı kaydet
+            breakdown[f"{vote['source']}_{vote['choice'].lower()}"] += 1
 
     # Çarpan bonusunu hesapla (çarpanlı - çarpansız)
     multiplied = calculate_votes_with_multipliers(proposal)
