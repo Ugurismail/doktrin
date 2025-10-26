@@ -364,9 +364,16 @@ def create_proposal(request):
     if is_founder:
         user_level = 'FOUNDER'
     elif user_team.parent_squad:
-        user_level = 'SQUAD'
-        if user_team.parent_squad.parent_union:
+        # Birlik lideri mi kontrol et
+        if user_team.parent_squad.parent_union and user_team.parent_squad.parent_union.leader == request.user:
             user_level = 'UNION'
+        # Takım lideri mi kontrol et
+        elif user_team.parent_squad.leader == request.user:
+            user_level = 'SQUAD'
+        else:
+            # Birlik veya takıma üye ama lider değil
+            messages.error(request, 'Öneri oluşturma yetkisi sadece ekip liderlerine aittir.')
+            return redirect('doctrine:doctrine_list')
     else:
         # Ekip seviyesinde - En az 8 kişi olmalı
         if user_team.member_count >= 8:
