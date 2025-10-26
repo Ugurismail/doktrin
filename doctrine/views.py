@@ -304,9 +304,9 @@ def vote_proposal(request, proposal_id):
         try:
             existing_vote = Vote.objects.get(proposal=proposal, user=request.user)
 
-            # 24 saat kontrolü
+            # Oy değiştirme kontrolü (öneri aktif mi?)
             if not existing_vote.can_change_vote():
-                messages.error(request, 'Oyunuzu değiştirmek için 24 saat beklemelisiniz!')
+                messages.error(request, 'Oylama süresi dolduğu için oyunuzu değiştiremezsiniz!')
                 return redirect('doctrine:proposal_detail', proposal_id=proposal_id)
 
             # Oy değiştirilebilir - güncelle

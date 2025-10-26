@@ -192,16 +192,14 @@ class Vote(models.Model):
         return f"{self.user.username} - {self.vote_choice}"
 
     def can_change_vote(self):
-        """Kullanıcı oyunu değiştirebilir mi? (24 saat kontrolü)"""
-        from django.utils import timezone
-        from datetime import timedelta
+        """
+        Kullanıcı oyunu değiştirebilir mi?
 
-        # Eğer last_changed_at boşsa (eski kayıtlar), değiştirilebilir
-        if not self.last_changed_at:
-            return True
-
-        time_since_last_change = timezone.now() - self.last_changed_at
-        return time_since_last_change >= timedelta(hours=24)
+        YENİ SİSTEM: Son ana kadar oy değiştirilebilir (24 saat kısıtlaması YOK)
+        Sadece öneri aktifse değiştirilebilir.
+        """
+        # Öneri hala aktifse değiştirilebilir
+        return self.proposal.status == 'ACTIVE'
 
 
 class Discussion(models.Model):

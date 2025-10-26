@@ -34,35 +34,120 @@ class User(AbstractUser):
         self.token_expires_at = datetime.now() + timedelta(hours=24)
         self.save()
 
+    def get_leader_vote_weight(self):
+        """
+        Kullanıcının lider konumuna göre oy ağırlığını hesaplar.
+
+        Kurallar:
+        - Normal üye: 1 oy
+        - Takım lideri: 2 oy (ekip lideri olmasa bile)
+        - Birlik lideri: 3 oy (alt seviye lider olmasa bile)
+        - İl lideri: 4 oy
+        """
+        weight = 1  # Base weight
+
+        # İl lideri kontrolü
+        from organization.models import ProvinceOrganization
+        if ProvinceOrganization.objects.filter(leader=self, is_active=True).exists():
+            return 4
+
+        # Birlik lideri kontrolü
+        from organization.models import Union
+        if Union.objects.filter(leader=self, is_active=True).exists():
+            return 3
+
+        # Takım lideri kontrolü
+        from organization.models import Squad
+        if Squad.objects.filter(leader=self, is_active=True).exists():
+            return 2
+
+        # Ekip lideri veya normal üye: 1
+        return weight
+
     def get_effective_vote_for(self, proposal):
         """
         Bir öneri için bu kullanıcının etkili oyunu döndürür.
 
+        YENİ SİSTEM:
         Öncelik sırası:
-        1. Kullanıcının kendi oyu varsa, onu döndür
-        2. Yoksa ve delege varsa, delegenin oyunu döndür
-        3. Yoksa ve ekip lideri varsa, liderin oyunu döndür
-        4. Hiçbiri yoksa None döndür
+        1. Kendi direkt oyu
+        2. Delegesi varsa onun oyu
+        3. Ekip lideri oyu (otomatik)
+        4. Takım lideri oyu (otomatik)
+        5. Birlik lideri oyu (otomatik)
+
+        Returns: dict {
+            'choice': 'YES'|'ABSTAIN'|'VETO',
+            'source': 'direct'|'delegate'|'team_leader'|'squad_leader'|'union_leader',
+            'weight': int (lider ağırlığı)
+        } veya None
         """
         from doctrine.models import Vote
 
-        # 1. Kendi oyu var mı?
+        # 1. Kendi direkt oyu var mı?
         own_vote = Vote.objects.filter(proposal=proposal, user=self).first()
         if own_vote:
-            return own_vote
+            return {
+                'choice': own_vote.vote_choice,
+                'source': 'direct',
+                'weight': self.get_leader_vote_weight()
+            }
 
-        # 2. Delege var mı ve onun oyu var mı?
+        # 2. Delege sistemi (önceki gibi çalışıyor)
         if self.vote_delegate:
-            delegate_vote = Vote.objects.filter(proposal=proposal, user=self.vote_delegate).first()
-            if delegate_vote:
-                return delegate_vote
+            # Delegenin etkili oyunu al (recursive)
+            delegate_effective = self.vote_delegate.get_effective_vote_for(proposal)
+            if delegate_effective:
+                return {
+                    'choice': delegate_effective['choice'],
+                    'source': 'delegate',
+                    'weight': self.get_leader_vote_weight()  # Kendi ağırlığı
+                }
 
-        # 3. Ekip lideri var mı ve onun oyu var mı?
+        # 3. Ekip lideri oyu (otomatik)
         if self.current_team and self.current_team.leader and self.current_team.leader != self:
-            leader_vote = Vote.objects.filter(proposal=proposal, user=self.current_team.leader).first()
+            leader_vote = Vote.objects.filter(
+                proposal=proposal,
+                user=self.current_team.leader
+            ).first()
             if leader_vote:
-                return leader_vote
+                return {
+                    'choice': leader_vote.vote_choice,
+                    'source': 'team_leader',
+                    'weight': self.get_leader_vote_weight()
+                }
 
+        # 4. Takım lideri oyu (otomatik)
+        if self.current_team and self.current_team.parent_squad:
+            squad = self.current_team.parent_squad
+            if squad.leader:
+                leader_vote = Vote.objects.filter(
+                    proposal=proposal,
+                    user=squad.leader
+                ).first()
+                if leader_vote:
+                    return {
+                        'choice': leader_vote.vote_choice,
+                        'source': 'squad_leader',
+                        'weight': self.get_leader_vote_weight()
+                    }
+
+        # 5. Birlik lideri oyu (otomatik)
+        if self.current_team and self.current_team.parent_squad:
+            squad = self.current_team.parent_squad
+            if squad.parent_union and squad.parent_union.leader:
+                leader_vote = Vote.objects.filter(
+                    proposal=proposal,
+                    user=squad.parent_union.leader
+                ).first()
+                if leader_vote:
+                    return {
+                        'choice': leader_vote.vote_choice,
+                        'source': 'union_leader',
+                        'weight': self.get_leader_vote_weight()
+                    }
+
+        # Hiç oy yok
         return None
 
     def get_delegation_chain(self):
