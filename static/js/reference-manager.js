@@ -6,6 +6,7 @@
 // Global variables
 let selectedReferences = [];
 let allReferences = [];
+let authorsList = [];
 
 // Modal işlemleri
 function openReferenceModal() {
@@ -44,19 +45,29 @@ function switchReferenceTab(tabName) {
     const existingTab = document.getElementById('existingReferenceTab');
     const tabs = document.querySelectorAll('.reference-modal .tab-btn');
 
+    // Güvenlik kontrolü - elementler var mı?
+    if (!newTab || !existingTab) {
+        console.error('Reference tabs not found in DOM');
+        return;
+    }
+
     if (tabName === 'new') {
         newTab.classList.add('active');
         existingTab.classList.remove('active');
-        tabs[0].classList.add('active');
-        tabs[1].classList.remove('active');
-        document.getElementById('saveRefBtn').textContent = 'Kaydet ve Ekle';
-        document.getElementById('saveRefBtn').style.display = 'inline-block';
+        if (tabs[0]) tabs[0].classList.add('active');
+        if (tabs[1]) tabs[1].classList.remove('active');
+        const saveBtn = document.getElementById('saveRefBtn');
+        if (saveBtn) {
+            saveBtn.textContent = 'Kaydet ve Ekle';
+            saveBtn.style.display = 'inline-block';
+        }
     } else {
         newTab.classList.remove('active');
         existingTab.classList.add('active');
-        tabs[0].classList.remove('active');
-        tabs[1].classList.add('active');
-        document.getElementById('saveRefBtn').style.display = 'none';
+        if (tabs[0]) tabs[0].classList.remove('active');
+        if (tabs[1]) tabs[1].classList.add('active');
+        const saveBtn = document.getElementById('saveRefBtn');
+        if (saveBtn) saveBtn.style.display = 'none';
         loadExistingReferences();
     }
 }
@@ -91,17 +102,30 @@ function loadAllReferencesForSelection() {
 
 // Yeni kaynak kaydet
 function saveNewReference() {
-    const form = document.getElementById('newReferenceForm');
+    // Form validation - yazar listesi kontrolü
+    if (authorsList.length === 0) {
+        if (window.showToast) {
+            window.showToast('Lütfen en az bir yazar ekleyin', 'error', 3000);
+        } else {
+            alert('Lütfen en az bir yazar ekleyin');
+        }
+        return;
+    }
 
-    // Form validation
-    const author = document.getElementById('ref_author').value.trim();
     const title = document.getElementById('ref_title').value.trim();
     const year = document.getElementById('ref_year').value;
 
-    if (!author || !title || !year) {
-        alert('Lütfen gerekli alanları doldurun (Yazar, Başlık, Yıl)');
+    if (!title || !year) {
+        if (window.showToast) {
+            window.showToast('Lütfen gerekli alanları doldurun (Başlık, Yıl)', 'error', 3000);
+        } else {
+            alert('Lütfen gerekli alanları doldurun (Başlık, Yıl)');
+        }
         return;
     }
+
+    // Yazarları birleştir (birden fazla yazar varsa " & " ile)
+    const author = authorsList.join(' & ');
 
     const referenceData = {
         reference_type: document.getElementById('ref_type').value,
@@ -125,10 +149,11 @@ function saveNewReference() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            addReferenceToSelected(data.reference);
+            // Yeni kaynak eklendi, modal'ı kapat
+            // NOT: Kaynak listeye eklenmiyor, sadece veritabanına kaydediliyor
             closeReferenceModal();
             if (window.showToast) {
-                window.showToast('✓ Kaynak başarıyla eklendi!', 'success', 3000);
+                window.showToast('✓ Kaynak başarıyla oluşturuldu! Atıf eklemek için Kaynaklar butonunu kullanın.', 'success', 3000);
             }
         } else {
             if (window.showToast) {
@@ -154,11 +179,29 @@ function displayReferenceList(references, containerId, showActions) {
         return;
     }
 
+    // Kaynakları yazar soyadına göre sırala
+    const sortedReferences = [...references].sort((a, b) => {
+        const getLastName = (author) => {
+            // "Soyadı, Ad" formatı varsa
+            if (author.includes(',')) {
+                return author.split(',')[0].trim().toLowerCase();
+            }
+            // "Ad Soyad" formatı varsa, son kelimeyi al
+            const parts = author.trim().split(' ');
+            return parts[parts.length - 1].toLowerCase();
+        };
+
+        const lastNameA = getLastName(a.author);
+        const lastNameB = getLastName(b.author);
+
+        return lastNameA.localeCompare(lastNameB, 'tr');
+    });
+
     // Modal içindeki "Mevcut Kaynak Seç" sekmesi mi?
     const isSelectionMode = containerId === 'referenceList';
 
     let html = '';
-    references.forEach(ref => {
+    sortedReferences.forEach(ref => {
         const isSelected = selectedReferences.some(r => r.id === ref.id);
         html += `
             <div class="reference-item-compact ${isSelected ? 'selected' : ''}" data-ref-id="${ref.id}">
@@ -295,9 +338,18 @@ function insertCitation(refId) {
     textarea.selectionStart = textarea.selectionEnd = startPos + citation.length;
     textarea.focus();
 
+    // Kaynağı seçili kaynaklar listesine ekle (eğer yoksa)
+    if (!selectedReferences.some(r => r.id === ref.id)) {
+        selectedReferences.push({
+            ...ref,
+            page_number: pageNum || ''
+        });
+        updateSelectedReferencesList();
+    }
+
     // Toast bildirimi göster
     if (window.showToast) {
-        window.showToast('✓ Atıf eklendi', 'success', 2000);
+        window.showToast('✓ Atıf eklendi ve kaynak listeye eklendi', 'success', 2000);
     }
 }
 
@@ -310,8 +362,21 @@ function insertCitationById(refId) {
 
 // Atıf metnini oluştur
 function getCitationText(ref) {
-    const authorLast = ref.author.includes(',') ? ref.author.split(',')[0].trim() : ref.author.split(' ')[0];
-    let citation = `(${authorLast}, ${ref.year}`;
+    // Birden fazla yazar var mı kontrol et (" & " ile ayrılmış)
+    const hasMultipleAuthors = ref.author.includes(' & ');
+
+    let authorPart;
+    if (hasMultipleAuthors) {
+        // İlk yazarın soyadını al ve "vd." ekle
+        const firstAuthor = ref.author.split(' & ')[0].trim();
+        const authorLast = firstAuthor.includes(',') ? firstAuthor.split(',')[0].trim() : firstAuthor.split(' ')[0];
+        authorPart = `${authorLast} vd.`;
+    } else {
+        // Tek yazar
+        authorPart = ref.author.includes(',') ? ref.author.split(',')[0].trim() : ref.author.split(' ')[0];
+    }
+
+    let citation = `(${authorPart}, ${ref.year}`;
     if (ref.page_number) {
         citation += `, ${ref.page_number}`;
     }
@@ -321,8 +386,21 @@ function getCitationText(ref) {
 
 // Atıf metnini sayfa numarasıyla oluştur
 function getCitationTextWithPage(ref, pageNum) {
-    const authorLast = ref.author.includes(',') ? ref.author.split(',')[0].trim() : ref.author.split(' ')[0];
-    let citation = `(${authorLast}, ${ref.year}`;
+    // Birden fazla yazar var mı kontrol et (" & " ile ayrılmış)
+    const hasMultipleAuthors = ref.author.includes(' & ');
+
+    let authorPart;
+    if (hasMultipleAuthors) {
+        // İlk yazarın soyadını al ve "vd." ekle
+        const firstAuthor = ref.author.split(' & ')[0].trim();
+        const authorLast = firstAuthor.includes(',') ? firstAuthor.split(',')[0].trim() : firstAuthor.split(' ')[0];
+        authorPart = `${authorLast} vd.`;
+    } else {
+        // Tek yazar
+        authorPart = ref.author.includes(',') ? ref.author.split(',')[0].trim() : ref.author.split(' ')[0];
+    }
+
+    let citation = `(${authorPart}, ${ref.year}`;
     if (pageNum && pageNum.trim() !== '') {
         citation += `, ${pageNum.trim()}`;
     }
@@ -357,6 +435,9 @@ function clearReferenceForm() {
     if (form) {
         form.reset();
     }
+    // Yazar listesini temizle
+    authorsList = [];
+    updateAuthorsList();
 }
 
 // HTML escape helper
@@ -382,6 +463,84 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+// Yazar ekleme sistemi
+function addAuthor() {
+    const lastnameInput = document.getElementById('author_lastname');
+    const firstnameInput = document.getElementById('author_firstname');
+
+    const lastname = lastnameInput.value.trim();
+    const firstname = firstnameInput.value.trim();
+
+    if (!lastname || !firstname) {
+        if (window.showToast) {
+            window.showToast('Lütfen hem soyadı hem adı girin', 'error', 2000);
+        }
+        return;
+    }
+
+    // "Soyadı, Ad" formatında ekle
+    const fullName = `${lastname}, ${firstname}`;
+
+    if (authorsList.includes(fullName)) {
+        if (window.showToast) {
+            window.showToast('Bu yazar zaten eklenmiş', 'warning', 2000);
+        }
+        return;
+    }
+
+    authorsList.push(fullName);
+    updateAuthorsList();
+
+    // Input alanlarını temizle
+    lastnameInput.value = '';
+    firstnameInput.value = '';
+    lastnameInput.focus();
+}
+
+function removeAuthor(index) {
+    authorsList.splice(index, 1);
+    updateAuthorsList();
+}
+
+function updateAuthorsList() {
+    const container = document.getElementById('authorsList');
+    if (!container) return;
+
+    if (authorsList.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+
+    container.innerHTML = authorsList.map((author, index) => `
+        <div class="dynamic-list-item">
+            <span>${author}</span>
+            <button type="button" class="remove-btn" onclick="removeAuthor(${index})" title="Kaldır">×</button>
+        </div>
+    `).join('');
+}
+
+// Enter tuşu ile ekleme
+document.addEventListener('DOMContentLoaded', function() {
+    const authorLastname = document.getElementById('author_lastname');
+    const authorFirstname = document.getElementById('author_firstname');
+
+    if (authorLastname && authorFirstname) {
+        authorLastname.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                authorFirstname.focus();
+            }
+        });
+
+        authorFirstname.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addAuthor();
+            }
+        });
+    }
+});
 
 // Modal dışına tıklanınca kapat
 window.addEventListener('click', function(event) {

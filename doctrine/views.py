@@ -88,6 +88,10 @@ def doctrine_list(request):
 
     active_proposals = Proposal.objects.filter(status='ACTIVE')
 
+    # Tag filtresi (ilişkili article'a göre)
+    if tag_filter:
+        active_proposals = active_proposals.filter(related_article__tags__slug=tag_filter)
+
     # Öneri türü filtresi
     if proposal_type_filter:
         active_proposals = active_proposals.filter(proposal_type=proposal_type_filter)
@@ -106,13 +110,17 @@ def doctrine_list(request):
             Q(proposal_type__icontains=search_query)
         )
 
-    active_proposals = active_proposals.order_by('-start_date')
+    active_proposals = active_proposals.order_by('-start_date').distinct()
     show_all_proposals = request.GET.get('show_all') == 'true'
 
     # Arşiv önerileri (pagination)
     archived_all = Proposal.objects.filter(
         status__in=['PASSED', 'REJECTED', 'ARCHIVED']
     )
+
+    # Tag filtresi (ilişkili article'a göre)
+    if tag_filter:
+        archived_all = archived_all.filter(related_article__tags__slug=tag_filter)
 
     # Durum filtresi
     if proposal_status_filter:
@@ -136,7 +144,7 @@ def doctrine_list(request):
             Q(proposal_type__icontains=search_query)
         )
 
-    archived_all = archived_all.order_by('-end_date')
+    archived_all = archived_all.order_by('-end_date').distinct()
 
     archive_paginator = Paginator(archived_all, 30)
     archive_page = request.GET.get('archive_page', 1)
@@ -160,6 +168,7 @@ def doctrine_list(request):
         'search_query': search_query,
         'all_tags': all_tags,
         'selected_tag': selected_tag,
+        'tag_filter': tag_filter,  # Template için ekle
         'date_from': date_from,
         'date_to': date_to,
         'created_by': created_by,
@@ -332,13 +341,37 @@ def create_proposal(request):
         proposed_content = request.POST.get('proposed_content')
         justification = request.POST.get('justification')
         related_article_id = request.POST.get('related_article')
+        proposed_article_type = request.POST.get('proposed_article_type', 'NORMAL_LAW')
         selected_tags = request.POST.getlist('tags')  # Seçilen etiketler
+
+        # İlke ekleme yetkisi kontrolü
+        if proposal_type == 'ADD' and proposed_article_type == 'FOUNDATION_LAW':
+            if user_level not in ['FOUNDER', 'UNION']:
+                messages.error(request, 'Kuruluş İlkesi ekleyebilmek için Kurucu veya Birlik lideri olmalısınız!')
+                return redirect('doctrine:create_proposal')
 
         # Eski madde içeriğini kaydet (MODIFY ve REMOVE için)
         original_content = None
         if related_article_id and proposal_type in ['MODIFY', 'REMOVE']:
             article = DoctrineArticle.objects.get(id=related_article_id)
             original_content = article.content
+
+            # Aktif öneri kontrolü
+            active_proposals = Proposal.objects.filter(
+                related_article_id=related_article_id,
+                status='ACTIVE',
+                proposal_type__in=['MODIFY', 'REMOVE']
+            )
+
+            if active_proposals.exists():
+                existing_proposal = active_proposals.first()
+                messages.warning(
+                    request,
+                    f'Bu maddeyle ilgili zaten aktif bir değişim önerisi var! '
+                    f'Yeni öneri açmak yerine, mevcut öneriye yorum yapabilirsiniz. '
+                    f'<a href="/doctrine/proposal/{existing_proposal.id}/">Mevcut öneriyi görüntüle</a>'
+                )
+                return redirect('doctrine:create_proposal')
 
             # Yetki kontrolü: İlkeleri sadece Kurucu ve Birlik değiştirebilir/kaldırabilir
             if article.article_type == 'FOUNDATION_LAW':
@@ -373,8 +406,10 @@ def create_proposal(request):
             original_article_content=original_content,
             proposed_content=proposed_content,
             justification=justification,
+            proposed_article_type=proposed_article_type,
             proposed_by_level=user_level,
-            proposed_by_entity_id=entity_id
+            proposed_by_entity_id=entity_id,
+            created_by=request.user  # Kullanıcıyı kaydet
         )
 
         # Eğer yeni madde önerisi ise ve etiketler seçildiyse, proposal'a not ekle
@@ -419,10 +454,21 @@ def create_proposal(request):
 
         notify_new_proposal(proposal, target_users)
 
-        # E-posta bildirimi gönder
+        # E-posta bildirimi gönder (arka planda)
+        import threading
         from users.emails import send_new_proposal_email
-        for user in target_users:
-            send_new_proposal_email(user, proposal)
+
+        def send_emails_in_background():
+            for user in target_users:
+                try:
+                    send_new_proposal_email(user, proposal)
+                except Exception as e:
+                    print(f"E-posta gönderme hatası: {e}")
+
+        # E-posta gönderimini arka planda başlat
+        email_thread = threading.Thread(target=send_emails_in_background)
+        email_thread.daemon = True
+        email_thread.start()
 
         # Aktivite oluştur
         Activity.objects.create(
@@ -432,9 +478,27 @@ def create_proposal(request):
             related_url=f'/doctrine/proposal/{proposal.id}/'
         )
 
+        # Eğer taslaktan oluşturulduysa taslağı sil
+        draft_id_from_post = request.GET.get('draft_id')
+        if draft_id_from_post:
+            try:
+                draft_to_delete = ProposalDraft.objects.get(id=draft_id_from_post, user=request.user)
+                draft_to_delete.delete()
+            except ProposalDraft.DoesNotExist:
+                pass
+
         messages.success(request, 'Öneriniz oluşturuldu ve oylamaya açıldı!')
         return redirect('doctrine:proposal_detail', proposal_id=proposal.id)
     
+    # Taslak yükleme - draft_id varsa taslağı al
+    draft = None
+    draft_id = request.GET.get('draft_id')
+    if draft_id:
+        try:
+            draft = ProposalDraft.objects.get(id=draft_id, user=request.user)
+        except ProposalDraft.DoesNotExist:
+            messages.error(request, 'Taslak bulunamadı')
+
     # Mevcut maddeleri listele - Takım seviyesinde ilkeleri gösterme
     if user_level == 'SQUAD':
         all_articles = DoctrineArticle.objects.filter(is_active=True, article_type='NORMAL_LAW').order_by('article_number')
@@ -448,6 +512,7 @@ def create_proposal(request):
         'user_level': user_level,
         'all_articles': all_articles,
         'all_tags': all_tags,
+        'draft': draft,  # Taslağı context'e ekle
     }
     return render(request, 'doctrine/create_proposal.html', context)
 
@@ -1007,15 +1072,35 @@ def my_references(request):
 def references_list(request):
     """Tüm kaynakları listele - Global kaynaklar sayfası"""
     from django.http import JsonResponse
+    from django.core.paginator import Paginator
     from .models import Reference, ProposalReference, ArticleReference
     from django.db.models import Count, Q
-    
-    references = Reference.objects.annotate(
+
+    # Arama parametresi
+    search_query = request.GET.get('search', '').strip()
+
+    all_references = Reference.objects.annotate(
         usage_count=Count('proposal_usages', distinct=True) + Count('article_usages', distinct=True)
-    ).order_by('-created_at')
-    
+    )
+
+    # Arama varsa filtrele
+    if search_query:
+        all_references = all_references.filter(
+            Q(author__icontains=search_query) |
+            Q(title__icontains=search_query) |
+            Q(publisher__icontains=search_query)
+        )
+
+    all_references = all_references.order_by('-created_at')
+
+    # Sayfalama: 15 kaynak per sayfa
+    paginator = Paginator(all_references, 15)
+    page_number = request.GET.get('page', 1)
+    references = paginator.get_page(page_number)
+
     return render(request, 'doctrine/references_list.html', {
-        'references': references
+        'references': references,
+        'search_query': search_query,
     })
 
 
@@ -1059,3 +1144,74 @@ def reference_usage(request, ref_id):
         
     except Reference.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Kaynak bulunamadı'}, status=404)
+
+
+def reference_detail(request, ref_id):
+    """Tek bir kaynağın detaylarını döndür (AJAX)"""
+    from django.http import JsonResponse
+    from .models import Reference
+
+    try:
+        reference = Reference.objects.get(id=ref_id)
+
+        return JsonResponse({
+            'success': True,
+            'reference': {
+                'id': reference.id,
+                'reference_type': reference.reference_type,
+                'author': reference.author,
+                'title': reference.title,
+                'year': reference.year,
+                'publisher': reference.publisher or '',
+                'city': reference.city or '',
+                'url': reference.url or '',
+                'notes': reference.notes or '',
+            }
+        })
+
+    except Reference.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Kaynak bulunamadı'}, status=404)
+
+
+def reference_update(request, ref_id):
+    """Kaynağı güncelle (AJAX POST)"""
+    from django.http import JsonResponse
+    from .models import Reference
+    import json
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Sadece POST istekleri kabul edilir'}, status=405)
+
+    try:
+        reference = Reference.objects.get(id=ref_id)
+
+        # JSON verisini parse et
+        data = json.loads(request.body)
+
+        # Kaynağı güncelle
+        reference.reference_type = data.get('reference_type', reference.reference_type)
+        reference.author = data.get('author', reference.author)
+        reference.title = data.get('title', reference.title)
+        reference.year = data.get('year', reference.year)
+        reference.publisher = data.get('publisher', '')
+        reference.city = data.get('city', '')
+        reference.url = data.get('url', '')
+        reference.notes = data.get('notes', '')
+
+        reference.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Kaynak başarıyla güncellendi',
+            'reference': {
+                'id': reference.id,
+                'author': reference.author,
+                'title': reference.title,
+                'year': reference.year,
+            }
+        })
+
+    except Reference.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Kaynak bulunamadı'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

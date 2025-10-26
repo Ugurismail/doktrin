@@ -30,7 +30,7 @@
     {% if notifications %}
     <div style="display: grid; gap: var(--space-sm);">
         {% for notification in notifications %}
-        <a href="{% if notification.notification_type == 'NEW_PROPOSAL' or notification.notification_type == 'PROPOSAL_PASSED' or notification.notification_type == 'PROPOSAL_REJECTED' or notification.notification_type == 'PROPOSAL_RESULT' %}{% url 'doctrine:proposal_detail' notification.related_object_id %}{% elif notification.notification_type == 'ANNOUNCEMENT' %}{% url 'organization:view_announcements' %}{% elif notification.notification_type == 'MENTION' and notification.related_object_id %}{% url 'predictions:prediction_detail' notification.related_object_id %}{% else %}#{% endif %}"
+        <a href="{% if notification.notification_type == 'NEW_PROPOSAL' or notification.notification_type == 'PROPOSAL_PASSED' or notification.notification_type == 'PROPOSAL_REJECTED' or notification.notification_type == 'PROPOSAL_RESULT' %}{% url 'doctrine:proposal_detail' notification.related_object_id %}{% elif notification.notification_type == 'ANNOUNCEMENT' %}{% url 'organization:view_announcements' %}{% elif notification.notification_type == 'MENTION' and notification.related_object_id %}{% url 'predictions:prediction_detail' notification.related_object_id %}{% elif notification.notification_type == 'LEADER_CHANGE' %}{% url 'organization:my_team' %}{% else %}#{% endif %}"
            onclick="markAsRead({{ notification.id }}); return true;"
            style="display: block; background: {% if not notification.is_read %}var(--bg-secondary){% else %}var(--bg){% endif %}; border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-md); text-decoration: none; color: var(--text); transition: all 0.2s;">
 

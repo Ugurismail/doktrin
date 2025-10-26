@@ -77,7 +77,7 @@ class ArticleTag(models.Model):
 class DoctrineArticle(models.Model):
     """Doktrin Maddesi"""
     ARTICLE_TYPE_CHOICES = [
-        ('FOUNDATION_LAW', 'İlke'),
+        ('FOUNDATION_LAW', '🏛️ İlke'),
         ('NORMAL_LAW', 'Yasa'),
     ]
 
@@ -146,8 +146,10 @@ class Proposal(models.Model):
     original_article_content = models.TextField(blank=True, null=True, help_text="Değişiklik önerisi için: Maddenin değişiklikten önceki hali")
     proposed_content = models.TextField()
     justification = models.TextField(blank=True, null=True, help_text="Önerinin gerekçesi")
+    proposed_article_type = models.CharField(max_length=20, choices=[('FOUNDATION_LAW', 'İlke'), ('NORMAL_LAW', 'Program')], default='NORMAL_LAW', help_text="Yeni madde eklenirken: İlke mi Program maddesi mi?")
     proposed_by_level = models.CharField(max_length=20, choices=PROPOSER_LEVEL_CHOICES)
     proposed_by_entity_id = models.IntegerField()  # Team/Squad/Union/ProvinceOrg ID
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='created_proposals', help_text="Öneriyi oluşturan kullanıcı")
     proposed_tags = models.TextField(blank=True, null=True, help_text="Önerilen etiketler (virgülle ayrılmış ID'ler)")
     start_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField()

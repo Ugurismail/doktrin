@@ -58,6 +58,32 @@
             <!-- Lider Seçimi -->
             <div class="card">
                 <h2 class="card-title">Lider Seçimi</h2>
+
+                <!-- Mevcut Oy Durumu -->
+                {% if leader_votes_data.vote_counts %}
+                <div style="margin-bottom: 16px; padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
+                        {{ leader_votes_data.total_votes }}/{{ leader_votes_data.member_count }} üye oy kullandı
+                    </div>
+
+                    <!-- Adaylar ve Oylar -->
+                    <div style="display: grid; gap: 6px;">
+                        {% for candidate, count in leader_votes_data.vote_counts.items %}
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: var(--bg); border-radius: 6px;">
+                            <span style="font-size: 14px; font-weight: 500;">{{ candidate.username }}</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 60px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">
+                                    <div style="width: {{ count|floatformat:0 }}0%; height: 100%; background: var(--accent);"></div>
+                                </div>
+                                <span style="font-size: 13px; font-weight: 600; color: var(--accent); min-width: 30px; text-align: right;">{{ count }} oy</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Oy Formu -->
                 <form method="post" action="{% url 'organization:vote_team_leader' %}">
                     {% csrf_token %}
                     <select name="candidate_id" required class="select-input mb-sm">

@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}Lider Atma Oylaması{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 2rem auto;">
+    <div class="card">
+        <!-- Başlık -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span style="font-size: 2rem;">⚖️</span>
+                <div>
+                    <h1 style="margin: 0; font-size: 1.75rem;">Lider Atma Oylaması</h1>
+                    <p style="margin: 0.25rem 0 0 0; color: var(--text-muted);">{{ team.display_name }}</p>
+                </div>
+            </div>
+            <div>
+                {% if is_ended %}
+                <span class="badge" style="background: #6c757d; color: white; padding: 0.5rem 1rem; border-radius: 20px;">
+                    ⏱️ Sona Erdi
+                </span>
+                {% else %}
+                <span class="badge" style="background: #28a745; color: white; padding: 0.5rem 1rem; border-radius: 20px;">
+                    ✅ Aktif
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Detaylar -->
+        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: var(--radius); margin-bottom: 1.5rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Atılması Önerilen Lider</p>
+                    <p style="margin: 0.25rem 0 0 0; font-weight: 700; font-size: 1.1rem;">{{ removal_vote.current_leader.username }}</p>
+                </div>
+                <div>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Başlatan</p>
+                    <p style="margin: 0.25rem 0 0 0; font-weight: 600;">{{ removal_vote.initiated_by.username }}</p>
+                </div>
+                <div>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Başlangıç</p>
+                    <p style="margin: 0.25rem 0 0 0; font-weight: 600;">{{ removal_vote.start_date|date:"d M Y, H:i" }}</p>
+                </div>
+                <div>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Bitiş</p>
+                    <p style="margin: 0.25rem 0 0 0; font-weight: 600;">{{ removal_vote.end_date|date:"d M Y, H:i" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gerekçe -->
+        <div style="margin-bottom: 2rem;">
+            <h3 style="margin: 0 0 0.75rem 0; font-size: 1.1rem;">📝 Atma Gerekçesi</h3>
+            <div style="background: var(--bg-secondary); padding: 1.25rem; border-radius: var(--radius); border-left: 4px solid var(--accent);">
+                <p style="margin: 0; line-height: 1.6; white-space: pre-wrap;">{{ removal_vote.reason }}</p>
+            </div>
+        </div>
+
+        <!-- Sonuçlar -->
+        <div style="margin-bottom: 2rem;">
+            <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem;">📊 Oylama Sonuçları</h3>
+
+            <!-- Progress Bars -->
+            <div style="margin-bottom: 1.5rem;">
+                <!-- Evet Oyları -->
+                <div style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-weight: 600; color: #28a745;">✅ Evet - Atılsın</span>
+                        <span style="font-weight: 700;">{{ removal_vote.yes_votes }} oy ({{ yes_percentage|floatformat:1 }}%)</span>
+                    </div>
+                    <div style="width: 100%; height: 30px; background: var(--bg-secondary); border-radius: var(--radius); overflow: hidden; position: relative;">
+                        <div style="height: 100%; background: #28a745; width: {{ yes_percentage }}%; transition: width 0.3s;"></div>
+                    </div>
+                </div>
+
+                <!-- Hayır Oyları -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-weight: 600; color: #dc3545;">❌ Hayır - Kalmalı</span>
+                        <span style="font-weight: 700;">{{ removal_vote.no_votes }} oy ({{ no_percentage|floatformat:1 }}%)</span>
+                    </div>
+                    <div style="width: 100%; height: 30px; background: var(--bg-secondary); border-radius: var(--radius); overflow: hidden; position: relative;">
+                        <div style="height: 100%; background: #dc3545; width: {{ no_percentage }}%; transition: width 0.3s;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- İstatistikler -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
+                <div style="background: var(--bg-secondary); padding: 1rem; border-radius: var(--radius);">
+                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Toplam Oy</p>
+                    <p style="margin: 0.25rem 0 0 0; font-size: 1.5rem; font-weight: 700;">{{ total_votes }}</p>
+                </div>
+                <div style="background: var(--bg-secondary); padding: 1rem; border-radius: var(--radius);">
+                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Toplam Üye</p>
+                    <p style="margin: 0.25rem 0 0 0; font-size: 1.5rem; font-weight: 700;">{{ total_members }}</p>
+                </div>
+                <div style="background: var(--bg-secondary); padding: 1rem; border-radius: var(--radius);">
+                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Katılım Oranı</p>
+                    <p style="margin: 0.25rem 0 0 0; font-size: 1.5rem; font-weight: 700;">{{ total_votes|floatformat:0 }}/{{ total_members }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Oy Kullanma Bölümü -->
+        {% if not is_ended %}
+            {% if user_vote %}
+            <div style="background: #d1ecf1; border: 1px solid #bee5eb; padding: 1.25rem; border-radius: var(--radius); margin-bottom: 1rem;">
+                <p style="margin: 0; color: #0c5460;">
+                    <strong>✓ Oyunuz Kayıtlı:</strong>
+                    {% if user_vote.vote == 'YES' %}
+                        <span style="color: #28a745; font-weight: 700;">Evet - Atılsın</span>
+                    {% else %}
+                        <span style="color: #dc3545; font-weight: 700;">Hayır - Kalmalı</span>
+                    {% endif %}
+                </p>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: #0c5460;">
+                    Oyunuzu değiştirmek için aşağıdaki butonları kullanabilirsiniz.
+                </p>
+            </div>
+            {% endif %}
+
+            {% if request.user == removal_vote.current_leader %}
+            <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 1.25rem; border-radius: var(--radius);">
+                <p style="margin: 0; color: #856404;">
+                    ⚠️ <strong>Lider olduğunuz için bu oylamada oy kullanamazsınız.</strong>
+                </p>
+            </div>
+            {% else %}
+            <form method="post" action="{% url 'organization:cast_removal_vote' removal_vote.id %}">
+                {% csrf_token %}
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <button type="submit" name="vote" value="YES" class="btn btn-primary" style="background: #28a745; border-color: #28a745; padding: 1rem; font-size: 1.1rem;">
+                        ✅ Evet - Atılsın
+                    </button>
+                    <button type="submit" name="vote" value="NO" class="btn btn-primary" style="background: #dc3545; border-color: #dc3545; padding: 1rem; font-size: 1.1rem;">
+                        ❌ Hayır - Kalmalı
+                    </button>
+                </div>
+            </form>
+            {% endif %}
+        {% else %}
+            <!-- Oylama Sonucu -->
+            <div style="background: {% if removal_vote.status == 'PASSED' %}#d4edda{% else %}#f8d7da{% endif %}; border: 1px solid {% if removal_vote.status == 'PASSED' %}#c3e6cb{% else %}#f5c6cb{% endif %}; padding: 1.5rem; border-radius: var(--radius); text-align: center;">
+                <p style="margin: 0; font-size: 1.25rem; font-weight: 700; color: {% if removal_vote.status == 'PASSED' %}#155724{% else %}#721c24{% endif %};">
+                    {% if removal_vote.status == 'PASSED' %}
+                        ✅ Oylama Sonucu: KABUL EDİLDİ
+                    {% else %}
+                        ❌ Oylama Sonucu: REDDEDİLDİ
+                    {% endif %}
+                </p>
+                <p style="margin: 0.5rem 0 0 0; color: {% if removal_vote.status == 'PASSED' %}#155724{% else %}#721c24{% endif %};">
+                    {% if removal_vote.status == 'PASSED' %}
+                        Lider görevden alınmıştır. Yeni lider seçimi başlatılmıştır.
+                    {% else %}
+                        Lider görevine devam edecektir.
+                    {% endif %}
+                </p>
+            </div>
+        {% endif %}
+
+        <!-- Geri Dön -->
+        <div style="margin-top: 2rem; text-align: center;">
+            <a href="{% url 'organization:my_team' %}" class="btn btn-secondary">
+                ← Ekibime Dön
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

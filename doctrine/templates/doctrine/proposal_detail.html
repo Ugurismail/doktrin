@@ -19,11 +19,11 @@
                 </h1>
                 <div class="proposal-meta">
                     <span class="proposal-meta-item">
-                        {{ proposal.get_proposed_by_level_display }}
+                        👤 {{ proposal.created_by.username|default:"Bilinmeyen" }}
                     </span>
                     <span class="proposal-meta-separator">•</span>
                     <span class="proposal-meta-item">
-                        {{ proposal.start_date|date:"d M Y" }}
+                        📅 {{ proposal.start_date|date:"d M Y" }}
                     </span>
                 </div>
             </div>
@@ -119,9 +119,11 @@
                 <div class="ref-min">
                     <span class="ref-num">[{{ forloop.counter }}]</span>
                     <span class="ref-text">
-                        {{ prop_ref.reference.author }} ({{ prop_ref.reference.year }}). {{ prop_ref.reference.title }}.
-                        {% if prop_ref.page_number %} {{ prop_ref.page_number }}.{% endif %}
-                        {% if prop_ref.reference.url %} <a href="{{ prop_ref.reference.url }}" target="_blank">↗</a>{% endif %}
+                        {{ prop_ref.reference.author }} ({{ prop_ref.reference.year }}). <em>{{ prop_ref.reference.title }}</em>.
+                        {% if prop_ref.reference.publisher %} {{ prop_ref.reference.publisher }}.{% endif %}
+                        {% if prop_ref.reference.city %} {{ prop_ref.reference.city }}.{% endif %}
+                        {% if prop_ref.reference.notes %} {{ prop_ref.reference.notes }}.{% endif %}
+                        {% if prop_ref.reference.url %} <a href="{{ prop_ref.reference.url }}" target="_blank" rel="noopener">↗</a>{% endif %}
                     </span>
                 </div>
                 {% endfor %}

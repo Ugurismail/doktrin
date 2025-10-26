@@ -10,7 +10,7 @@
     <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
     <link rel="apple-touch-icon" href="{% static 'images/favicon.svg' %}">
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=15">
 </head>
 <body>
     <header>
@@ -30,7 +30,8 @@
                             <a href="{% url 'doctrine:my_drafts' %}">📝 Taslaklar</a>
                             <a href="{% url 'doctrine:references_list' %}">📚 Kaynaklar</a>
                             <a href="{% url 'organization:my_team' %}">👥 Ekibim</a>
-                            <a href="{% url 'predictions:prediction_list' %}">🔮 Tahminler</a>
+                            <a href="{% url 'predictions:prediction_list' %}">🦉 Tahminler</a>
+                            <a href="https://eksisozluk.com/" target="_blank" rel="noopener">📖 Sözlük</a>
                             <a href="{% url 'doctrine:activity_feed' %}">📊 Aktivite</a>
                             <a href="{% url 'organization:view_announcements' %}">📢 Duyurular</a>
                             {% if user.is_superuser or user.is_founder %}
@@ -91,7 +92,7 @@
                 <div class="messages" id="django-messages">
                     {% for message in messages %}
                         <div class="message {{ message.tags }} auto-fade-message">
-                            {{ message }}
+                            {{ message|safe }}
                         </div>
                     {% endfor %}
                 </div>
@@ -179,8 +180,12 @@
         (function() {
             function updateNotificationBadge() {
                 fetch('{% url "notifications:get_unread_count" %}')
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok || response.redirected) return null;
+                        return response.json();
+                    })
                     .then(data => {
+                        if (!data) return;
                         const badge = document.getElementById('notification-badge');
                         if (data.count > 0) {
                             badge.textContent = data.count > 9 ? '9+' : data.count;
@@ -189,13 +194,17 @@
                             badge.style.opacity = '0';
                         }
                     })
-                    .catch(error => console.log('Bildirim sayısı alınamadı:', error));
+                    .catch(() => {});  // Sessizce hata yoksay
             }
 
             function updateMessageBadge() {
                 fetch('{% url "organization:get_unread_message_count" %}')
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok || response.redirected) return null;
+                        return response.json();
+                    })
                     .then(data => {
+                        if (!data) return;
                         const badge = document.getElementById('message-badge');
                         if (badge && data.count > 0) {
                             badge.textContent = data.count > 9 ? '9+' : data.count;
@@ -204,19 +213,23 @@
                             badge.style.opacity = '0';
                         }
                     })
-                    .catch(error => console.log('Mesaj sayısı alınamadı:', error));
+                    .catch(() => {});  // Sessizce hata yoksay
             }
 
             function checkExpiredPredictions() {
                 fetch('{% url "predictions:check_expired" %}')
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok || response.redirected) return null;
+                        return response.json();
+                    })
                     .then(data => {
+                        if (!data) return;
                         if (data.expired_count > 0) {
                             // Bildirim badge'ini güncelle
                             updateNotificationBadge();
                         }
                     })
-                    .catch(error => console.log('Tahmin kontrolü başarısız:', error));
+                    .catch(() => {});  // Sessizce hata yoksay
             }
 
             // Sayfa yüklendiğinde güncelle
@@ -291,11 +304,14 @@
             document.head.appendChild(style);
         })();
 
-        // Mesajların otomatik kaybolması - 1.5 saniye sonra fade out
+        // Mesajların otomatik kaybolması
         (function() {
             const messages = document.querySelectorAll('.auto-fade-message');
             messages.forEach(message => {
-                // 1.5 saniye bekle, sonra fade out başlat
+                // Warning mesajları 5 saniye, diğerleri 1.5 saniye beklesin
+                const isWarning = message.classList.contains('warning');
+                const delay = isWarning ? 5000 : 1500;
+
                 setTimeout(() => {
                     message.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
                     message.style.opacity = '0';
@@ -311,7 +327,7 @@
                             container.parentElement.remove();
                         }
                     }, 500);
-                }, 1500);
+                }, delay);
             });
         })();
 

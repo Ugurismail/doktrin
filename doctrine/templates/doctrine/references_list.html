@@ -20,7 +20,7 @@
         </div>
         <div class="filter-buttons">
             <button onclick="filterByType('all')" class="filter-btn active" data-type="all">
-                Tümü ({{ references|length }})
+                Tümü ({{ references.paginator.count }})
             </button>
             <button onclick="filterByType('BOOK')" class="filter-btn" data-type="BOOK">
                 Kitap
@@ -40,86 +40,41 @@
         </div>
     </div>
 
-    <div class="references-grid" id="referencesGrid">
+    <div class="references-list" id="referencesGrid">
         {% for ref in references %}
-        <div class="reference-card"
+        <div class="reference-row"
              data-type="{{ ref.reference_type }}"
              data-author="{{ ref.author|lower }}"
              data-title="{{ ref.title|lower }}"
              data-year="{{ ref.year }}">
 
-            <div class="reference-card-header">
-                <span class="reference-type-badge badge-{{ ref.reference_type|lower }}">
-                    {{ ref.get_reference_type_display }}
-                </span>
-                {% if ref.is_verified %}
-                <span class="verified-badge" title="Doğrulanmış kaynak">
-                    ✓
-                </span>
-                {% endif %}
-            </div>
+            <div class="ref-row-main">
+                <div class="ref-row-left">
+                    <div class="ref-citation">
+                        <span class="ref-author">{{ ref.author }}</span>
+                        <span class="ref-year">({{ ref.year }})</span>
+                        <span class="ref-title">{{ ref.title }}</span>
+                        {% if ref.publisher %}<span class="ref-publisher">{{ ref.publisher }}</span>{% endif %}
+                        {% if ref.city %}<span class="ref-city">{{ ref.city }}</span>{% endif %}
+                    </div>
+                </div>
 
-            <div class="reference-card-body">
-                <div class="reference-author">
-                    {{ ref.author }}
-                </div>
-                <div class="reference-title">
-                    {{ ref.title }}
-                </div>
-                <div class="reference-meta">
-                    <span class="reference-year">{{ ref.year }}</span>
-                    {% if ref.publisher %}
-                    <span class="reference-publisher">• {{ ref.publisher }}</span>
+                <div class="ref-row-right">
+                    <button class="ref-usage-badge" onclick="showUsageModal({{ ref.id }})" title="Kullanım yerlerini gör">
+                        📖 {{ ref.usage_count }}
+                    </button>
+
+                    {% if ref.url %}
+                    <a href="{{ ref.url }}" target="_blank" class="ref-link-btn" title="Kaynağa git">🔗</a>
                     {% endif %}
-                    {% if ref.city %}
-                    <span class="reference-city">• {{ ref.city }}</span>
+
+                    {% if ref.created_by == request.user %}
+                    <button class="ref-edit-btn" onclick="openEditReferenceModal({{ ref.id }})" title="Düzenle">✏️</button>
                     {% endif %}
-                </div>
 
-                {% if ref.url %}
-                <div class="reference-url">
-                    <a href="{{ ref.url }}" target="_blank" rel="noopener noreferrer">
-                        🔗 Kaynağa Git
-                    </a>
-                </div>
-                {% endif %}
-
-                {% if ref.doi %}
-                <div class="reference-doi">
-                    <strong>DOI:</strong> {{ ref.doi }}
-                </div>
-                {% endif %}
-
-                {% if ref.notes %}
-                <div class="reference-notes">
-                    {{ ref.notes|truncatewords:20 }}
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="reference-card-footer">
-                <div class="reference-usage"
-                     data-ref-id="{{ ref.id }}"
-                     onmouseenter="showUsagePopover({{ ref.id }})"
-                     onmouseleave="hideUsagePopover()">
-                    <span class="usage-icon">📖</span>
-                    <span class="usage-text">
-                        {% if ref.usage_count > 0 %}
-                            {{ ref.usage_count }} yerde kullanıldı
-                        {% else %}
-                            Henüz kullanılmadı
-                        {% endif %}
-                    </span>
-                </div>
-                <div class="reference-creator">
-                    Ekleyen: <strong>{{ ref.created_by.username }}</strong>
-                </div>
-            </div>
-
-            <!-- Popover (hover ile gösterilecek) -->
-            <div id="popover-{{ ref.id }}" class="usage-popover hidden">
-                <div class="popover-content">
-                    <div class="popover-loading">Yükleniyor...</div>
+                    {% if ref.is_verified %}
+                    <span class="ref-verified" title="Doğrulanmış">✓</span>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -130,6 +85,44 @@
             <p>İlk kaynağı ekleyen siz olun!</p>
         </div>
         {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if references.has_other_pages %}
+    <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: var(--space-xl); padding: var(--space-lg);">
+        {% if references.has_previous %}
+            <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}" style="padding: 8px 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-secondary); color: var(--text); text-decoration: none; transition: all 0.2s;">İlk</a>
+            <a href="?page={{ references.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" style="padding: 8px 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-secondary); color: var(--text); text-decoration: none; transition: all 0.2s;">←</a>
+        {% else %}
+            <span style="padding: 8px 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text-secondary); opacity: 0.5;">İlk</span>
+            <span style="padding: 8px 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text-secondary); opacity: 0.5;">←</span>
+        {% endif %}
+
+        <span style="padding: 8px 16px; font-weight: 600; color: var(--text);">
+            Sayfa {{ references.number }} / {{ references.paginator.num_pages }}
+        </span>
+
+        {% if references.has_next %}
+            <a href="?page={{ references.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" style="padding: 8px 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-secondary); color: var(--text); text-decoration: none; transition: all 0.2s;">→</a>
+            <a href="?page={{ references.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}" style="padding: 8px 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-secondary); color: var(--text); text-decoration: none; transition: all 0.2s;">Son</a>
+        {% else %}
+            <span style="padding: 8px 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text-secondary); opacity: 0.5;">→</span>
+            <span style="padding: 8px 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text-secondary); opacity: 0.5;">Son</span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Usage Modal -->
+    <div id="usageModal" class="usage-modal" onclick="if(event.target === this) closeUsageModal()">
+        <div class="usage-modal-content">
+            <div class="usage-modal-header">
+                <h2>📖 Kaynak Kullanım Yerleri</h2>
+                <button class="usage-modal-close" onclick="closeUsageModal()">&times;</button>
+            </div>
+            <div class="usage-modal-body" id="usageModalBody">
+                <div class="usage-loading">Yükleniyor...</div>
+            </div>
+        </div>
     </div>
 
     <!-- Citation Format Modal -->
@@ -153,26 +146,26 @@
 // Arama fonksiyonu
 document.getElementById('searchReferences').addEventListener('input', function(e) {
     const searchTerm = e.target.value.toLowerCase();
-    const cards = document.querySelectorAll('.reference-card');
+    const rows = document.querySelectorAll('.reference-row');
 
-    cards.forEach(card => {
-        const author = card.dataset.author;
-        const title = card.dataset.title;
-        const year = card.dataset.year;
+    rows.forEach(row => {
+        const author = row.dataset.author;
+        const title = row.dataset.title;
+        const year = row.dataset.year;
 
         if (author.includes(searchTerm) ||
             title.includes(searchTerm) ||
             year.includes(searchTerm)) {
-            card.style.display = '';
+            row.style.display = '';
         } else {
-            card.style.display = 'none';
+            row.style.display = 'none';
         }
     });
 });
 
 // Tip filtreleme
 function filterByType(type) {
-    const cards = document.querySelectorAll('.reference-card');
+    const rows = document.querySelectorAll('.reference-row');
     const buttons = document.querySelectorAll('.filter-btn');
 
     // Button aktiflik durumunu güncelle
@@ -184,100 +177,88 @@ function filterByType(type) {
         }
     });
 
-    // Kartları filtrele
-    cards.forEach(card => {
-        if (type === 'all' || card.dataset.type === type) {
-            card.style.display = '';
+    // Satırları filtrele
+    rows.forEach(row => {
+        if (type === 'all' || row.dataset.type === type) {
+            row.style.display = '';
         } else {
-            card.style.display = 'none';
+            row.style.display = 'none';
         }
     });
 }
 
-// Kullanım yerleri popover
-let currentPopover = null;
-let popoverTimeout = null;
+// Usage Modal Functions
+function showUsageModal(refId) {
+    const modal = document.getElementById('usageModal');
+    const body = document.getElementById('usageModalBody');
 
-function showUsagePopover(refId) {
-    // Önceki popover'ı gizle
-    if (currentPopover) {
-        currentPopover.classList.add('hidden');
-    }
+    modal.style.display = 'flex';
+    body.innerHTML = '<div class="usage-loading"><div class="spinner"></div><p>Yükleniyor...</p></div>';
 
-    const popover = document.getElementById('popover-' + refId);
-    if (!popover) return;
-
-    currentPopover = popover;
-
-    // Timeout ile göster (hover stability için)
-    popoverTimeout = setTimeout(() => {
-        popover.classList.remove('hidden');
-        loadUsageData(refId);
-    }, 300);
-}
-
-function hideUsagePopover() {
-    // Timeout'u iptal et
-    if (popoverTimeout) {
-        clearTimeout(popoverTimeout);
-    }
-
-    // Popover'ı gizle
-    setTimeout(() => {
-        if (currentPopover) {
-            currentPopover.classList.add('hidden');
-            currentPopover = null;
-        }
-    }, 200);
-}
-
-// Kullanım verilerini yükle (AJAX)
-function loadUsageData(refId) {
-    const popover = document.getElementById('popover-' + refId);
-    if (!popover) return;
-
-    const content = popover.querySelector('.popover-content');
-    content.innerHTML = '<div class="popover-loading">Yükleniyor...</div>';
-
+    // Load usage data
     fetch('/doctrine/api/references/' + refId + '/usage/')
         .then(response => response.json())
         .then(data => {
             if (data.usage_count === 0) {
-                content.innerHTML = '<div class="popover-empty">Bu kaynak henüz kullanılmamış</div>';
+                body.innerHTML = `
+                    <div class="usage-empty">
+                        <div class="usage-empty-icon">📭</div>
+                        <p>Bu kaynak henüz hiçbir maddede kullanılmamış</p>
+                    </div>
+                `;
                 return;
             }
 
-            let html = '<div class="usage-details">';
+            let html = '';
 
-            if (data.articles.length > 0) {
+            if (data.articles && data.articles.length > 0) {
                 html += '<div class="usage-section">';
-                html += '<h4>İlkeler ve Yasalar:</h4>';
-                html += '<ul>';
+                html += '<h3 class="usage-section-title">📜 İlkeler ve Program</h3>';
+                html += '<div class="usage-list">';
                 data.articles.forEach(article => {
-                    html += `<li><a href="/doctrine/article/${article.id}/">${article.article_type} ${article.article_number}</a></li>`;
+                    html += `
+                        <a href="/doctrine/article/${article.id}/" class="usage-item">
+                            <span class="usage-item-icon">🏛️</span>
+                            <span class="usage-item-text">${article.article_type} ${article.article_number}</span>
+                            <span class="usage-item-arrow">→</span>
+                        </a>
+                    `;
                 });
-                html += '</ul>';
-                html += '</div>';
+                html += '</div></div>';
             }
 
-            if (data.proposals.length > 0) {
+            if (data.proposals && data.proposals.length > 0) {
                 html += '<div class="usage-section">';
-                html += '<h4>Önerilerde:</h4>';
-                html += '<ul>';
+                html += '<h3 class="usage-section-title">💡 Öneriler</h3>';
+                html += '<div class="usage-list">';
                 data.proposals.forEach(proposal => {
-                    html += `<li><a href="/doctrine/proposal/${proposal.id}/">Öneri #${proposal.id} - ${proposal.proposal_type}</a></li>`;
+                    html += `
+                        <a href="/doctrine/proposal/${proposal.id}/" class="usage-item">
+                            <span class="usage-item-icon">📝</span>
+                            <span class="usage-item-text">Öneri #${proposal.id} - ${proposal.proposal_type}</span>
+                            <span class="usage-item-arrow">→</span>
+                        </a>
+                    `;
                 });
-                html += '</ul>';
-                html += '</div>';
+                html += '</div></div>';
             }
 
-            html += '</div>';
-            content.innerHTML = html;
+            body.innerHTML = html || '<div class="usage-empty"><p>Kullanım bilgisi bulunamadı</p></div>';
         })
         .catch(error => {
-            console.error('Kullanım verileri yüklenirken hata:', error);
-            content.innerHTML = '<div class="popover-error">Veriler yüklenemedi</div>';
+            body.innerHTML = `
+                <div class="usage-error">
+                    <div class="usage-error-icon">⚠️</div>
+                    <p>Veriler yüklenirken bir hata oluştu</p>
+                </div>
+            `;
+            console.error('Error loading usage data:', error);
         });
+}
+
+function closeUsageModal() {
+    const modal = document.getElementById('usageModal');
+    modal.style.display = 'none';
 }
 
 // Citation modal
@@ -293,23 +274,24 @@ function closeCitationModal() {
 <style>
 .references-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: var(--space-lg);
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-md);
     margin-top: var(--space-xl);
 }
 
 .reference-card {
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: var(--space-lg);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-md);
     transition: all 0.2s;
     position: relative;
 }
 
 .reference-card:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    border-color: var(--primary-color);
+    border-color: var(--accent);
+    transform: translateY(-2px);
 }
 
 .reference-card-header {
@@ -346,26 +328,26 @@ function closeCitationModal() {
 
 .reference-author {
     font-weight: 700;
-    font-size: 1.1rem;
-    color: var(--text-primary);
+    font-size: 1rem;
+    color: var(--text);
     margin-bottom: var(--space-xs);
 }
 
 .reference-title {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
     margin-bottom: var(--space-sm);
-    line-height: 1.5;
+    line-height: 1.4;
 }
 
 .reference-meta {
-    font-size: 0.85rem;
-    color: var(--text-muted);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
     margin-bottom: var(--space-sm);
 }
 
 .reference-url a {
-    color: var(--primary-color);
+    color: var(--accent);
     text-decoration: none;
     font-size: 0.85rem;
 }
@@ -377,11 +359,11 @@ function closeCitationModal() {
 .reference-card-footer {
     margin-top: var(--space-md);
     padding-top: var(--space-md);
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
 }
 
 .reference-usage {
@@ -392,15 +374,16 @@ function closeCitationModal() {
     padding: 4px 8px;
     border-radius: 4px;
     transition: background 0.2s;
+    color: var(--text-secondary);
 }
 
 .reference-usage:hover {
-    background: var(--bg-light);
+    background: var(--bg);
 }
 
 .reference-creator {
-    color: var(--text-muted);
-    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
 }
 
 /* Popover */
@@ -409,9 +392,9 @@ function closeCitationModal() {
     bottom: 100%;
     left: 0;
     margin-bottom: 10px;
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     padding: var(--space-md);
     min-width: 300px;
@@ -425,13 +408,13 @@ function closeCitationModal() {
     top: 100%;
     left: 20px;
     border: 8px solid transparent;
-    border-top-color: white;
+    border-top-color: var(--bg);
 }
 
 .usage-details h4 {
     margin: 0 0 var(--space-sm) 0;
     font-size: 0.9rem;
-    color: var(--text-primary);
+    color: var(--text);
 }
 
 .usage-details ul {
@@ -445,7 +428,7 @@ function closeCitationModal() {
 }
 
 .usage-details a {
-    color: var(--primary-color);
+    color: var(--accent);
     text-decoration: none;
 }
 
@@ -469,9 +452,11 @@ function closeCitationModal() {
 .search-input {
     width: 100%;
     padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     font-size: 1rem;
+    background: var(--bg);
+    color: var(--text);
 }
 
 .filter-buttons {
@@ -482,23 +467,24 @@ function closeCitationModal() {
 
 .filter-btn {
     padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--border-color);
-    background: white;
-    border-radius: var(--border-radius);
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    color: var(--text);
+    border-radius: var(--radius);
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     transition: all 0.2s;
 }
 
 .filter-btn:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
 .filter-btn.active {
-    background: var(--primary-color);
+    background: var(--accent);
     color: white;
-    border-color: var(--primary-color);
+    border-color: var(--accent);
 }
 
 .empty-state {
@@ -526,6 +512,265 @@ function closeCitationModal() {
         width: 100%;
     }
 }
+
+.btn-edit-reference {
+    padding: 0.4rem 0.8rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-edit-reference:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.reference-actions {
+    display: flex;
+    gap: 0.5rem;
+}
 </style>
+
+<!-- Düzenleme Modalı -->
+<div id="editReferenceModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Kaynağı Düzenle</h2>
+            <button type="button" class="modal-close" onclick="closeEditReferenceModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="editReferenceForm">
+                <input type="hidden" id="edit_ref_id">
+
+                <div class="form-group">
+                    <label for="edit_ref_type">Kaynak Türü</label>
+                    <select id="edit_ref_type" required>
+                        <option value="BOOK">Kitap</option>
+                        <option value="ARTICLE">Makale</option>
+                        <option value="JOURNAL">Dergi</option>
+                        <option value="WEBSITE">Web Sitesi</option>
+                        <option value="REPORT">Rapor</option>
+                        <option value="THESIS">Tez</option>
+                        <option value="OTHER">Diğer</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Yazar(lar) *</label>
+                    <div id="edit_authorsList" class="dynamic-list"></div>
+                    <div class="author-input-row">
+                        <input type="text" id="edit_author_lastname" placeholder="Soyadı" class="author-input">
+                        <input type="text" id="edit_author_firstname" placeholder="Adı" class="author-input">
+                        <button type="button" class="btn-add-item" onclick="addEditAuthor()">+ Ekle</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit_ref_title">Eser Başlığı *</label>
+                    <input type="text" id="edit_ref_title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit_ref_year">Yayın Yılı *</label>
+                    <input type="number" id="edit_ref_year" min="1000" max="2100" required>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="edit_ref_publisher">Yayınevi</label>
+                        <input type="text" id="edit_ref_publisher">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_ref_city">Yayın Yeri</label>
+                        <input type="text" id="edit_ref_city">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit_ref_url">Online Link (URL)</label>
+                    <input type="url" id="edit_ref_url">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit_ref_notes">Künyenin Kalanı</label>
+                    <textarea id="edit_ref_notes" rows="3" placeholder="Künyeyle ilgili diğer gerekli bilgileri giriniz (çevirmen, editör, baskı, sayfa sayısı vb.)"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeEditReferenceModal()">İptal</button>
+            <button type="button" class="btn btn-primary" onclick="updateReference()">Güncelle</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let editAuthorsList = [];
+
+function openEditReferenceModal(refId) {
+    // Kaynağı API'den çek
+    fetch(`/doctrine/api/references/${refId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const ref = data.reference;
+
+                // Form alanlarını doldur
+                document.getElementById('edit_ref_id').value = ref.id;
+                document.getElementById('edit_ref_type').value = ref.reference_type;
+                document.getElementById('edit_ref_title').value = ref.title;
+                document.getElementById('edit_ref_year').value = ref.year;
+                document.getElementById('edit_ref_publisher').value = ref.publisher || '';
+                document.getElementById('edit_ref_city').value = ref.city || '';
+                document.getElementById('edit_ref_url').value = ref.url || '';
+                document.getElementById('edit_ref_notes').value = ref.notes || '';
+
+                // Yazarları parse et ve listeye ekle
+                editAuthorsList = [];
+                if (ref.author) {
+                    // " & " ile ayrılmış yazarları parse et
+                    const authors = ref.author.split(' & ');
+                    editAuthorsList = authors.map(a => a.trim());
+                }
+                updateEditAuthorsList();
+
+                // Modalı aç
+                document.getElementById('editReferenceModal').classList.add('active');
+            }
+        })
+        .catch(error => {
+            console.error('Kaynak yüklenirken hata:', error);
+            alert('Kaynak yüklenemedi!');
+        });
+}
+
+function closeEditReferenceModal() {
+    document.getElementById('editReferenceModal').classList.remove('active');
+    document.getElementById('editReferenceForm').reset();
+    editAuthorsList = [];
+    updateEditAuthorsList();
+}
+
+function addEditAuthor() {
+    const lastnameInput = document.getElementById('edit_author_lastname');
+    const firstnameInput = document.getElementById('edit_author_firstname');
+
+    const lastname = lastnameInput.value.trim();
+    const firstname = firstnameInput.value.trim();
+
+    if (!lastname || !firstname) {
+        alert('Lütfen hem soyadı hem adı girin');
+        return;
+    }
+
+    const fullName = `${lastname}, ${firstname}`;
+
+    if (editAuthorsList.includes(fullName)) {
+        alert('Bu yazar zaten eklenmiş');
+        return;
+    }
+
+    editAuthorsList.push(fullName);
+    updateEditAuthorsList();
+
+    lastnameInput.value = '';
+    firstnameInput.value = '';
+    lastnameInput.focus();
+}
+
+function removeEditAuthor(index) {
+    editAuthorsList.splice(index, 1);
+    updateEditAuthorsList();
+}
+
+function updateEditAuthorsList() {
+    const container = document.getElementById('edit_authorsList');
+    if (!container) return;
+
+    if (editAuthorsList.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+
+    container.innerHTML = editAuthorsList.map((author, index) => `
+        <div class="dynamic-list-item">
+            <span>${author}</span>
+            <button type="button" class="remove-btn" onclick="removeEditAuthor(${index})" title="Kaldır">×</button>
+        </div>
+    `).join('');
+}
+
+function updateReference() {
+    const refId = document.getElementById('edit_ref_id').value;
+
+    if (editAuthorsList.length === 0) {
+        alert('Lütfen en az bir yazar ekleyin');
+        return;
+    }
+
+    const title = document.getElementById('edit_ref_title').value.trim();
+    const year = document.getElementById('edit_ref_year').value;
+
+    if (!title || !year) {
+        alert('Lütfen gerekli alanları doldurun (Başlık, Yıl)');
+        return;
+    }
+
+    const author = editAuthorsList.join(' & ');
+
+    const referenceData = {
+        reference_type: document.getElementById('edit_ref_type').value,
+        author: author,
+        title: title,
+        year: parseInt(year),
+        publisher: document.getElementById('edit_ref_publisher').value.trim(),
+        city: document.getElementById('edit_ref_city').value.trim(),
+        url: document.getElementById('edit_ref_url').value.trim(),
+        notes: document.getElementById('edit_ref_notes').value.trim(),
+    };
+
+    fetch(`/doctrine/api/references/${refId}/update/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(referenceData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Kaynak başarıyla güncellendi! Sayfa yeniden yükleniyor...');
+            location.reload();
+        } else {
+            alert('Hata: ' + (data.error || 'Bilinmeyen hata'));
+        }
+    })
+    .catch(error => {
+        console.error('Kaynak güncellenirken hata:', error);
+        alert('Kaynak güncellenirken hata oluştu!');
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
 
 {% endblock %}

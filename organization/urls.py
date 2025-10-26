@@ -31,6 +31,10 @@ urlpatterns = [
     path('union/manage/', views.manage_union, name='manage_union'),
     # Member Transfer
     path('transfer/', views.request_team_transfer, name='request_team_transfer'),
+    # Leader Removal Voting
+    path('leader-removal/initiate/', views.initiate_leader_removal, name='initiate_leader_removal'),
+    path('removal-vote/<int:vote_id>/', views.removal_vote_detail, name='removal_vote_detail'),
+    path('removal-vote/<int:vote_id>/cast/', views.cast_removal_vote, name='cast_removal_vote'),
     # Messages
     path('messages/inbox/', message_views.message_inbox, name='message_inbox'),
     path('messages/sent/', message_views.message_sent, name='message_sent'),

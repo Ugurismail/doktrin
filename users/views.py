@@ -6,9 +6,10 @@ from django.utils import timezone
 from .models import User
 
 def home(request):
-    """Ana sayfa - Herkes için home.html"""
-    from doctrine.models import DoctrineArticle, Proposal, Vote
+    """Ana sayfa - Akış (Activity Feed)"""
+    from doctrine.models import DoctrineArticle, Proposal, Vote, Activity
     from organization.models import Team, Squad, Union
+    from django.core.paginator import Paginator
 
     # Platform istatistikleri (herkes için)
     stats = {
@@ -22,7 +23,18 @@ def home(request):
         'passed_proposals': Proposal.objects.filter(status='PASSED').count(),
     }
 
-    context = {'stats': stats}
+    # Akış - Son aktiviteler (herkes için)
+    all_activities = Activity.objects.select_related('user').order_by('-created_at')
+
+    # Sayfalama
+    paginator = Paginator(all_activities, 20)  # Her sayfada 20 aktivite
+    page_number = request.GET.get('page', 1)
+    activities = paginator.get_page(page_number)
+
+    context = {
+        'stats': stats,
+        'activities': activities,
+    }
 
     # Giriş yapmış kullanıcılar için ekstra bilgiler
     if request.user.is_authenticated:

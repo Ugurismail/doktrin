@@ -1,7 +1,8 @@
 <div style="display: flex; gap: 8px; margin-top: 12px;">
     <form method="post" action="{% url 'doctrine:vote_discussion' discussion.id %}" style="margin: 0;">
         {% csrf_token %}
-        <button type="submit" name="vote_type" value="UP" style="background: var(--bg); border: 1px solid var(--border); padding: 8px 14px; border-radius: var(--radius); cursor: pointer; font-size: 14px; color: var(--text); display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; font-weight: 500;" onmouseover="this.style.background='var(--bg-secondary)'; this.style.borderColor='var(--accent)';" onmouseout="this.style.background='var(--bg)'; this.style.borderColor='var(--border)';">
+        <input type="hidden" name="vote_type" value="UP">
+        <button type="submit" style="background: var(--bg); border: 1px solid var(--border); padding: 8px 14px; border-radius: var(--radius); cursor: pointer; font-size: 14px; color: var(--text); display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; font-weight: 500;" onmouseover="this.style.background='var(--bg-secondary)'; this.style.borderColor='var(--accent)';" onmouseout="this.style.background='var(--bg)'; this.style.borderColor='var(--border)';">
             <span style="font-size: 16px;">↑</span>
             <span>{{ discussion.upvotes }}</span>
         </button>
@@ -9,7 +10,8 @@
 
     <form method="post" action="{% url 'doctrine:vote_discussion' discussion.id %}" style="margin: 0;">
         {% csrf_token %}
-        <button type="submit" name="vote_type" value="DOWN" style="background: var(--bg); border: 1px solid var(--border); padding: 8px 14px; border-radius: var(--radius); cursor: pointer; font-size: 14px; color: var(--text); display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; font-weight: 500;" onmouseover="this.style.background='var(--bg-secondary)'; this.style.borderColor='var(--accent)';" onmouseout="this.style.background='var(--bg)'; this.style.borderColor='var(--border)';">
+        <input type="hidden" name="vote_type" value="DOWN">
+        <button type="submit" style="background: var(--bg); border: 1px solid var(--border); padding: 8px 14px; border-radius: var(--radius); cursor: pointer; font-size: 14px; color: var(--text); display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; font-weight: 500;" onmouseover="this.style.background='var(--bg-secondary)'; this.style.borderColor='var(--accent)';" onmouseout="this.style.background='var(--bg)'; this.style.borderColor='var(--border)';">
             <span style="font-size: 16px;">↓</span>
             <span>{{ discussion.downvotes }}</span>
         </button>

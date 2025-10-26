@@ -43,21 +43,36 @@
             </div>
         </div>
 
+        <!-- Leader Removal Section -->
+        {% if request.user != team.leader %}
+        <div style="margin-bottom: var(--spacing-xl); padding: 20px; background: var(--bg-secondary); border-radius: 12px; border-left: 4px solid #dc3545;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="font-size: 18px; margin: 0 0 8px 0; color: #dc3545;">⚠️ Lider Atma Oylaması</h3>
+                    <p style="margin: 0; color: var(--text-muted); font-size: 14px;">
+                        Liderin görevden alınması için oylama başlatabilirsiniz. Oylama 1 hafta sürer ve çoğunluk kararı ile sonuçlanır.
+                    </p>
+                </div>
+                <a href="{% url 'organization:initiate_leader_removal' %}"
+                   class="btn btn-primary"
+                   style="background: #dc3545; border-color: #dc3545; white-space: nowrap; padding: 12px 24px;"
+                   onclick="return confirm('Lider atma oylaması başlatmak istediğinizden emin misiniz? Bu işlem geri alınamaz.');">
+                    ⚖️ Atma Oylaması Başlat
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Team Members -->
         <h2 style="font-size: 24px; margin-bottom: var(--spacing-md);">Ekip Üyeleri ({{ team_members.count }}/15)</h2>
 
-        <div style="display: grid; gap: 12px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             {% for member in team_members %}
-            <div style="padding: 16px; background: var(--bg-secondary); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <strong>{{ member.username }}</strong>
-                    {% if member == team.leader %}
-                    <span style="margin-left: 8px; padding: 4px 8px; background: var(--primary); color: white; border-radius: 4px; font-size: 12px;">👑 Lider</span>
-                    {% endif %}
-                </div>
-                <div style="font-size: 14px; color: var(--text-light);">
-                    {{ member.province }}
-                </div>
+            <div style="padding: 8px 16px; background: var(--bg-secondary); border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                <strong style="font-size: 14px;">{{ member.username }}</strong>
+                {% if member == team.leader %}
+                <span style="font-size: 14px;">👑</span>
+                {% endif %}
             </div>
             {% endfor %}
         </div>

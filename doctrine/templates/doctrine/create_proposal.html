@@ -25,7 +25,7 @@
                 {% elif user_level == 'PROVINCE_ORG' %}İl Örgütü
                 {% endif %}
                 <br>
-                Bu seviyede doktrini değiştirme önerisi sunabilirsiniz. <strong>ŞİMDİLİK TEST İÇİN:</strong> Öneri 10 dakika boyunca oylamaya açık kalacaktır.
+                Bu seviyede doktrini değiştirme önerisi sunabilirsiniz. Öneriniz 14 gün boyunca oylamaya açık kalacaktır.
             </p>
         </div>
 
@@ -40,6 +40,19 @@
                     <option value="MODIFY">Mevcut Maddeyi Değiştir</option>
                     <option value="REMOVE">Madde Kaldır</option>
                 </select>
+            </div>
+
+            <div class="form-group hidden" id="article_type_select_div">
+                <label for="proposed_article_type">Madde Türü</label>
+                <select id="proposed_article_type" name="proposed_article_type" required>
+                    <option value="NORMAL_LAW">📜 Program Maddesi</option>
+                    {% if user_level == 'FOUNDER' or user_level == 'UNION' %}
+                    <option value="FOUNDATION_LAW">🏛️ İlke (Sadece Kurucu ve Birlik)</option>
+                    {% endif %}
+                </select>
+                <small class="form-hint">
+                    İlkeler %85 oy ile kabul/reddedilir. Program maddeleri çoğunluk ile kabul edilir.
+                </small>
             </div>
 
             <div class="form-group hidden" id="article_select_div">
@@ -77,7 +90,7 @@
                     placeholder="Yeni madde içeriğini veya değişiklik önerinizi buraya yazın..."
                     class="textarea-content"></textarea>
                 <small class="form-hint">
-                    Net ve açık bir şekilde yazın. <strong>TEST:</strong> Bu öneri 10 dakika boyunca oylamaya açık kalacak.
+                    Net ve açık bir şekilde yazın. Öneriniz 14 gün boyunca oylamaya açık kalacaktır.
                 </small>
             </div>
 
@@ -136,27 +149,89 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Form submit - selected_references:', document.getElementById('selected_references').value);
         });
     }
+
+    // Taslak verileri varsa formu doldur
+    {% if draft %}
+    console.log('Taslak yükleniyor...');
+
+    // Öneri türünü seç
+    const proposalTypeSelect = document.getElementById('proposal_type');
+    if (proposalTypeSelect) {
+        {% if draft.proposal_type == 'NEW_ARTICLE' %}
+        proposalTypeSelect.value = 'ADD';
+        {% elif draft.proposal_type == 'AMEND_ARTICLE' %}
+        proposalTypeSelect.value = 'MODIFY';
+        {% elif draft.proposal_type == 'REPEAL_ARTICLE' %}
+        proposalTypeSelect.value = 'REMOVE';
+        {% endif %}
+
+        // toggleArticleSelect fonksiyonunu çağır
+        toggleArticleSelect();
+    }
+
+    // İlgili madde seç
+    {% if draft.related_article %}
+    const relatedArticleSelect = document.getElementById('related_article');
+    if (relatedArticleSelect) {
+        relatedArticleSelect.value = '{{ draft.related_article.id }}';
+    }
+    {% endif %}
+
+    // Önerilen içerik
+    {% if draft.proposed_content %}
+    const proposedContent = document.getElementById('proposed_content');
+    if (proposedContent) {
+        proposedContent.value = "{{ draft.proposed_content|escapejs }}";
+    }
+    {% endif %}
+
+    // Gerekçe
+    {% if draft.justification %}
+    const justification = document.getElementById('justification');
+    if (justification) {
+        justification.value = "{{ draft.justification|escapejs }}";
+    }
+    {% endif %}
+
+    // Etiketler (proposed_tags varsa)
+    {% if draft.proposed_tags %}
+    const tagIds = '{{ draft.proposed_tags }}'.split(',');
+    tagIds.forEach(tagId => {
+        const checkbox = document.querySelector(`input[name="tags"][value="${tagId.trim()}"]`);
+        if (checkbox) {
+            checkbox.checked = true;
+        }
+    });
+    {% endif %}
+
+    console.log('Taslak yüklendi!');
+    {% endif %}
 });
 
 function toggleArticleSelect() {
     const proposalType = document.getElementById('proposal_type').value;
     const articleDiv = document.getElementById('article_select_div');
+    const articleTypeDiv = document.getElementById('article_type_select_div');
     const tagsDiv = document.getElementById('tags_select_div');
     const articleLabel = document.getElementById('article_select_label');
 
     if (proposalType === 'MODIFY') {
         articleDiv.classList.remove('hidden');
+        articleTypeDiv.classList.add('hidden');
         articleLabel.textContent = 'Değiştirilecek Madde';
         tagsDiv.classList.add('hidden');
     } else if (proposalType === 'REMOVE') {
         articleDiv.classList.remove('hidden');
+        articleTypeDiv.classList.add('hidden');
         articleLabel.textContent = 'Kaldırılacak Madde';
         tagsDiv.classList.add('hidden');
     } else if (proposalType === 'ADD') {
         articleDiv.classList.add('hidden');
+        articleTypeDiv.classList.remove('hidden');
         tagsDiv.classList.remove('hidden');
     } else {
         articleDiv.classList.add('hidden');
+        articleTypeDiv.classList.add('hidden');
         tagsDiv.classList.add('hidden');
     }
 }
@@ -222,17 +297,12 @@ function saveDraft() {
 <div id="referenceModal" class="modal">
     <div class="modal-content modal-lg">
         <div class="modal-header">
-            <h2>Kaynak Ekle</h2>
+            <h2>Yeni Kaynak Oluştur</h2>
             <button type="button" class="modal-close" onclick="closeReferenceModal()">&times;</button>
         </div>
         <div class="modal-body">
-            <div class="tabs">
-                <button type="button" class="tab-btn active" onclick="switchReferenceTab('new')">Yeni Kaynak Oluştur</button>
-                <button type="button" class="tab-btn" onclick="switchReferenceTab('existing')">Mevcut Kaynak Seç</button>
-            </div>
-
-            <!-- Yeni Kaynak Oluştur Tab -->
-            <div id="newReferenceTab" class="tab-content active">
+            <!-- Yeni Kaynak Formu -->
+            <div id="newReferenceTab">
                 <form id="newReferenceForm">
                     <div class="form-group">
                         <label for="ref_type">Kaynak Türü</label>
@@ -247,9 +317,13 @@ function saveDraft() {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="ref_author">Yazar(lar) *</label>
-                        <input type="text" id="ref_author" placeholder="Örn: Kant, Immanuel" required>
-                        <small class="form-hint">Birden fazla yazar için "&" kullanın</small>
+                        <label>Yazar(lar) *</label>
+                        <div id="authorsList" class="dynamic-list"></div>
+                        <div class="author-input-row">
+                            <input type="text" id="author_lastname" placeholder="Soyadı" class="author-input">
+                            <input type="text" id="author_firstname" placeholder="Adı" class="author-input">
+                            <button type="button" class="btn-add-item" onclick="addAuthor()">+ Ekle</button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="ref_title">Eser Başlığı *</label>
@@ -263,11 +337,11 @@ function saveDraft() {
                     <div class="form-row-2">
                         <div class="form-group">
                             <label for="ref_publisher">Yayınevi</label>
-                            <input type="text" id="ref_publisher">
+                            <input type="text" id="ref_publisher" placeholder="Örn: Türkiye İş Bankası Kültür Yayınları">
                         </div>
                         <div class="form-group">
                             <label for="ref_city">Yayın Yeri</label>
-                            <input type="text" id="ref_city">
+                            <input type="text" id="ref_city" placeholder="Örn: İstanbul">
                         </div>
                     </div>
                     <div class="form-group">
@@ -275,20 +349,10 @@ function saveDraft() {
                         <input type="url" id="ref_url" placeholder="https://...">
                     </div>
                     <div class="form-group">
-                        <label for="ref_notes">Notlar</label>
-                        <textarea id="ref_notes" rows="2"></textarea>
+                        <label for="ref_notes">Künyenin Kalanı</label>
+                        <textarea id="ref_notes" rows="3" placeholder="Künyeyle ilgili diğer gerekli bilgileri giriniz (çevirmen, editör, baskı, sayfa sayısı vb.)"></textarea>
                     </div>
                 </form>
-            </div>
-
-            <!-- Mevcut Kaynak Seç Tab -->
-            <div id="existingReferenceTab" class="tab-content">
-                <div class="form-group">
-                    <input type="text" id="searchReference" placeholder="🔍 Yazar, başlık veya yıla göre ara..." onkeyup="searchReferences()">
-                </div>
-                <div id="referenceList" class="reference-list">
-                    <p class="text-muted">Kaynaklar yükleniyor...</p>
-                </div>
             </div>
         </div>
         <div class="modal-footer">

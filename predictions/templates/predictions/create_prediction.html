@@ -5,14 +5,16 @@
 {% block content %}
 
 <style>
-/* Takvim ikonu gündüz modunda görünür olsun */
+/* Takvim ikonu her modda görünür olsun */
 input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    filter: invert(0.5);
+    filter: invert(0.5) brightness(0.8);
     cursor: pointer;
+    opacity: 1;
 }
 
 [data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    filter: invert(1);
+    filter: invert(1) brightness(1.2);
+    opacity: 1;
 }
 </style>
 

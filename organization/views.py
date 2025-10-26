@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-from .models import Team, Squad, Union, OrganizationFormationProposal, FormationVote, LeaderVote
+from .models import Team, Squad, Union, OrganizationFormationProposal, FormationVote, LeaderVote, LeaderRemovalVote, RemovalVoteCast
 from users.models import InviteCode, User
 from notifications.utils import notify_leader_change, notify_formation_approved
 import uuid
@@ -42,14 +42,27 @@ def my_team(request):
             voter__current_team=team,
             voter_level='TEAM'
         ).select_related('voter', 'candidate')
-        
+
         from collections import Counter
         vote_counts = Counter(vote.candidate for vote in leader_votes)
-        
+
+        # Oy kullanmayan üyeler mevcut lidere oy vermiş sayılır
+        votes_cast = leader_votes.count()
+        if team.leader and votes_cast < team.member_count:
+            # Mevcut liderin oy sayısını hesapla
+            leader_current_votes = vote_counts.get(team.leader, 0)
+            # Oy kullanmayanları ekle
+            remaining_votes = team.member_count - votes_cast
+            vote_counts[team.leader] = leader_current_votes + remaining_votes
+
+        # Eğer hiç oy yoksa, mevcut liderin tüm oyları aldığını göster
+        if not vote_counts and team.leader:
+            vote_counts = {team.leader: team.member_count}
+
         leader_votes_data = {
             'votes': leader_votes,
             'vote_counts': dict(vote_counts),
-            'total_votes': leader_votes.count(),
+            'total_votes': team.member_count,  # Her zaman toplam üye sayısı
             'member_count': team.member_count,
         }
     
@@ -115,9 +128,47 @@ def my_squad(request):
             squad_ids = [int(sid) for sid in proposal.participating_entities]
             proposal.squads = Squad.objects.filter(id__in=squad_ids)
 
+    # Lider seçimi oylarını al
+    leader_votes_data = {}
+    if squad:
+        squad_team_leaders = User.objects.filter(
+            led_team__parent_squad=squad,
+            led_team__is_active=True
+        )
+
+        leader_votes = LeaderVote.objects.filter(
+            voter__in=squad_team_leaders,
+            voter_level='SQUAD'
+        ).select_related('voter', 'candidate')
+
+        from collections import Counter
+        vote_counts = Counter(vote.candidate for vote in leader_votes)
+
+        # Oy kullanmayan liderler mevcut lidere oy vermiş sayılır
+        leader_count = squad_team_leaders.count()
+        votes_cast = leader_votes.count()
+        if squad.leader and votes_cast < leader_count:
+            # Mevcut liderin oy sayısını hesapla
+            leader_current_votes = vote_counts.get(squad.leader, 0)
+            # Oy kullanmayanları ekle
+            remaining_votes = leader_count - votes_cast
+            vote_counts[squad.leader] = leader_current_votes + remaining_votes
+
+        # Eğer hiç oy yoksa, mevcut liderin tüm oyları aldığını göster
+        if not vote_counts and squad.leader:
+            vote_counts = {squad.leader: leader_count}
+
+        leader_votes_data = {
+            'votes': leader_votes,
+            'vote_counts': dict(vote_counts),
+            'total_votes': leader_count,  # Her zaman toplam lider sayısı
+            'leader_count': leader_count,
+        }
+
     context = {
         'squad': squad,
         'pending_proposals': pending_proposals,
+        'leader_votes_data': leader_votes_data,
     }
     return render(request, 'organization/my_squad.html', context)
 
@@ -151,9 +202,47 @@ def my_union(request):
             union_ids = [int(uid) for uid in proposal.participating_entities]
             proposal.unions = Union.objects.filter(id__in=union_ids)
 
+    # Lider seçimi oylarını al
+    leader_votes_data = {}
+    if union:
+        union_squad_leaders = User.objects.filter(
+            led_squad__parent_union=union,
+            led_squad__is_active=True
+        )
+
+        leader_votes = LeaderVote.objects.filter(
+            voter__in=union_squad_leaders,
+            voter_level='UNION'
+        ).select_related('voter', 'candidate')
+
+        from collections import Counter
+        vote_counts = Counter(vote.candidate for vote in leader_votes)
+
+        # Oy kullanmayan liderler mevcut lidere oy vermiş sayılır
+        leader_count = union_squad_leaders.count()
+        votes_cast = leader_votes.count()
+        if union.leader and votes_cast < leader_count:
+            # Mevcut liderin oy sayısını hesapla
+            leader_current_votes = vote_counts.get(union.leader, 0)
+            # Oy kullanmayanları ekle
+            remaining_votes = leader_count - votes_cast
+            vote_counts[union.leader] = leader_current_votes + remaining_votes
+
+        # Eğer hiç oy yoksa, mevcut liderin tüm oyları aldığını göster
+        if not vote_counts and union.leader:
+            vote_counts = {union.leader: leader_count}
+
+        leader_votes_data = {
+            'votes': leader_votes,
+            'vote_counts': dict(vote_counts),
+            'total_votes': leader_count,  # Her zaman toplam lider sayısı
+            'leader_count': leader_count,
+        }
+
     context = {
         'union': union,
         'pending_proposals': pending_proposals,
+        'leader_votes_data': leader_votes_data,
     }
     return render(request, 'organization/my_union.html', context)
 
@@ -544,7 +633,21 @@ def vote_team_leader(request):
     user_team = request.user.current_team
     
     if not user_team:
-        messages.error(request, 'Bir ekipe dahil olmalısınız.')
+        messages.error(request, 'Bir ekibe dahil olmalısınız.')
+        return redirect('organization:my_team')
+
+    # Eski lider kontrolü - eğer bu kullanıcı yakın zamanda atılmış bir lidersse oy veremez
+    from django.utils import timezone
+    recent_removal = LeaderRemovalVote.objects.filter(
+        level='TEAM',
+        entity_id=user_team.id,
+        current_leader=request.user,
+        status='PASSED',
+        end_date__gte=timezone.now() - timezone.timedelta(days=30)  # Son 30 gün içinde
+    ).first()
+
+    if recent_removal:
+        messages.error(request, 'Atılmış lider olarak yeni lider seçiminde oy kullanamazsınız.')
         return redirect('organization:my_team')
     
     if request.method == 'POST':
@@ -565,16 +668,24 @@ def vote_team_leader(request):
             voter_level='TEAM',
             defaults={'candidate': candidate}
         )
-        
+
+        # Oy sayımında eski lideri hariç tut
         team_votes = LeaderVote.objects.filter(
             voter__current_team=user_team,
             voter_level='TEAM'
         )
-        
-        if team_votes.count() == user_team.member_count:
+        if recent_removal:
+            team_votes = team_votes.exclude(voter=recent_removal.current_leader)
+
+        # Ekip üye sayısından eski lideri çıkar
+        expected_vote_count = user_team.member_count
+        if recent_removal:
+            expected_vote_count -= 1
+
+        if team_votes.count() == expected_vote_count:
             candidates = team_votes.values_list('candidate', flat=True)
             unique_candidates = set(candidates)
-            
+
             if len(unique_candidates) == 1:
                 new_leader_id = list(unique_candidates)[0]
                 new_leader = User.objects.get(id=new_leader_id)
@@ -582,13 +693,18 @@ def vote_team_leader(request):
                 user_team.leader = new_leader
                 user_team.save()
 
+                # Oyları temizle - yeni lider seçildi
+                team_votes.delete()
+
                 # Bildirim gönder
                 if old_leader != new_leader:
                     notify_leader_change(user_team, new_leader, 'TEAM')
 
                 messages.success(request, f'{new_leader.username} yeni ekip lideri oldu!')
             else:
-                messages.info(request, 'Oyunuz kaydedildi. Oy birliği sağlanmadı.')
+                # Oy birliği sağlanmadı, mevcut lider devam etsin
+                # Oyları SİLME - sayfa yenilendiğinde kullanıcılar görebilsin
+                messages.info(request, 'Oy birliği sağlanmadı, mevcut lider görevine devam ediyor.')
         else:
             messages.success(request, 'Oyunuz kaydedildi.')
         
@@ -611,6 +727,19 @@ def vote_squad_leader(request):
     # Sadece ekip liderleri oy kullanabilir
     if user_team.leader != request.user:
         messages.error(request, 'Sadece ekip liderleri takım lideri oylamasına katılabilir.')
+        return redirect('organization:my_squad')
+
+    # Eski lider kontrolü - eğer bu kullanıcı yakın zamanda atılmış bir lidersse oy veremez
+    recent_removal = LeaderRemovalVote.objects.filter(
+        level='SQUAD',
+        entity_id=user_squad.id,
+        current_leader=request.user,
+        status='PASSED',
+        end_date__gte=timezone.now() - timezone.timedelta(days=30)
+    ).first()
+
+    if recent_removal:
+        messages.error(request, 'Atılmış lider olarak yeni lider seçiminde oy kullanamazsınız.')
         return redirect('organization:my_squad')
 
     if request.method == 'POST':
@@ -639,10 +768,14 @@ def vote_squad_leader(request):
             led_team__is_active=True
         )
 
+        # Oy sayımında eski lideri hariç tut
         squad_votes = LeaderVote.objects.filter(
             voter__in=squad_team_leaders,
             voter_level='SQUAD'
         )
+        if recent_removal:
+            squad_votes = squad_votes.exclude(voter=recent_removal.current_leader)
+            squad_team_leaders = squad_team_leaders.exclude(id=recent_removal.current_leader.id)
 
         if squad_votes.count() == squad_team_leaders.count():
             candidates = squad_votes.values_list('candidate', flat=True)
@@ -655,13 +788,18 @@ def vote_squad_leader(request):
                 user_squad.leader = new_leader
                 user_squad.save()
 
+                # Oyları temizle - yeni lider seçildi
+                squad_votes.delete()
+
                 # Bildirim gönder
                 if old_leader != new_leader:
                     notify_leader_change(user_squad, new_leader, 'SQUAD')
 
                 messages.success(request, f'{new_leader.username} yeni takım lideri oldu!')
             else:
-                messages.info(request, 'Oyunuz kaydedildi. Oy birliği sağlanmadı.')
+                # Oy birliği sağlanmadı, mevcut lider devam etsin
+                # Oyları SİLME - sayfa yenilendiğinde kullanıcılar görebilsin
+                messages.info(request, 'Oy birliği sağlanmadı, mevcut lider görevine devam ediyor.')
         else:
             messages.success(request, 'Oyunuz kaydedildi.')
 
@@ -684,6 +822,19 @@ def vote_union_leader(request):
     # Sadece takım liderleri oy kullanabilir
     if user_team.parent_squad.leader != request.user:
         messages.error(request, 'Sadece takım liderleri birlik lideri oylamasına katılabilir.')
+        return redirect('organization:my_union')
+
+    # Eski lider kontrolü - eğer bu kullanıcı yakın zamanda atılmış bir lidersse oy veremez
+    recent_removal = LeaderRemovalVote.objects.filter(
+        level='UNION',
+        entity_id=user_union.id,
+        current_leader=request.user,
+        status='PASSED',
+        end_date__gte=timezone.now() - timezone.timedelta(days=30)
+    ).first()
+
+    if recent_removal:
+        messages.error(request, 'Atılmış lider olarak yeni lider seçiminde oy kullanamazsınız.')
         return redirect('organization:my_union')
 
     if request.method == 'POST':
@@ -712,10 +863,14 @@ def vote_union_leader(request):
             led_squad__is_active=True
         )
 
+        # Oy sayımında eski lideri hariç tut
         union_votes = LeaderVote.objects.filter(
             voter__in=union_squad_leaders,
             voter_level='UNION'
         )
+        if recent_removal:
+            union_votes = union_votes.exclude(voter=recent_removal.current_leader)
+            union_squad_leaders = union_squad_leaders.exclude(id=recent_removal.current_leader.id)
 
         if union_votes.count() == union_squad_leaders.count():
             candidates = union_votes.values_list('candidate', flat=True)
@@ -728,13 +883,18 @@ def vote_union_leader(request):
                 user_union.leader = new_leader
                 user_union.save()
 
+                # Oyları temizle - yeni lider seçildi
+                union_votes.delete()
+
                 # Bildirim gönder
                 if old_leader != new_leader:
                     notify_leader_change(user_union, new_leader, 'UNION')
 
                 messages.success(request, f'{new_leader.username} yeni birlik lideri oldu!')
             else:
-                messages.info(request, 'Oyunuz kaydedildi. Oy birliği sağlanmadı.')
+                # Oy birliği sağlanmadı, mevcut lider devam etsin
+                # Oyları SİLME - sayfa yenilendiğinde kullanıcılar görebilsin
+                messages.info(request, 'Oy birliği sağlanmadı, mevcut lider görevine devam ediyor.')
         else:
             messages.success(request, 'Oyunuz kaydedildi.')
 
@@ -775,9 +935,47 @@ def my_province_org(request):
             union_ids = [int(uid) for uid in proposal.participating_entities]
             proposal.unions = Union.objects.filter(id__in=union_ids)
 
+    # Lider seçimi oylarını al
+    leader_votes_data = {}
+    if province_org:
+        province_org_union_leaders = User.objects.filter(
+            led_union__parent_province_org=province_org,
+            led_union__is_active=True
+        )
+
+        leader_votes = LeaderVote.objects.filter(
+            voter__in=province_org_union_leaders,
+            voter_level='PROVINCE_ORG'
+        ).select_related('voter', 'candidate')
+
+        from collections import Counter
+        vote_counts = Counter(vote.candidate for vote in leader_votes)
+
+        # Oy kullanmayan liderler mevcut lidere oy vermiş sayılır
+        leader_count = province_org_union_leaders.count()
+        votes_cast = leader_votes.count()
+        if province_org.leader and votes_cast < leader_count:
+            # Mevcut liderin oy sayısını hesapla
+            leader_current_votes = vote_counts.get(province_org.leader, 0)
+            # Oy kullanmayanları ekle
+            remaining_votes = leader_count - votes_cast
+            vote_counts[province_org.leader] = leader_current_votes + remaining_votes
+
+        # Eğer hiç oy yoksa, mevcut liderin tüm oyları aldığını göster
+        if not vote_counts and province_org.leader:
+            vote_counts = {province_org.leader: leader_count}
+
+        leader_votes_data = {
+            'votes': leader_votes,
+            'vote_counts': dict(vote_counts),
+            'total_votes': leader_count,  # Her zaman toplam lider sayısı
+            'leader_count': leader_count,
+        }
+
     context = {
         'province_org': province_org,
         'pending_proposals': pending_proposals,
+        'leader_votes_data': leader_votes_data,
     }
     return render(request, 'organization/my_province_org.html', context)
 
@@ -1002,13 +1200,18 @@ def vote_province_org_leader(request):
                 province_org.leader = new_leader
                 province_org.save()
 
+                # Oyları temizle - yeni lider seçildi
+                province_org_votes.delete()
+
                 # Bildirim gönder
                 if old_leader != new_leader:
                     notify_leader_change(province_org, new_leader, 'PROVINCE_ORG')
 
                 messages.success(request, f'{new_leader.username} yeni il örgütü lideri oldu!')
             else:
-                messages.info(request, 'Oyunuz kaydedildi. Oy birliği sağlanmadı.')
+                # Oy birliği sağlanmadı, mevcut lider devam etsin
+                # Oyları SİLME - sayfa yenilendiğinde kullanıcılar görebilsin
+                messages.info(request, 'Oy birliği sağlanmadı, mevcut lider görevine devam ediyor.')
         else:
             messages.success(request, 'Oyunuz kaydedildi.')
 
@@ -1360,3 +1563,205 @@ def request_team_transfer(request):
         'current_team': request.user.current_team,
     }
     return render(request, 'organization/request_team_transfer.html', context)
+
+
+# ============================================
+# LİDER ATMA OYLAMA SİSTEMİ
+# ============================================
+
+@login_required
+def initiate_leader_removal(request):
+    """Lider atma oylaması başlat"""
+    from .models import LeaderRemovalVote, Team
+    from django.utils import timezone
+
+    user_team = request.user.current_team
+    if not user_team:
+        messages.error(request, 'Bir ekibe üye olmalısınız.')
+        return redirect('organization:my_team')
+
+    # Sadece ekip üyeleri başlatabilir (lider hariç)
+    if user_team.leader == request.user:
+        messages.error(request, 'Lider olarak kendi atma oylamanızı başlatamazsınız.')
+        return redirect('organization:team_manage')
+
+    # Zaten aktif bir atma oylaması var mı?
+    active_removal = LeaderRemovalVote.objects.filter(
+        level='TEAM',
+        entity_id=user_team.id,
+        status='ACTIVE',
+        end_date__gt=timezone.now()
+    ).first()
+
+    if active_removal:
+        messages.warning(request, 'Zaten aktif bir lider atma oylaması var!')
+        return redirect('organization:removal_vote_detail', vote_id=active_removal.id)
+
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '').strip()
+
+        if not reason:
+            messages.error(request, 'Lütfen bir gerekçe yazın.')
+            return redirect('organization:initiate_leader_removal')
+
+        if len(reason) < 50:
+            messages.error(request, 'Gerekçe en az 50 karakter olmalıdır.')
+            return redirect('organization:initiate_leader_removal')
+
+        # Atma oylaması oluştur
+        removal_vote = LeaderRemovalVote.objects.create(
+            level='TEAM',
+            entity_id=user_team.id,
+            current_leader=user_team.leader,
+            initiated_by=request.user,
+            reason=reason
+        )
+
+        # Başlatanın oyu otomatik "EVET"
+        from .models import RemovalVoteCast
+        RemovalVoteCast.objects.create(
+            removal_vote=removal_vote,
+            voter=request.user,
+            vote='YES'
+        )
+        removal_vote.yes_votes = 1
+        removal_vote.save()
+
+        # Bildirim gönder
+        from notifications.utils import create_notification
+        from users.models import User
+
+        # Tüm ekip üyelerine bildirim
+        team_members = User.objects.filter(current_team=user_team).exclude(id=request.user.id)
+        for member in team_members:
+            create_notification(
+                user=member,
+                notification_type='leader_removal_started',
+                title='Lider Atma Oylaması Başlatıldı',
+                message=f'{request.user.username}, {user_team.leader.username} için lider atma oylaması başlattı.',
+                related_url=f'/organization/removal-vote/{removal_vote.id}/'
+            )
+
+        messages.success(request, 'Lider atma oylaması başlatıldı! Oylama 1 hafta sürecek.')
+        return redirect('organization:removal_vote_detail', vote_id=removal_vote.id)
+
+    context = {
+        'team': user_team,
+    }
+    return render(request, 'organization/initiate_leader_removal.html', context)
+
+
+@login_required
+def removal_vote_detail(request, vote_id):
+    """Lider atma oylaması detay sayfası"""
+    from .models import LeaderRemovalVote, RemovalVoteCast
+    from django.utils import timezone
+
+    removal_vote = get_object_or_404(LeaderRemovalVote, id=vote_id)
+
+    # Yetki kontrolü - sadece ilgili ekip/takım/birlik üyeleri görebilir
+    user_team = request.user.current_team
+    if not user_team or removal_vote.entity_id != user_team.id:
+        messages.error(request, 'Bu oylamayı görme yetkiniz yok.')
+        return redirect('organization:my_team')
+
+    # Kullanıcının oyu var mı?
+    user_vote = RemovalVoteCast.objects.filter(
+        removal_vote=removal_vote,
+        voter=request.user
+    ).first()
+
+    # Oylama bitti mi?
+    is_ended = timezone.now() > removal_vote.end_date or removal_vote.status != 'ACTIVE'
+
+    # Toplam oy sayısı ve yüzdeler
+    total_votes = removal_vote.yes_votes + removal_vote.no_votes
+    total_members = user_team.member_count
+
+    yes_percentage = (removal_vote.yes_votes / total_votes * 100) if total_votes > 0 else 0
+    no_percentage = (removal_vote.no_votes / total_votes * 100) if total_votes > 0 else 0
+
+    context = {
+        'removal_vote': removal_vote,
+        'user_vote': user_vote,
+        'is_ended': is_ended,
+        'total_votes': total_votes,
+        'total_members': total_members,
+        'yes_percentage': yes_percentage,
+        'no_percentage': no_percentage,
+        'team': user_team,
+    }
+    return render(request, 'organization/removal_vote_detail.html', context)
+
+
+@login_required
+def cast_removal_vote(request, vote_id):
+    """Lider atma oylamasında oy kullan"""
+    from .models import LeaderRemovalVote, RemovalVoteCast
+    from django.utils import timezone
+
+    if request.method != 'POST':
+        return redirect('organization:removal_vote_detail', vote_id=vote_id)
+
+    removal_vote = get_object_or_404(LeaderRemovalVote, id=vote_id)
+
+    # Yetki kontrolü
+    user_team = request.user.current_team
+    if not user_team or removal_vote.entity_id != user_team.id:
+        messages.error(request, 'Bu oylamada oy kullanma yetkiniz yok.')
+        return redirect('organization:my_team')
+
+    # Lider oy kullanamaz
+    if request.user == removal_vote.current_leader:
+        messages.error(request, 'Lider olarak kendi atma oylamanızda oy kullanamazsınız.')
+        return redirect('organization:removal_vote_detail', vote_id=vote_id)
+
+    # Oylama bitti mi?
+    if timezone.now() > removal_vote.end_date or removal_vote.status != 'ACTIVE':
+        messages.error(request, 'Bu oylama sona ermiştir.')
+        return redirect('organization:removal_vote_detail', vote_id=vote_id)
+
+    # Zaten oy kullandı mı?
+    existing_vote = RemovalVoteCast.objects.filter(
+        removal_vote=removal_vote,
+        voter=request.user
+    ).first()
+
+    vote_choice = request.POST.get('vote')
+    if vote_choice not in ['YES', 'NO']:
+        messages.error(request, 'Geçersiz oy seçimi.')
+        return redirect('organization:removal_vote_detail', vote_id=vote_id)
+
+    if existing_vote:
+        # Oy değiştirme
+        old_vote = existing_vote.vote
+        existing_vote.vote = vote_choice
+        existing_vote.save()
+
+        # Sayıları güncelle
+        if old_vote == 'YES' and vote_choice == 'NO':
+            removal_vote.yes_votes -= 1
+            removal_vote.no_votes += 1
+        elif old_vote == 'NO' and vote_choice == 'YES':
+            removal_vote.no_votes -= 1
+            removal_vote.yes_votes += 1
+
+        removal_vote.save()
+        messages.success(request, 'Oyunuz değiştirildi.')
+    else:
+        # Yeni oy
+        RemovalVoteCast.objects.create(
+            removal_vote=removal_vote,
+            voter=request.user,
+            vote=vote_choice
+        )
+
+        if vote_choice == 'YES':
+            removal_vote.yes_votes += 1
+        else:
+            removal_vote.no_votes += 1
+
+        removal_vote.save()
+        messages.success(request, 'Oyunuz kaydedildi.')
+
+    return redirect('organization:removal_vote_detail', vote_id=vote_id)

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Lider Atma Oylaması Başlat{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin: 2rem auto;">
+    <div class="card">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+            <span style="font-size: 2rem;">⚠️</span>
+            <h1 style="margin: 0; font-size: 1.75rem;">Lider Atma Oylaması Başlat</h1>
+        </div>
+
+        <div class="info-box" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; margin-bottom: 1.5rem;">
+            <p style="margin: 0; color: #856404;">
+                <strong>⚠️ Önemli Bilgilendirme:</strong><br>
+                Lider atma oylaması ciddi bir süreçtir. Başlattığınızda:
+            </p>
+            <ul style="margin: 0.5rem 0 0 1.5rem; color: #856404;">
+                <li>Oylama 1 hafta (7 gün) sürecektir</li>
+                <li>Tüm ekip üyeleri bildirim alacaktır</li>
+                <li>Çoğunluk "Evet" derse lider görevden alınır</li>
+                <li>Lider oy kullanamaz</li>
+                <li>Oylar anonim değildir</li>
+            </ul>
+        </div>
+
+        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: var(--radius); margin-bottom: 1.5rem;">
+            <h3 style="margin: 0 0 0.75rem 0; font-size: 1.1rem;">Mevcut Durum</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Ekip</p>
+                    <p style="margin: 0.25rem 0 0 0; font-weight: 600;">{{ team.display_name }}</p>
+                </div>
+                <div>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Mevcut Lider</p>
+                    <p style="margin: 0.25rem 0 0 0; font-weight: 600;">{{ team.leader.username }}</p>
+                </div>
+                <div>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Toplam Üye</p>
+                    <p style="margin: 0.25rem 0 0 0; font-weight: 600;">{{ team.member_count }} kişi</p>
+                </div>
+                <div>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Gerekli Çoğunluk</p>
+                    <p style="margin: 0.25rem 0 0 0; font-weight: 600;">%50 + 1 oy</p>
+                </div>
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="reason" style="font-weight: 600; margin-bottom: 0.5rem; display: block;">
+                    Atma Gerekçesi *
+                </label>
+                <textarea
+                    id="reason"
+                    name="reason"
+                    rows="8"
+                    required
+                    placeholder="Lider atma oylaması başlatma gerekçenizi detaylı bir şekilde açıklayın. Bu gerekçe tüm ekip üyelerine gösterilecektir. (En az 50 karakter)"
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; resize: vertical;"
+                ></textarea>
+                <small style="display: block; margin-top: 0.5rem; color: var(--text-muted);">
+                    En az 50 karakter. Açık ve somut nedenler belirtiniz.
+                </small>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                <a href="{% url 'organization:team_manage' %}" class="btn btn-secondary">
+                    ← İptal
+                </a>
+                <button type="submit" class="btn btn-primary" style="background: #dc3545; border-color: #dc3545;">
+                    ⚠️ Atma Oylaması Başlat
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.info-box ul {
+    padding-left: 1.5rem;
+}
+
+.info-box li {
+    margin: 0.25rem 0;
+}
+</style>
+{% endblock %}

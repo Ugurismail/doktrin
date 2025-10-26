@@ -1,42 +1,283 @@
 {% extends 'base.html' %}
 
-{% block title %}Doktrin{% endblock %}
+{% block title %}{% if user.is_authenticated %}Akış{% else %}Doktrin{% endif %}{% endblock %}
 
 {% block content %}
 
-<!-- Hero - Dynamic based on auth status -->
 {% if user.is_authenticated %}
-<!-- Logged In Hero - Welcome Back -->
-<section class="hero-section hero-gradient">
-    <div class="hero-container">
-        <div class="hero-badge">
-            <span class="hero-badge-text">👋 Hoş Geldin</span>
-        </div>
-        <h1 class="hero-title">
-            {{ user.username }}
-        </h1>
-        <p class="hero-subtitle">
-            {% if user.current_team %}
-                {{ user.current_team.display_name }} •
-                {% if user.current_team.leader == user %}Ekip Lideri{% else %}Ekip Üyesi{% endif %}
-            {% else %}
-                Henüz bir ekibe katılmadın
-            {% endif %}
-        </p>
+<!-- LOGGED IN: Activity Feed -->
+<style>
+/* Akış (Feed) Sayfası Stilleri */
+.feed-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--space-lg) var(--space-md);
+}
 
-        <div class="hero-actions">
-            <a href="{% url 'doctrine:doctrine_list' %}" class="btn btn-primary">📜 Doktrin</a>
-            {% if user.current_team %}
-                <a href="{% url 'organization:my_team' %}" class="btn btn-secondary">👥 Ekibim</a>
-            {% else %}
-                <a href="{% url 'organization:create_team' %}" class="btn btn-secondary">🎯 Ekip Oluştur</a>
-            {% endif %}
-            <a href="{% url 'users:user_guide' %}" class="btn btn-secondary">📖 Kılavuz</a>
-        </div>
+.feed-header {
+    text-align: center;
+    padding: 2rem 0 1.5rem;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 2rem;
+}
+
+.feed-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.feed-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+/* Quick Stats Bar */
+.quick-stats {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.quick-stat {
+    text-align: center;
+}
+
+.quick-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.quick-stat-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+/* Activity Feed Items */
+.activity-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.activity-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: all 0.2s;
+}
+
+.activity-item:hover {
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.activity-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    border: 1px solid var(--border);
+}
+
+.activity-meta {
+    flex: 1;
+}
+
+.activity-user {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.activity-time {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.activity-content {
+    padding-left: 48px;
+    color: var(--text);
+    line-height: 1.6;
+}
+
+.activity-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    color: var(--primary);
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+.activity-link:hover {
+    text-decoration: underline;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    padding: 2rem 0;
+}
+
+.pagination a,
+.pagination span {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text);
+}
+
+.pagination a:hover {
+    background: var(--bg-secondary);
+    border-color: var(--primary);
+}
+
+.pagination .current {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+/* Quick Actions for New Users */
+.quick-actions {
+    background: linear-gradient(135deg, var(--primary) 0%, #0052CC 100%);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: white;
+}
+
+.quick-actions h3 {
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.quick-actions p {
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+}
+
+.quick-actions .btn {
+    margin: 0 0.5rem;
+}
+</style>
+
+<div class="feed-container">
+    {% if not user.current_team %}
+    <!-- Quick Actions for New Users -->
+    <div class="quick-actions">
+        <h3>🎯 Hemen Başla!</h3>
+        <p>Platforma katılmak için bir ekip oluştur veya mevcut bir ekibe katıl</p>
+        <a href="{% url 'organization:create_team' %}" class="btn btn-primary">Ekip Oluştur</a>
+        <a href="{% url 'organization:join_team' %}" class="btn btn-secondary">Ekibe Katıl</a>
     </div>
-</section>
+    {% endif %}
+
+    <!-- Activity Feed -->
+    <div class="activity-feed">
+        {% if activities %}
+            {% for activity in activities %}
+            <div class="activity-item">
+                <div class="activity-header">
+                    <div class="activity-icon">
+                        {% if activity.activity_type == 'proposal_created' %}📝
+                        {% elif activity.activity_type == 'proposal_passed' %}✅
+                        {% elif activity.activity_type == 'proposal_rejected' %}❌
+                        {% elif activity.activity_type == 'comment_added' %}💬
+                        {% elif activity.activity_type == 'vote_cast' %}🗳️
+                        {% elif activity.activity_type == 'leader_changed' %}👑
+                        {% elif activity.activity_type == 'organization_formed' %}🏛️
+                        {% elif activity.activity_type == 'team_created' %}👥
+                        {% elif activity.activity_type == 'prediction_created' %}🦉
+                        {% elif activity.activity_type == 'prediction_expired' %}⏰
+                        {% elif activity.activity_type == 'prediction_verified' %}✓
+                        {% else %}📌
+                        {% endif %}
+                    </div>
+                    <div class="activity-meta">
+                        {% if activity.user %}
+                        <div class="activity-user">{{ activity.user.username }}</div>
+                        {% else %}
+                        <div class="activity-user">Sistem</div>
+                        {% endif %}
+                        <div class="activity-time">{{ activity.created_at|timesince }} önce</div>
+                    </div>
+                </div>
+                <div class="activity-content">
+                    {{ activity.description }}
+                    {% if activity.related_url %}
+                    <a href="{{ activity.related_url }}" class="activity-link">→ Detayları gör</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Pagination -->
+            {% if activities.has_other_pages %}
+            <div class="pagination">
+                {% if activities.has_previous %}
+                    <a href="?page=1">İlk</a>
+                    <a href="?page={{ activities.previous_page_number }}">Önceki</a>
+                {% endif %}
+
+                <span class="current">
+                    {{ activities.number }} / {{ activities.paginator.num_pages }}
+                </span>
+
+                {% if activities.has_next %}
+                    <a href="?page={{ activities.next_page_number }}">Sonraki</a>
+                    <a href="?page={{ activities.paginator.num_pages }}">Son</a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+        {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-state-icon">🌱</div>
+                <h3>Henüz aktivite yok</h3>
+                <p>Platform yeni başlıyor. İlk aktiviteyi sen oluştur!</p>
+                <a href="{% url 'doctrine:doctrine_list' %}" class="btn btn-primary" style="margin-top: 1rem;">Doktrin'e Git</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
 {% else %}
-<!-- Guest Hero - Call to Action -->
+<!-- GUEST: Original Landing Page -->
 <section class="hero-section hero-guest">
     <div class="hero-container">
         <h1 class="hero-title-xl">
@@ -52,7 +293,6 @@
         </div>
     </div>
 </section>
-{% endif %}
 
 <!-- Live Stats - Platform Metrics -->
 <section class="section-padding section-border-bottom">
@@ -137,13 +377,6 @@
     </div>
 </section>
 
-{% if not user.is_authenticated %}
-<!-- CTA - Minimal -->
-<section class="section-padding section-border-top text-center">
-    <h2 class="section-title mb-sm">Başla</h2>
-    <p class="text-secondary mb-md">Bugün kayıt ol, yarın örgütlen.</p>
-    <a href="{% url 'users:register' %}" class="btn btn-primary">Kayıt Ol</a>
-</section>
 {% endif %}
 
 {% endblock %}

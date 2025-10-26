@@ -30,9 +30,20 @@ class Command(BaseCommand):
                 self.stdout.write(f'Öneri #{proposal.id} arşivlendi (oy yok)')
                 continue
 
-            # ŞİMDİLİK TEST İÇİN: Basit çoğunluk (yes > no + abstain)
-            # SONRA: Veto %15, kabul %50 sistemi olacak
-            if proposal.vote_yes_count > proposal.vote_veto_count + proposal.vote_abstain_count:
+            # Kabul eşiğini belirle
+            # İlkeler için %85, Program maddeleri için basit çoğunluk
+            is_foundation = hasattr(proposal, 'proposed_article_type') and proposal.proposed_article_type == 'FOUNDATION_LAW'
+            if is_foundation or (proposal.related_article and proposal.related_article.article_type == 'FOUNDATION_LAW'):
+                # İlke: %85 kabul gerekli
+                required_percentage = 0.85
+                approval_rate = proposal.vote_yes_count / total_votes if total_votes > 0 else 0
+                is_passed = approval_rate >= required_percentage
+                self.stdout.write(f'  İlke önerisi: {approval_rate*100:.1f}% kabul oyu (gerekli: {required_percentage*100}%)')
+            else:
+                # Program: Basit çoğunluk
+                is_passed = proposal.vote_yes_count > proposal.vote_veto_count + proposal.vote_abstain_count
+
+            if is_passed:
                 proposal.status = 'PASSED'
                 proposal.save()
 
@@ -60,13 +71,16 @@ class Command(BaseCommand):
                     article.save()
                     self.stdout.write(f'  → Madde #{article.id} güncellendi (v{next_version_number} oluşturuldu)')
                 elif proposal.proposal_type == 'ADD':
-                    # Yeni madde ekle (her zaman NORMAL_LAW)
-                    last_law = DoctrineArticle.objects.filter(article_type='NORMAL_LAW').order_by('-article_number').first()
-                    next_number = (last_law.article_number + 1) if last_law else 1
+                    # Yeni madde ekle (İlke veya Program)
+                    article_type = proposal.proposed_article_type if hasattr(proposal, 'proposed_article_type') else 'NORMAL_LAW'
+
+                    # Bu türde son maddeyi bul ve numara belirle
+                    last_article = DoctrineArticle.objects.filter(article_type=article_type).order_by('-article_number').first()
+                    next_number = (last_article.article_number + 1) if last_article else 1
 
                     new_article = DoctrineArticle.objects.create(
                         article_number=next_number,
-                        article_type='NORMAL_LAW',
+                        article_type=article_type,
                         content=proposal.proposed_content,
                         justification=proposal.justification,
                         created_by=None  # Proposal ile oluşturulan maddeler için
@@ -84,7 +98,8 @@ class Command(BaseCommand):
                             except (ArticleTag.DoesNotExist, ValueError):
                                 pass
 
-                    self.stdout.write(f'  → Yeni madde oluşturuldu: Yasa {new_article.article_number}')
+                    article_type_display = 'İlke' if article_type == 'FOUNDATION_LAW' else 'Program Maddesi'
+                    self.stdout.write(f'  → Yeni madde oluşturuldu: {article_type_display} {new_article.article_number}')
 
                 elif proposal.proposal_type == 'REMOVE' and proposal.related_article:
                     # Maddeyi kaldır (is_active = False)
@@ -116,7 +131,8 @@ class Command(BaseCommand):
                     old_content = proposal.original_article_content or proposal.related_article.content
                     notification_msg = f'Madde {proposal.related_article.article_number} değiştirildi! "{old_content[:50]}..." → "{proposal.proposed_content[:50]}..." ✅'
                 elif proposal.proposal_type == 'ADD':
-                    notification_msg = f'Yeni madde eklendi: "{proposal.proposed_content[:80]}..." ✅'
+                    article_type_text = 'İlke' if (hasattr(proposal, 'proposed_article_type') and proposal.proposed_article_type == 'FOUNDATION_LAW') else 'Program maddesi'
+                    notification_msg = f'Yeni {article_type_text} eklendi: "{proposal.proposed_content[:80]}..." ✅'
                 elif proposal.proposal_type == 'REMOVE' and proposal.related_article:
                     notification_msg = f'{proposal.related_article.get_article_type_display()} {proposal.related_article.article_number} kaldırıldı! 🗑️'
                 else:

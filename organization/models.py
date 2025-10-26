@@ -185,3 +185,79 @@ class FormationVote(models.Model):
     def __str__(self):
         return f"{self.voter.username} - {self.vote}"
 
+
+class LeaderRemovalVote(models.Model):
+    """Lider Atma Oylama Sistemi"""
+    LEVEL_CHOICES = [
+        ('TEAM', 'Ekip'),
+        ('SQUAD', 'Takım'),
+        ('UNION', 'Birlik'),
+    ]
+
+    STATUS_CHOICES = [
+        ('ACTIVE', 'Aktif'),
+        ('PASSED', 'Kabul Edildi'),
+        ('REJECTED', 'Reddedildi'),
+    ]
+
+    level = models.CharField(max_length=20, choices=LEVEL_CHOICES)
+    entity_id = models.IntegerField()  # Team/Squad/Union ID
+    current_leader = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='removal_votes_against'
+    )
+    initiated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='removal_votes_initiated'
+    )
+    reason = models.TextField(help_text="Atma gerekçesi")
+
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='ACTIVE')
+
+    # Oy sayıları
+    yes_votes = models.IntegerField(default=0)
+    no_votes = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['-start_date']
+
+    def save(self, *args, **kwargs):
+        if not self.end_date:
+            from django.utils import timezone
+            from datetime import timedelta
+            self.end_date = timezone.now() + timedelta(days=7)  # 1 hafta
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.current_leader.username} atma oyu - {self.get_level_display()}"
+
+
+class RemovalVoteCast(models.Model):
+    """Atma oylamasında kullanılan oylar"""
+    VOTE_CHOICES = [
+        ('YES', 'Evet - Atılsın'),
+        ('NO', 'Hayır - Kalmalı'),
+    ]
+
+    removal_vote = models.ForeignKey(
+        LeaderRemovalVote,
+        on_delete=models.CASCADE,
+        related_name='votes'
+    )
+    voter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    vote = models.CharField(max_length=3, choices=VOTE_CHOICES)
+    voted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('removal_vote', 'voter')
+
+    def __str__(self):
+        return f"{self.voter.username} - {self.vote}"
+
