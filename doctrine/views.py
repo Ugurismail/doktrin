@@ -3,11 +3,16 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.contrib.auth import get_user_model
 from .models import DoctrineArticle, Proposal, Vote, Discussion, DiscussionVote, Activity, ArticleTag, ProposalDraft, Reference, ProposalReference, ArticleReference
 from .vote_calculator import calculate_votes_with_multipliers
 from notifications.utils import notify_comment_reply
+from notifications.models import Notification
 from config.rate_limit import rate_limit
 import json
+import re
+
+User = get_user_model()
 
 
 def doctrine_list(request):
@@ -233,9 +238,6 @@ def proposal_detail(request, proposal_id):
                     pass
 
             # @mention tespiti ve bildirim
-            import re
-            from notifications.models import Notification
-
             # @username pattern'i bul
             mentions = re.findall(r'@(\w+)', comment_text)
 
@@ -697,9 +699,6 @@ def article_detail(request, article_id):
                     pass
 
             # @mention tespiti ve bildirim
-            import re
-            from notifications.models import Notification
-
             # @username pattern'i bul
             mentions = re.findall(r'@(\w+)', comment_text)
 
