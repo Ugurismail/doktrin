@@ -10,7 +10,7 @@ from django.http import HttpResponse
 import hashlib
 
 
-def rate_limit(limit=5, period=60, message="Çok fazla istek gönderdiniz. Lütfen bekleyin."):
+def rate_limit(limit=5, period=60, message="Çok fazla istek gönderdiniz. Lütfen bekleyin.", methods=None):
     """
     Rate limiting decorator
 
@@ -18,15 +18,21 @@ def rate_limit(limit=5, period=60, message="Çok fazla istek gönderdiniz. Lütf
         limit: İzin verilen maksimum istek sayısı
         period: Zaman periyodu (saniye)
         message: Limit aşıldığında gösterilecek mesaj
+        methods: Rate limit uygulanacak HTTP metodları (None = tüm metodlar, ['POST'] = sadece POST)
 
     Örnek:
-        @rate_limit(limit=3, period=60)  # Dakikada 3 istek
+        @rate_limit(limit=3, period=60)  # Dakikada 3 istek (tüm metodlar)
+        @rate_limit(limit=20, period=60, methods=['POST'])  # Dakikada 20 POST isteği
         def my_view(request):
             ...
     """
     def decorator(view_func):
         @wraps(view_func)
         def wrapped_view(request, *args, **kwargs):
+            # Eğer methods parametresi verilmişse ve mevcut method listede yoksa, rate limit uygulama
+            if methods is not None and request.method not in methods:
+                return view_func(request, *args, **kwargs)
+
             # Kullanıcı veya IP bazlı anahtar oluştur
             if request.user.is_authenticated:
                 identifier = f"user_{request.user.id}"

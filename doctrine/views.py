@@ -180,7 +180,7 @@ def doctrine_list(request):
 
 
 @login_required
-@rate_limit(limit=20, period=60, message="Çok fazla yorum gönderiyorsunuz. Lütfen bir dakika bekleyin.")
+@rate_limit(limit=20, period=60, methods=['POST'], message="Çok fazla yorum gönderiyorsunuz. Lütfen bir dakika bekleyin.")
 def proposal_detail(request, proposal_id):
     """Öneri detay ve tartışma"""
     proposal = get_object_or_404(Proposal, id=proposal_id)
@@ -646,7 +646,7 @@ def vote_discussion(request, discussion_id):
 
 
 @login_required
-@rate_limit(limit=20, period=60, message="Çok fazla yorum gönderiyorsunuz. Lütfen bir dakika bekleyin.")
+@rate_limit(limit=20, period=60, methods=['POST'], message="Çok fazla yorum gönderiyorsunuz. Lütfen bir dakika bekleyin.")
 def article_detail(request, article_id):
     """Madde detay ve yorumlar"""
     article = get_object_or_404(DoctrineArticle.objects.prefetch_related('tags', 'versions'), id=article_id)
@@ -695,6 +695,33 @@ def article_detail(request, article_id):
                         notify_comment_reply(new_comment, parent_comment)
                 except Discussion.DoesNotExist:
                     pass
+
+            # @mention tespiti ve bildirim
+            import re
+            from notifications.models import Notification
+
+            # @username pattern'i bul
+            mentions = re.findall(r'@(\w+)', comment_text)
+
+            if mentions:
+                # Tekrar edenleri kaldır
+                unique_mentions = set(mentions)
+
+                for username in unique_mentions:
+                    # Kendine mention yapmadıysa ve kullanıcı varsa
+                    if username.lower() != request.user.username.lower():
+                        try:
+                            mentioned_user = User.objects.get(username__iexact=username)
+
+                            # Bildirim gönder
+                            Notification.objects.create(
+                                user=mentioned_user,
+                                notification_type='MENTION',
+                                message=f'{request.user.username} sizi bir tartışmada etiketledi: "{comment_text[:80]}..."',
+                                related_object_id=article.id
+                            )
+                        except User.DoesNotExist:
+                            pass  # Kullanıcı bulunamadı, geç
 
             messages.success(request, 'Yorumunuz eklendi!')
             return redirect('doctrine:article_detail', article_id=article_id)
