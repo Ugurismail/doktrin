@@ -159,6 +159,6 @@ SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')
 CRONJOBS = [
     # Her gece saat 3'te süresi dolmuş davet kodlarını temizle
     ('0 3 * * *', 'django.core.management.call_command', ['cleanup_expired_invites']),
-    # ŞİMDİLİK TEST İÇİN: Her dakika kontrol et (SONRA: her saat başı olacak)
-    ('* * * * *', 'django.core.management.call_command', ['check_proposal_deadlines']),
+    # Her saat başı öneri sürelerini kontrol et ve sonuçlandır
+    ('0 * * * *', 'django.core.management.call_command', ['check_proposal_deadlines']),
 ]

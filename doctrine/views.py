@@ -11,8 +11,10 @@ from notifications.models import Notification
 from config.rate_limit import rate_limit
 import json
 import re
+import logging
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 def doctrine_list(request):
@@ -327,7 +329,7 @@ def vote_proposal(request, proposal_id):
             proposal.vote_abstain_count = vote_results['ABSTAIN']
             proposal.vote_veto_count = vote_results['VETO']
         except Exception as e:
-            print(f"Çarpan hesaplama hatası: {e}")
+            logger.error(f"Çarpan hesaplama hatası (Proposal {proposal.id}): {e}", exc_info=True)
             # Hata olursa basit sayıma geç
             proposal.vote_yes_count = proposal.votes.filter(vote_choice='YES').count()
             proposal.vote_abstain_count = proposal.votes.filter(vote_choice='ABSTAIN').count()
@@ -504,7 +506,7 @@ def create_proposal(request):
                 try:
                     send_new_proposal_email(user, proposal)
                 except Exception as e:
-                    print(f"E-posta gönderme hatası: {e}")
+                    logger.error(f"E-posta gönderme hatası (User {user.id}, Proposal {proposal.id}): {e}", exc_info=True)
 
         # E-posta gönderimini arka planda başlat
         email_thread = threading.Thread(target=send_emails_in_background)

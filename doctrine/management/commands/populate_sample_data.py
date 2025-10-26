@@ -4,9 +4,29 @@ from users.models import User
 import random
 
 class Command(BaseCommand):
-    help = 'Tüm maddelere 300 kelimelik gerekçeler ve 100 adet çeşitli yorumlar ekler'
+    help = 'Tüm maddelere 300 kelimelik gerekçeler ve 100 adet çeşitli yorumlar ekler (TEST/DEVELOPMENT ONLY)'
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--force',
+            action='store_true',
+            help='Force execution without confirmation (use with caution!)',
+        )
 
     def handle(self, *args, **kwargs):
+        force = kwargs.get('force', False)
+
+        # Production'da yanlışlıkla çalışmasını engelle
+        if not force:
+            self.stdout.write(self.style.WARNING(
+                '\n⚠️  UYARI: Bu komut TEST VERİSİ oluşturur!\n'
+                '   Production ortamında çalıştırılmamalıdır.\n'
+                '   20 test kullanıcısı ve yüzlerce test yorumu oluşturulacak.\n'
+            ))
+            confirm = input('Devam etmek istediğinize emin misiniz? (yes/no): ')
+            if confirm.lower() != 'yes':
+                self.stdout.write(self.style.SUCCESS('İşlem iptal edildi.'))
+                return
         # Kurucu kullanıcıyı al
         try:
             founder = User.objects.get(username='kurucu')
