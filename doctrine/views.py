@@ -232,6 +232,33 @@ def proposal_detail(request, proposal_id):
                 except Discussion.DoesNotExist:
                     pass
 
+            # @mention tespiti ve bildirim
+            import re
+            from notifications.models import Notification
+
+            # @username pattern'i bul
+            mentions = re.findall(r'@(\w+)', comment_text)
+
+            if mentions:
+                # Tekrar edenleri kaldır
+                unique_mentions = set(mentions)
+
+                for username in unique_mentions:
+                    # Kendine mention yapmadıysa ve kullanıcı varsa
+                    if username.lower() != request.user.username.lower():
+                        try:
+                            mentioned_user = User.objects.get(username__iexact=username)
+
+                            # Bildirim gönder
+                            Notification.objects.create(
+                                user=mentioned_user,
+                                notification_type='MENTION',
+                                message=f'{request.user.username} sizi bir tartışmada etiketledi: "{comment_text[:80]}..."',
+                                related_object_id=proposal.id if proposal else None
+                            )
+                        except User.DoesNotExist:
+                            pass  # Kullanıcı bulunamadı, geç
+
             messages.success(request, 'Yorumunuz eklendi!')
             return redirect('doctrine:proposal_detail', proposal_id=proposal_id)
 

@@ -1,0 +1,60 @@
+{% load mention_tags %}
+
+<div class="discussion-item" id="comment-{{ discussion.id }}" style="{% if depth > 0 %}margin-left: {{ depth|mul:30 }}px;{% endif %}">
+    <div class="discussion-content">
+        <!-- Yorum metni -->
+        <p class="discussion-text">{{ discussion.comment_text|highlight_mentions|safe|linebreaks }}</p>
+
+        <!-- Meta bilgiler -->
+        <div class="discussion-meta">
+            <div class="discussion-author-info">
+                <a href="{% url 'users:user_profile' discussion.user.username %}" class="discussion-author">
+                    {{ discussion.user.username }}
+                </a>
+                <span class="discussion-date">{{ discussion.created_at|date:"d M Y, H:i" }}</span>
+                {% if discussion.parent_comment %}
+                <span class="discussion-reply-to">
+                    → @{{ discussion.parent_comment.user.username }} yanıt olarak
+                </span>
+                {% endif %}
+            </div>
+
+            <button class="discussion-reply-btn" onclick="toggleReplyForm({{ discussion.id }})">
+                💬 Yanıtla
+            </button>
+        </div>
+
+        <!-- Vote buttons -->
+        {% include "doctrine/_discussion_vote_buttons.html" %}
+
+        <!-- Reply form (hidden by default) -->
+        <div class="discussion-reply-form hidden" id="reply-form-{{ discussion.id }}">
+            <form method="post" style="margin-top: 1rem;">
+                {% csrf_token %}
+                <input type="hidden" name="parent_comment_id" value="{{ discussion.id }}">
+                <textarea
+                    name="comment"
+                    rows="3"
+                    placeholder="@{{ discussion.user.username }} kullanıcısına yanıt yazın..."
+                    required
+                    style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; resize: vertical;"
+                ></textarea>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button type="submit" class="btn-primary btn-sm">Gönder</button>
+                    <button type="button" class="btn-secondary btn-sm" onclick="toggleReplyForm({{ discussion.id }})">
+                        İptal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Nested replies -->
+    {% if discussion.replies.all %}
+    <div class="discussion-replies">
+        {% for reply in discussion.replies.all %}
+            {% include "doctrine/_discussion_item.html" with discussion=reply depth=depth|add:1 %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>

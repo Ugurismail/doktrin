@@ -1,0 +1,602 @@
+{% extends 'base.html' %}
+
+{% block title %}Oy İstatistiklerim - Doktrin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="page-title">📊 Oy İstatistiklerim</h1>
+
+    <!-- Genel İstatistikler -->
+    <div class="stats-grid-3">
+        <div class="stat-card highlight">
+            <div class="stat-icon">🗳️</div>
+            <div class="stat-value">{{ total_votes }}</div>
+            <div class="stat-label">Toplam Oy</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-value">{{ pending_votes }}</div>
+            <div class="stat-label">Bekleyen Oylama</div>
+            {% if pending_votes > 0 %}
+            <a href="{% url 'doctrine:doctrine_list' %}" class="stat-link">Oylamaya Git →</a>
+            {% endif %}
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-value">{{ success_rate|floatformat:1 }}%</div>
+            <div class="stat-label">Başarı Oranı</div>
+            <small class="stat-hint">EVET dediğiniz önerilerden geçenler</small>
+        </div>
+    </div>
+
+    <!-- Oy Dağılımı -->
+    <div class="card">
+        <h2 class="section-title">Oy Dağılımınız</h2>
+
+        <div class="vote-distribution">
+            <div class="vote-bar-container">
+                <div class="vote-bar-wrapper">
+                    <div class="vote-bar vote-bar-yes" style="width: {{ yes_percentage }}%"></div>
+                    <div class="vote-bar vote-bar-abstain" style="width: {{ abstain_percentage }}%; margin-left: {{ yes_percentage }}%"></div>
+                    <div class="vote-bar vote-bar-veto" style="width: {{ veto_percentage }}%; margin-left: {% widthratio yes_percentage 1 1|add:abstain_percentage %}%"></div>
+                </div>
+            </div>
+
+            <div class="vote-stats-row">
+                <div class="vote-stat-item">
+                    <div class="vote-stat-dot vote-dot-yes"></div>
+                    <div class="vote-stat-info">
+                        <span class="vote-stat-label">Kabul</span>
+                        <span class="vote-stat-value">{{ yes_votes }} ({{ yes_percentage|floatformat:1 }}%)</span>
+                    </div>
+                </div>
+
+                <div class="vote-stat-item">
+                    <div class="vote-stat-dot vote-dot-abstain"></div>
+                    <div class="vote-stat-info">
+                        <span class="vote-stat-label">Çekimser</span>
+                        <span class="vote-stat-value">{{ abstain_votes }} ({{ abstain_percentage|floatformat:1 }}%)</span>
+                    </div>
+                </div>
+
+                <div class="vote-stat-item">
+                    <div class="vote-stat-dot vote-dot-veto"></div>
+                    <div class="vote-stat-info">
+                        <span class="vote-stat-label">Veto</span>
+                        <span class="vote-stat-value">{{ veto_votes }} ({{ veto_percentage|floatformat:1 }}%)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Öneri Sonuçları -->
+    <div class="card">
+        <h2 class="section-title">Oy Verdiğiniz Önerilerin Sonuçları</h2>
+
+        <div class="results-grid">
+            <div class="result-box result-passed">
+                <div class="result-icon">✅</div>
+                <div class="result-value">{{ passed_proposals }}</div>
+                <div class="result-label">Kabul Edildi</div>
+            </div>
+
+            <div class="result-box result-rejected">
+                <div class="result-icon">❌</div>
+                <div class="result-value">{{ rejected_proposals }}</div>
+                <div class="result-label">Reddedildi</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delegasyon Bilgisi -->
+    {% if current_delegate or delegators_count > 0 %}
+    <div class="card">
+        <h2 class="section-title">⚡ Delegasyon Durumunuz</h2>
+
+        <div class="delegation-info-grid">
+            {% if current_delegate %}
+            <div class="delegation-box">
+                <div class="delegation-icon">👉</div>
+                <div class="delegation-content">
+                    <div class="delegation-title">Delegeniz</div>
+                    <div class="delegation-value">{{ current_delegate.username }}</div>
+                    <small class="delegation-hint">Oy kullanmadığınız önerilerde bu kişinin oyu kullanılır</small>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if delegators_count > 0 %}
+            <div class="delegation-box">
+                <div class="delegation-icon">👈</div>
+                <div class="delegation-content">
+                    <div class="delegation-title">Size Delege Edenler</div>
+                    <div class="delegation-value">{{ delegators_count }} kişi</div>
+                    <small class="delegation-hint">Bu kişiler adına oy kullanıyorsunuz</small>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <a href="{% url 'users:vote_delegation' %}" class="btn-secondary" style="margin-top: 1rem;">
+            Delegasyon Ayarları →
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Oy Geçmişi -->
+    <div class="card">
+        <h2 class="section-title">Oy Geçmişiniz</h2>
+
+        {% if votes %}
+        <div class="votes-list">
+            {% for vote in votes %}
+            <div class="vote-item">
+                <div class="vote-item-header">
+                    <div class="vote-item-title">
+                        <a href="{% url 'doctrine:proposal_detail' vote.proposal.id %}" class="vote-item-link">
+                            {{ vote.proposal.get_proposal_type_display }}
+                            {% if vote.proposal.related_article %}
+                            - Madde {{ vote.proposal.related_article.article_number }}
+                            {% endif %}
+                        </a>
+                    </div>
+                    <div class="vote-item-badge vote-badge-{{ vote.vote_choice|lower }}">
+                        {% if vote.vote_choice == 'YES' %}
+                        ✅ Kabul
+                        {% elif vote.vote_choice == 'ABSTAIN' %}
+                        ⏸️ Çekimser
+                        {% elif vote.vote_choice == 'VETO' %}
+                        ❌ Veto
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="vote-item-meta">
+                    <span class="vote-item-date">📅 {{ vote.voted_at|date:"d M Y, H:i" }}</span>
+
+                    {% if vote.proposal.status == 'PASSED' %}
+                    <span class="vote-item-status status-passed">✅ Kabul Edildi</span>
+                    {% elif vote.proposal.status == 'REJECTED' %}
+                    <span class="vote-item-status status-rejected">❌ Reddedildi</span>
+                    {% elif vote.proposal.status == 'ACTIVE' %}
+                    <span class="vote-item-status status-active">⏳ Oylama Devam Ediyor</span>
+                    {% endif %}
+                </div>
+
+                {% if vote.proposal.proposed_content %}
+                <p class="vote-item-content">{{ vote.proposal.proposed_content|truncatewords:30 }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Sayfalama -->
+        {% if votes.has_other_pages %}
+        <div class="pagination">
+            {% if votes.has_previous %}
+            <a href="?page={{ votes.previous_page_number }}" class="pagination-link">← Önceki</a>
+            {% endif %}
+
+            <span class="pagination-info">
+                Sayfa {{ votes.number }} / {{ votes.paginator.num_pages }}
+            </span>
+
+            {% if votes.has_next %}
+            <a href="?page={{ votes.next_page_number }}" class="pagination-link">Sonraki →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🗳️</div>
+            <p class="empty-text">Henüz hiç oy kullanmadınız.</p>
+            <a href="{% url 'doctrine:doctrine_list' %}" class="btn-primary">Doktrini Görüntüle</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.stats-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card.highlight {
+    border-color: var(--accent-color);
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.05), rgba(255, 255, 255, 1));
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.stat-hint {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.stat-link {
+    display: inline-block;
+    margin-top: 0.75rem;
+    color: var(--accent-color);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.stat-link:hover {
+    text-decoration: underline;
+}
+
+.vote-distribution {
+    margin: 1.5rem 0;
+}
+
+.vote-bar-container {
+    margin-bottom: 1.5rem;
+}
+
+.vote-bar-wrapper {
+    position: relative;
+    width: 100%;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.vote-bar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    transition: width 0.5s ease;
+}
+
+.vote-bar-yes {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.vote-bar-abstain {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.vote-bar-veto {
+    background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+.vote-stats-row {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.vote-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.vote-stat-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+}
+
+.vote-dot-yes {
+    background: #10b981;
+}
+
+.vote-dot-abstain {
+    background: #f59e0b;
+}
+
+.vote-dot-veto {
+    background: #ef4444;
+}
+
+.vote-stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.vote-stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.vote-stat-value {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.result-box {
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    border: 2px solid;
+}
+
+.result-passed {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.result-rejected {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.result-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.result-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.result-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.delegation-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.delegation-box {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: rgba(52, 152, 219, 0.05);
+    border: 1px solid rgba(52, 152, 219, 0.2);
+    border-radius: 12px;
+}
+
+.delegation-icon {
+    font-size: 2rem;
+}
+
+.delegation-content {
+    flex: 1;
+}
+
+.delegation-title {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.delegation-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
+}
+
+.delegation-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.votes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.vote-item {
+    padding: 1.25rem;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.vote-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.vote-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.vote-item-title {
+    flex: 1;
+}
+
+.vote-item-link {
+    font-weight: 600;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 1.05rem;
+}
+
+.vote-item-link:hover {
+    text-decoration: underline;
+}
+
+.vote-item-badge {
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.vote-badge-yes {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+}
+
+.vote-badge-abstain {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+.vote-badge-veto {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.vote-item-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.vote-item-date {
+    font-size: 0.85rem;
+}
+
+.vote-item-status {
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-passed {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+}
+
+.status-rejected {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.status-active {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+}
+
+.vote-item-content {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.pagination-link {
+    padding: 0.5rem 1rem;
+    background: var(--accent-color);
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.pagination-link:hover {
+    background: var(--accent-hover);
+}
+
+.pagination-info {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-text {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .stats-grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .vote-item-header {
+        flex-direction: column;
+    }
+
+    .vote-item-badge {
+        align-self: flex-start;
+    }
+}
+</style>
+{% endblock %}

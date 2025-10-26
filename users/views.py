@@ -262,6 +262,78 @@ def user_guide(request):
 
 
 @login_required
+def vote_statistics(request):
+    """Kullanıcının detaylı oy istatistikleri"""
+    from doctrine.models import Vote, Proposal
+    from django.db.models import Count, Q
+    from django.core.paginator import Paginator
+
+    # Tüm oylar (sayfalama ile)
+    all_votes = Vote.objects.filter(user=request.user).select_related(
+        'proposal', 'proposal__related_article'
+    ).order_by('-voted_at')
+
+    # Sayfalama
+    paginator = Paginator(all_votes, 20)
+    page_number = request.GET.get('page', 1)
+    votes = paginator.get_page(page_number)
+
+    # Genel istatistikler
+    total_votes = Vote.objects.filter(user=request.user).count()
+    yes_votes = Vote.objects.filter(user=request.user, vote_choice='YES').count()
+    abstain_votes = Vote.objects.filter(user=request.user, vote_choice='ABSTAIN').count()
+    veto_votes = Vote.objects.filter(user=request.user, vote_choice='VETO').count()
+
+    # Yüzdeler
+    yes_percentage = (yes_votes / total_votes * 100) if total_votes > 0 else 0
+    abstain_percentage = (abstain_votes / total_votes * 100) if total_votes > 0 else 0
+    veto_percentage = (veto_votes / total_votes * 100) if total_votes > 0 else 0
+
+    # Kabul/red oranları (kullanıcının oy verdiği önerilerden)
+    voted_proposals = Proposal.objects.filter(
+        id__in=Vote.objects.filter(user=request.user).values_list('proposal_id', flat=True)
+    )
+    passed_proposals = voted_proposals.filter(status='PASSED').count()
+    rejected_proposals = voted_proposals.filter(status='REJECTED').count()
+
+    # Başarı oranı (kullanıcının YES dediği önerilerden kaçı geçti?)
+    user_yes_proposals = voted_proposals.filter(
+        id__in=Vote.objects.filter(user=request.user, vote_choice='YES').values_list('proposal_id', flat=True)
+    )
+    success_rate = 0
+    if user_yes_proposals.count() > 0:
+        successful_yes = user_yes_proposals.filter(status='PASSED').count()
+        success_rate = (successful_yes / user_yes_proposals.count()) * 100
+
+    # Delegasyon bilgisi
+    delegators_count = request.user.delegated_voters.count()
+    current_delegate = request.user.vote_delegate
+
+    # Aktif oylamalar (henüz oy kullanılmamış)
+    user_vote_ids = Vote.objects.filter(user=request.user).values_list('proposal_id', flat=True)
+    pending_votes = Proposal.objects.filter(status='ACTIVE').exclude(id__in=user_vote_ids).count()
+
+    context = {
+        'votes': votes,
+        'total_votes': total_votes,
+        'yes_votes': yes_votes,
+        'abstain_votes': abstain_votes,
+        'veto_votes': veto_votes,
+        'yes_percentage': yes_percentage,
+        'abstain_percentage': abstain_percentage,
+        'veto_percentage': veto_percentage,
+        'passed_proposals': passed_proposals,
+        'rejected_proposals': rejected_proposals,
+        'success_rate': success_rate,
+        'delegators_count': delegators_count,
+        'current_delegate': current_delegate,
+        'pending_votes': pending_votes,
+    }
+
+    return render(request, 'users/vote_statistics.html', context)
+
+
+@login_required
 def vote_delegation(request):
     """Oy delegasyonu ayarları"""
     if request.method == 'POST':
