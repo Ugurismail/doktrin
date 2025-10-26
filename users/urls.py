@@ -14,4 +14,5 @@ urlpatterns = [
     path('guide/', views.user_guide, name='user_guide'),
     path('vote-delegation/', views.vote_delegation, name='vote_delegation'),
     path('vote-statistics/', views.vote_statistics, name='vote_statistics'),
+    path('delegate-votes/', views.delegate_votes, name='delegate_votes'),
 ]

@@ -47,11 +47,16 @@
         </div>
         {% endif %}
 
-        <form method="post" style="margin-top: 1rem;">
-            {% csrf_token %}
-            <input type="hidden" name="delegate_id" value="none">
-            <button type="submit" class="btn-secondary">Delegasyonu Kaldır</button>
-        </form>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">
+            <a href="{% url 'users:delegate_votes' %}" class="btn-primary">
+                📊 Delegenizin Oylarını Görüntüle
+            </a>
+            <form method="post" style="margin: 0;">
+                {% csrf_token %}
+                <input type="hidden" name="delegate_id" value="none">
+                <button type="submit" class="btn-secondary">Delegasyonu Kaldır</button>
+            </form>
+        </div>
     </div>
     {% else %}
     <div class="card">
@@ -127,7 +132,13 @@
         <ul class="tips-list">
             <li>🎯 <strong>Uzmanlığa göre seçin:</strong> Farklı konularda uzman kişilere delege olabilirsiniz (ancak şu anda sadece tek delege seçilebiliyor).</li>
             <li>📊 <strong>Aktif kullanıcıları tercih edin:</strong> Düzenli oy kullanan kişileri delege olarak seçmek daha etkilidir.</li>
-            <li>🔄 <strong>Delegenizi takip edin:</strong> Delegenizin nasıl oy kullandığını kontrol edebilirsiniz.</li>
+            <li>🔄 <strong>Delegenizi takip edin:</strong> Delegenizin nasıl oy kullandığını
+                {% if current_delegate %}
+                <a href="{% url 'users:delegate_votes' %}" style="color: var(--accent-color); font-weight: 600;">buradan görebilirsiniz</a>
+                {% else %}
+                kontrol edebilirsiniz
+                {% endif %}.
+            </li>
             <li>⚡ <strong>Kendi oyunuz her zaman önceliklidir:</strong> Önemli gördüğünüz konularda kendi oyunuzu kullanın!</li>
         </ul>
     </div>

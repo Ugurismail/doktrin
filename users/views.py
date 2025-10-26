@@ -392,3 +392,61 @@ def vote_delegation(request):
     }
 
     return render(request, 'users/vote_delegation.html', context)
+
+
+@login_required
+def delegate_votes(request):
+    """Delegenin oy kullanma geçmişini göster"""
+    from doctrine.models import Vote, Proposal
+    from django.core.paginator import Paginator
+
+    # Kullanıcının bir delegesi var mı kontrol et
+    if not request.user.vote_delegate:
+        messages.warning(request, 'Henüz bir delege belirlemediniz.')
+        return redirect('users:vote_delegation')
+
+    delegate = request.user.vote_delegate
+
+    # Delegenin tüm oyları
+    all_votes = Vote.objects.filter(user=delegate).select_related(
+        'proposal', 'proposal__related_article'
+    ).order_by('-voted_at')
+
+    # Sayfalama
+    paginator = Paginator(all_votes, 20)
+    page_number = request.GET.get('page', 1)
+    votes = paginator.get_page(page_number)
+
+    # İstatistikler
+    total_votes = Vote.objects.filter(user=delegate).count()
+    yes_votes = Vote.objects.filter(user=delegate, vote_choice='YES').count()
+    abstain_votes = Vote.objects.filter(user=delegate, vote_choice='ABSTAIN').count()
+    veto_votes = Vote.objects.filter(user=delegate, vote_choice='VETO').count()
+
+    # Yüzdeler
+    yes_percentage = (yes_votes / total_votes * 100) if total_votes > 0 else 0
+    abstain_percentage = (abstain_votes / total_votes * 100) if total_votes > 0 else 0
+    veto_percentage = (veto_votes / total_votes * 100) if total_votes > 0 else 0
+
+    # Kullanıcının kendi oyları ile karşılaştırma
+    user_votes = Vote.objects.filter(user=request.user).count()
+
+    # Aktif oylamalar (delege henüz oy kullanmamış)
+    delegate_vote_ids = Vote.objects.filter(user=delegate).values_list('proposal_id', flat=True)
+    pending_votes = Proposal.objects.filter(status='ACTIVE').exclude(id__in=delegate_vote_ids).count()
+
+    context = {
+        'delegate': delegate,
+        'votes': votes,
+        'total_votes': total_votes,
+        'yes_votes': yes_votes,
+        'abstain_votes': abstain_votes,
+        'veto_votes': veto_votes,
+        'yes_percentage': yes_percentage,
+        'abstain_percentage': abstain_percentage,
+        'veto_percentage': veto_percentage,
+        'user_votes': user_votes,
+        'pending_votes': pending_votes,
+    }
+
+    return render(request, 'users/delegate_votes.html', context)
