@@ -305,18 +305,51 @@
                         <span style="color: var(--accent-text);">⚡ Çarpan Bonusu:</span>
                         <strong style="color: var(--accent-text);">+{{ vote_breakdown.multiplier_bonus }}</strong>
                     </div>
-                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--success-bg); border-radius: 4px; border: 2px solid var(--success-color);">
-                        <span style="color: var(--success-text); font-weight: 600;">✓ Final Kabul:</span>
-                        <strong style="color: var(--success-text); font-size: 1.1rem;">{{ vote_breakdown.final_yes }}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--warning-bg); border-radius: 4px; border: 2px solid var(--warning-color);">
-                        <span style="color: var(--warning-text); font-weight: 600;">⊘ Final Çekimser:</span>
-                        <strong style="color: var(--warning-text); font-size: 1.1rem;">{{ vote_breakdown.final_abstain }}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--danger-bg); border-radius: 4px; border: 2px solid var(--danger-color);">
-                        <span style="color: var(--danger-text); font-weight: 600;">✗ Final Veto:</span>
-                        <strong style="color: var(--danger-text); font-size: 1.1rem;">{{ vote_breakdown.final_veto }}</strong>
-                    </div>
+
+                    {% comment %} Kazanan tarafı belirle {% endcomment %}
+                    {% if vote_breakdown.final_yes >= vote_breakdown.final_veto and vote_breakdown.final_yes >= vote_breakdown.final_abstain %}
+                        {% comment %} YES kazanıyor {% endcomment %}
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--success-bg); border-radius: 4px; border: 2px solid var(--success-color);">
+                            <span style="color: var(--success-text); font-weight: 600;">✓ Final Kabul:</span>
+                            <strong style="color: var(--success-text); font-size: 1.1rem;">{{ vote_breakdown.final_yes }}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
+                            <span style="color: var(--text-secondary); font-weight: 600;">⊘ Final Çekimser:</span>
+                            <strong style="color: var(--text-secondary); font-size: 1.1rem;">{{ vote_breakdown.final_abstain }}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
+                            <span style="color: var(--text-secondary); font-weight: 600;">✗ Final Veto:</span>
+                            <strong style="color: var(--text-secondary); font-size: 1.1rem;">{{ vote_breakdown.final_veto }}</strong>
+                        </div>
+                    {% elif vote_breakdown.final_veto >= vote_breakdown.final_yes and vote_breakdown.final_veto >= vote_breakdown.final_abstain %}
+                        {% comment %} VETO kazanıyor {% endcomment %}
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
+                            <span style="color: var(--text-secondary); font-weight: 600;">✓ Final Kabul:</span>
+                            <strong style="color: var(--text-secondary); font-size: 1.1rem;">{{ vote_breakdown.final_yes }}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
+                            <span style="color: var(--text-secondary); font-weight: 600;">⊘ Final Çekimser:</span>
+                            <strong style="color: var(--text-secondary); font-size: 1.1rem;">{{ vote_breakdown.final_abstain }}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--success-bg); border-radius: 4px; border: 2px solid var(--success-color);">
+                            <span style="color: var(--success-text); font-weight: 600;">✗ Final Veto:</span>
+                            <strong style="color: var(--success-text); font-size: 1.1rem;">{{ vote_breakdown.final_veto }}</strong>
+                        </div>
+                    {% else %}
+                        {% comment %} ABSTAIN kazanıyor {% endcomment %}
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
+                            <span style="color: var(--text-secondary); font-weight: 600;">✓ Final Kabul:</span>
+                            <strong style="color: var(--text-secondary); font-size: 1.1rem;">{{ vote_breakdown.final_yes }}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--success-bg); border-radius: 4px; border: 2px solid var(--success-color);">
+                            <span style="color: var(--success-text); font-weight: 600;">⊘ Final Çekimser:</span>
+                            <strong style="color: var(--success-text); font-size: 1.1rem;">{{ vote_breakdown.final_abstain }}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px;">
+                            <span style="color: var(--text-secondary); font-weight: 600;">✗ Final Veto:</span>
+                            <strong style="color: var(--text-secondary); font-size: 1.1rem;">{{ vote_breakdown.final_veto }}</strong>
+                        </div>
+                    {% endif %}
                 </div>
 
                 <div style="margin-top: 1rem; padding: 0.75rem; background: var(--info-bg); border-left: 4px solid var(--info-color); border-radius: 4px;">
