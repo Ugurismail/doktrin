@@ -28,9 +28,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-change-this-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -153,7 +153,7 @@ DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER', 'noreply@doktrin.com')
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Site URL for emails
-SITE_URL = 'http://localhost:8000'  # Production'da değiştirilecek
+SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')
 
 # Cron Jobs
 CRONJOBS = [
