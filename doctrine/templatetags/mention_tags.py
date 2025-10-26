@@ -17,3 +17,12 @@ def highlight_mentions(text):
         return f'<span class="mention">@{username}</span>'
 
     return re.sub(pattern, replace_mention, text)
+
+
+@register.filter(name='mul')
+def mul(value, arg):
+    """İki sayıyı çarpar (margin hesaplaması için)"""
+    try:
+        return int(value) * int(arg)
+    except (ValueError, TypeError):
+        return 0
