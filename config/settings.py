@@ -85,12 +85,25 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Production: PostgreSQL | Development: SQLite
+if os.getenv('USE_POSTGRESQL', 'False') == 'True':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'doktrin_db'),
+            'USER': os.getenv('DB_USER', 'doktrin_user'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -127,7 +140,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # Production: collectstatic buraya toplar
+
+# Media files (User uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -136,8 +155,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
-# Static files (CSS, JavaScript, Images)
-STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Email Settings
 # Use SMTP backend for real email sending (Gmail)
@@ -162,3 +179,37 @@ CRONJOBS = [
     # Her saat başı öneri sürelerini kontrol et ve sonuçlandır
     ('0 * * * *', 'django.core.management.call_command', ['check_proposal_deadlines']),
 ]
+
+# ==============================================================================
+# PRODUCTION SECURITY SETTINGS
+# ==============================================================================
+
+# Production modunda güvenlik ayarları aktif olur
+if not DEBUG:
+    # HTTPS ayarları
+    SECURE_SSL_REDIRECT = True  # HTTP'den HTTPS'e yönlendir
+    SESSION_COOKIE_SECURE = True  # Session cookie'leri sadece HTTPS üzerinden
+    CSRF_COOKIE_SECURE = True  # CSRF cookie'leri sadece HTTPS üzerinden
+
+    # HSTS (HTTP Strict Transport Security)
+    SECURE_HSTS_SECONDS = 31536000  # 1 yıl
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    # Diğer güvenlik başlıkları
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+
+    # Proxy ayarları (Nginx arkasında çalışırken)
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Session güvenliği
+SESSION_COOKIE_HTTPONLY = True  # JavaScript'ten erişimi engelle
+SESSION_COOKIE_AGE = 1209600  # 2 hafta (saniye cinsinden)
+SESSION_SAVE_EVERY_REQUEST = False
+
+# CSRF koruması
+CSRF_COOKIE_HTTPONLY = True
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_SAMESITE = 'Lax'
