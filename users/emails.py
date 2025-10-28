@@ -1,6 +1,6 @@
 """
 Email Utility Functions
-Doktrin platformu için email gönderme fonksiyonları
+Bizlik platformu için email gönderme fonksiyonları
 """
 
 from django.core.mail import send_mail
@@ -10,7 +10,7 @@ from django.conf import settings
 
 def send_welcome_email(user):
     """Hoş geldiniz e-postası gönder"""
-    subject = 'Doktrin Platformuna Hoş Geldiniz!'
+    subject = 'Bizlik Platformuna Hoş Geldiniz!'
 
     html_message = render_to_string('emails/welcome.html', {
         'user': user,
@@ -51,7 +51,7 @@ def send_team_invite_email(user, team, invite_code, expiry_date):
 
 def send_new_proposal_email(user, proposal):
     """Yeni öneri bildirimi e-postası gönder"""
-    subject = '🗳️ Yeni Oylama Başladı - Doktrin'
+    subject = '🗳️ Yeni Oylama Başladı - Bizlik'
 
     html_message = render_to_string('emails/new_proposal.html', {
         'user': user,

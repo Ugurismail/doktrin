@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Kullanım Kılavuzu - Doktrin{% endblock %}
+{% block title %}Kullanım Kılavuzu - Bizlik{% endblock %}
 
 {% block content %}
 <style>
@@ -159,7 +159,7 @@
 </style>
 
 <div class="guide-container">
-    <h1 style="font-size: 48px; margin-bottom: 16px; text-align: center;">📖 Doktrin Kullanım Kılavuzu</h1>
+    <h1 style="font-size: 48px; margin-bottom: 16px; text-align: center;">📖 Bizlik Kullanım Kılavuzu</h1>
     <p style="text-align: center; color: var(--text-light); margin-bottom: 40px;">
         Sistemi etkin kullanmak için kapsamlı rehber
     </p>
@@ -171,7 +171,7 @@
             <ul>
                 <li><a href="#giris">🌟 Giriş</a></li>
                 <li><a href="#hesap">👤 Hesap İşlemleri</a></li>
-                <li><a href="#doktrin">📜 Doktrin Sistemi</a></li>
+                <li><a href="#doktrin">📜 Bizlik Sistemi</a></li>
                 <li><a href="#oylama">🗳️ Oylama Sistemi</a></li>
                 <li><a href="#organizasyon">🏢 Organizasyon Yapısı</a></li>
                 <li><a href="#tahminler">🦉 Tahmin Sistemi</a></li>
@@ -189,9 +189,9 @@
 
             <!-- GİRİŞ -->
             <div id="giris" class="guide-section">
-                <h2>🌟 Doktrin Platformuna Hoş Geldiniz</h2>
+                <h2>🌟 Bizlik Platformuna Hoş Geldiniz</h2>
                 <p>
-                    Doktrin, demokratik karar alma süreçlerini dijitalleştiren, şeffaf ve katılımcı bir platformdur.
+                    Bizlik, demokratik karar alma süreçlerini dijitalleştiren, şeffaf ve katılımcı bir platformdur.
                     Bu platform üzerinde örgütünüzün temel ilkelerini ve yasalarını oluşturabilir, değiştirebilir
                     ve yönetebilirsiniz.
                 </p>
@@ -242,10 +242,10 @@
 
             <!-- DOKTRİN SİSTEMİ -->
             <div id="doktrin" class="guide-section">
-                <h2>📜 Doktrin Sistemi</h2>
+                <h2>📜 Bizlik Sistemi</h2>
 
                 <p>
-                    Doktrin, örgütünüzün temel belgesidir. İki tip madde vardır:
+                    Bizlik, örgütünüzün temel belgesidir. İki tip madde vardır:
                 </p>
 
                 <div class="feature-grid">
@@ -259,10 +259,10 @@
                     </div>
                 </div>
 
-                <h3>Doktrin'e Erişim</h3>
-                <p>Navbar'daki <strong>"Doktrin"</strong> linkine tıklayarak ana doktrin sayfasına erişebilirsiniz.</p>
+                <h3>Bizlik'e Erişim</h3>
+                <p>Navbar'daki <strong>"Bizlik"</strong> linkine tıklayarak ana doktrin sayfasına erişebilirsiniz.</p>
 
-                <h4>Doktrin Sayfasında:</h4>
+                <h4>Bizlik Sayfasında:</h4>
                 <ul>
                     <li><strong>Arama Kutusu:</strong> Maddelerde kelime araması yapabilirsiniz</li>
                     <li><strong>🔧 Gelişmiş Filtreler:</strong> Tarih aralığı, kullanıcı, öneri türü gibi kriterlere göre filtreleme</li>
@@ -724,8 +724,8 @@
             <div id="arama" class="guide-section">
                 <h2>🔍 Arama & Filtreleme</h2>
 
-                <h3>Doktrin'de Arama</h3>
-                <p>Doktrin sayfasının üstündeki arama kutusunu kullanabilirsiniz:</p>
+                <h3>Bizlik'de Arama</h3>
+                <p>Bizlik sayfasının üstündeki arama kutusunu kullanabilirsiniz:</p>
                 <ul>
                     <li>Madde numarası ile arama</li>
                     <li>İçerikte kelime arama</li>
@@ -755,7 +755,7 @@
                 </div>
 
                 <h3>Etiket Filtresi</h3>
-                <p>Doktrin sayfasında etiket butonlarına tıklayarak:</p>
+                <p>Bizlik sayfasında etiket butonlarına tıklayarak:</p>
                 <ul>
                     <li>Sadece o etiketteki maddeleri görürsünüz</li>
                     <li>"Tümü" butonuna tıklayarak filtreyi kaldırabilirsiniz</li>
@@ -775,11 +775,11 @@
             <div id="export" class="guide-section">
                 <h2>📦 Export & Yedekleme</h2>
 
-                <h3>Doktrin Export</h3>
+                <h3>Bizlik Export</h3>
                 <p>Tüm doktrin'i metin dosyası olarak indirebilirsiniz:</p>
                 <ol>
                     <li>Tarayıcınıza şu URL'yi girin: <code>/doctrine/export/text/</code></li>
-                    <li>Veya doğrudan: <a href="{% url 'doctrine:export_doctrine_text' %}">Doktrin'i İndir</a></li>
+                    <li>Veya doğrudan: <a href="{% url 'doctrine:export_doctrine_text' %}">Bizlik'i İndir</a></li>
                     <li>Dosya otomatik olarak indirilir</li>
                 </ol>
 
@@ -1014,10 +1014,10 @@ python manage.py backup_database --output=/path/to/backups
                 <h3>Hızlı Erişim Kısayolları</h3>
                 <div class="code-block">
 <strong>Önemli Linkler:</strong>
-• Doktrin: /doctrine/
+• Bizlik: /doctrine/
 • Öneri Oluştur: /doctrine/proposal/create/
 • Ekip Transfer: /organization/transfer/
-• Doktrin Export: /doctrine/export/text/
+• Bizlik Export: /doctrine/export/text/
 • İstatistikler: /doctrine/statistics/ (Kurucu/Admin)
 • Lider Tablosu: /doctrine/leaderboard/
 • Kılavuz: /guide/ (bu sayfa)

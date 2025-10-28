@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def doctrine_list(request):
-    """Doktrin listesi"""
+    """Bizlik listesi"""
     search_query = request.GET.get('search', '').strip()
     tag_filter = request.GET.get('tag', '').strip()
     date_from = request.GET.get('date_from', '').strip()
@@ -904,7 +904,7 @@ def leaderboard(request):
 
 @login_required
 def export_doctrine_text(request):
-    """Doktrin'i metin formatında export et"""
+    """Bizlik'i metin formatında export et"""
     from django.http import HttpResponse
     from datetime import datetime
 

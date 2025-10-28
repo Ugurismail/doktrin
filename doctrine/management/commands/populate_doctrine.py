@@ -480,4 +480,4 @@ class Command(BaseCommand):
             )
         self.stdout.write(self.style.SUCCESS(f'{len(laws)} yasa eklendi'))
 
-        self.stdout.write(self.style.SUCCESS('Doktrin başarıyla dolduruldu!'))
+        self.stdout.write(self.style.SUCCESS('Bizlik başarıyla dolduruldu!'))

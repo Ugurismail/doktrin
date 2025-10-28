@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Oy İstatistiklerim - Doktrin{% endblock %}
+{% block title %}Oy İstatistiklerim - Bizlik{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -194,7 +194,7 @@
         <div class="empty-state">
             <div class="empty-icon">🗳️</div>
             <p class="empty-text">Henüz hiç oy kullanmadınız.</p>
-            <a href="{% url 'doctrine:doctrine_list' %}" class="btn-primary">Doktrini Görüntüle</a>
+            <a href="{% url 'doctrine:doctrine_list' %}" class="btn-primary">Bizliki Görüntüle</a>
         </div>
         {% endif %}
     </div>

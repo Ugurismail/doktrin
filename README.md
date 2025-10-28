@@ -1,4 +1,4 @@
-# 📜 Doktrin Platform
+# 📜 Bizlik Platform
 
 Topluluk tabanlı siyasi örgütlenme ve doktrin yönetim platformu. Liquid democracy prensipleriyle çalışan, hiyerarşik organizasyon ve demokratik karar alma sistemi.
 
@@ -20,7 +20,7 @@ Topluluk tabanlı siyasi örgütlenme ve doktrin yönetim platformu. Liquid demo
 - **Seviye Bazlı Oylama**: Her seviyede farklı oy yetkisi
 - **Bildirim Sistemi**: Lider değişimlerinde otomatik bildirim
 
-### 📝 Doktrin Yönetimi
+### 📝 Bizlik Yönetimi
 - **2 Madde Türü**: İlkeler ve Yasalar
 - **5 Öneri Türü**: Ekleme, Değiştirme, Silme, İsim Değişikliği, Kurucu Revizyonu
 - **Versiyon Kontrol**: Her değişiklik kaydedilir
@@ -97,7 +97,7 @@ doktrin-project/
 ├── config/              # Django ayarları
 ├── users/               # Kullanıcı yönetimi
 ├── organization/        # Organizasyon yapısı
-├── doctrine/            # Doktrin maddeleri ve öneriler
+├── doctrine/            # Bizlik maddeleri ve öneriler
 ├── notifications/       # Bildirim sistemi
 ├── predictions/         # Tahmin sistemi
 ├── templates/           # HTML şablonları
@@ -185,4 +185,4 @@ Bu platform, topluluk tabanlı demokratik karar alma süreçlerini dijitalleşti
 
 ---
 
-Made with ❤️ by Doktrin Team
+Made with ❤️ by Bizlik Team

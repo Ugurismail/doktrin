@@ -136,7 +136,7 @@ class Command(BaseCommand):
                 elif proposal.proposal_type == 'REMOVE' and proposal.related_article:
                     notification_msg = f'{proposal.related_article.get_article_type_display()} {proposal.related_article.article_number} kaldırıldı! 🗑️'
                 else:
-                    notification_msg = f'"{proposal.get_proposal_type_display()}" önerisi KABUL edildi! Doktrin güncellendi. ✅'
+                    notification_msg = f'"{proposal.get_proposal_type_display()}" önerisi KABUL edildi! Bizlik güncellendi. ✅'
 
                 for user in all_users:
                     Notification.objects.create(

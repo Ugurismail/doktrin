@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Doktrin Platform{% endblock %}</title>
+    <title>{% block title %}Bizlik{% endblock %}</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
@@ -16,8 +16,8 @@
     <header>
         <nav>
             <a href="{% url 'users:home' %}" class="nav-logo">
-                <img src="{% static 'images/favicon.svg' %}" alt="Doktrin Logo" class="nav-logo-img">
-                <h1 class="nav-logo-text">Doktrin</h1>
+                <img src="{% static 'images/favicon.svg' %}" alt="Bizlik Logo" class="nav-logo-img">
+                <h1 class="nav-logo-text">Bizlik</h1>
             </a>
             <ul>
                 {% if user.is_authenticated %}
@@ -26,7 +26,7 @@
                             ☰ Menü
                         </button>
                         <div class="nav-dropdown-content" id="navDropdown">
-                            <a href="{% url 'doctrine:doctrine_list' %}">📜 Doktrin</a>
+                            <a href="{% url 'doctrine:doctrine_list' %}">📜 Bizlik</a>
                             <a href="{% url 'doctrine:my_drafts' %}">📝 Taslaklar</a>
                             <a href="{% url 'doctrine:references_list' %}">📚 Kaynaklar</a>
                             <a href="{% url 'organization:my_team' %}">👥 Ekibim</a>
@@ -107,7 +107,7 @@
     </main>
 
     <footer>
-        <p>© 2025 Doktrin Platform</p>
+        <p>© 2025 Bizlik Platform</p>
     </footer>
 
     <!-- Reference Manager Script -->

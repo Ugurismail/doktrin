@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{% if user.is_authenticated %}Akış{% else %}Doktrin{% endif %}{% endblock %}
+{% block title %}{% if user.is_authenticated %}Akış{% else %}Bizlik{% endif %}{% endblock %}
 
 {% block content %}
 
@@ -270,7 +270,7 @@
                 <div class="empty-state-icon">🌱</div>
                 <h3>Henüz aktivite yok</h3>
                 <p>Platform yeni başlıyor. İlk aktiviteyi sen oluştur!</p>
-                <a href="{% url 'doctrine:doctrine_list' %}" class="btn btn-primary" style="margin-top: 1rem;">Doktrin'e Git</a>
+                <a href="{% url 'doctrine:doctrine_list' %}" class="btn btn-primary" style="margin-top: 1rem;">Bizlik'e Git</a>
             </div>
         {% endif %}
     </div>
@@ -306,7 +306,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-value text-accent">{{ stats.total_articles }}</div>
-                <div class="stat-label">Doktrin Maddesi</div>
+                <div class="stat-label">Bizlik Maddesi</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value text-success">{{ stats.passed_proposals }}</div>

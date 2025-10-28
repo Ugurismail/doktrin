@@ -1,6 +1,6 @@
-# Doktrin Platform - Production Deployment Guide
+# Bizlik Platform - Production Deployment Guide
 
-Bu dokümanda Doktrin platformunun production sunucusuna nasıl deploy edileceği anlatılmaktadır.
+Bu dokümanda Bizlik platformunun production sunucusuna nasıl deploy edileceği anlatılmaktadır.
 
 ## 📋 Gereksinimler
 
@@ -187,7 +187,7 @@ sudo nano /etc/systemd/system/doktrin.service
 
 ```ini
 [Unit]
-Description=Doktrin Gunicorn daemon
+Description=Bizlik Gunicorn daemon
 After=network.target
 
 [Service]

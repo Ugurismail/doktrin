@@ -75,7 +75,7 @@ class ArticleTag(models.Model):
 
 
 class DoctrineArticle(models.Model):
-    """Doktrin Maddesi"""
+    """Bizlik Maddesi"""
     ARTICLE_TYPE_CHOICES = [
         ('FOUNDATION_LAW', '🏛️ İlke'),
         ('NORMAL_LAW', 'Yasa'),

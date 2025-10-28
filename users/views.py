@@ -100,7 +100,7 @@ def register(request):
         )
 
         send_mail(
-            subject='Doktrin - Email Doğrulama',
+            subject='Bizlik - Email Doğrulama',
             message=f'Merhaba {user.username},\n\nEmail adresinizi doğrulamak için aşağıdaki linke tıklayın:\n\n{verification_url}\n\nBu link 24 saat geçerlidir.',
             from_email='noreply@doktrin.com',
             recipient_list=[user.email],
