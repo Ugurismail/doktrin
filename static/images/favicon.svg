@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-  <!-- Modern Bizlik Logosu - Birlik ve Topluluk Simgesi -->
+  <!-- Bizlik Logosu - İç İçe Çemberler: Birlik ve Topluluk -->
 
   <defs>
     <!-- Modern gradient renkler -->
@@ -13,9 +13,23 @@
       <stop offset="100%" style="stop-color:#f43f5e;stop-opacity:1" />
     </linearGradient>
 
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#eab308;stop-opacity:1" />
+    </linearGradient>
+
     <!-- Glow efekti -->
     <filter id="glow">
-      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Soft glow -->
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
       <feMerge>
         <feMergeNode in="coloredBlur"/>
         <feMergeNode in="SourceGraphic"/>
@@ -23,28 +37,33 @@
     </filter>
   </defs>
 
-  <!-- Arka plan daire (birlik simgesi) -->
-  <circle cx="100" cy="100" r="85" fill="url(#primaryGrad)" opacity="0.08"/>
+  <!-- En dış büyük çember (tüm topluluğu temsil ediyor) -->
+  <circle cx="100" cy="100" r="88" fill="none" stroke="url(#primaryGrad)" stroke-width="3" opacity="0.3"/>
+  <circle cx="100" cy="100" r="85" fill="url(#primaryGrad)" opacity="0.05"/>
 
-  <!-- 3 bağlı nokta - topluluk/birlik -->
-  <!-- Sol alt nokta -->
-  <circle cx="70" cy="110" r="22" fill="url(#primaryGrad)" opacity="0.9" filter="url(#glow)"/>
+  <!-- 3 orta boy çember (alt topluluklar) birbirleriyle kesişiyor -->
 
-  <!-- Sağ alt nokta -->
-  <circle cx="130" cy="110" r="22" fill="url(#primaryGrad)" opacity="0.9" filter="url(#glow)"/>
+  <!-- Sol çember -->
+  <circle cx="75" cy="105" r="38" fill="url(#primaryGrad)" opacity="0.25" filter="url(#softGlow)"/>
+  <circle cx="75" cy="105" r="38" fill="none" stroke="url(#primaryGrad)" stroke-width="3" opacity="0.7"/>
 
-  <!-- Üst merkez nokta (lider/ortak değer) -->
-  <circle cx="100" cy="70" r="24" fill="url(#accentGrad)" opacity="0.95" filter="url(#glow)"/>
+  <!-- Sağ çember -->
+  <circle cx="125" cy="105" r="38" fill="url(#accentGrad)" opacity="0.25" filter="url(#softGlow)"/>
+  <circle cx="125" cy="105" r="38" fill="none" stroke="url(#accentGrad)" stroke-width="3" opacity="0.7"/>
 
-  <!-- Bağlantı çizgileri -->
-  <line x1="78" y1="104" x2="93" y2="80" stroke="url(#primaryGrad)" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
-  <line x1="107" y1="80" x2="122" y2="104" stroke="url(#accentGrad)" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
-  <line x1="92" y1="110" x2="108" y2="110" stroke="url(#primaryGrad)" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+  <!-- Üst çember -->
+  <circle cx="100" cy="75" r="38" fill="url(#goldGrad)" opacity="0.25" filter="url(#softGlow)"/>
+  <circle cx="100" cy="75" r="38" fill="none" stroke="url(#goldGrad)" stroke-width="3" opacity="0.7"/>
 
-  <!-- Merkez vurgu - birlik sembolü -->
-  <circle cx="100" cy="95" r="16" fill="#ffffff" opacity="0.95"/>
-  <circle cx="100" cy="95" r="12" fill="url(#accentGrad)" opacity="0.8"/>
+  <!-- Merkez kesişim noktası (ortak değerler/birlik) -->
+  <!-- Üçgensel kesişim alanı vurgusu -->
+  <circle cx="100" cy="95" r="26" fill="#ffffff" opacity="0.9"/>
+  <circle cx="100" cy="95" r="24" fill="url(#primaryGrad)" opacity="0.4" filter="url(#glow)"/>
 
-  <!-- İç detay -->
-  <circle cx="100" cy="95" r="5" fill="#ffffff" opacity="0.7"/>
+  <!-- İç merkez nokta (güçlü birlik) -->
+  <circle cx="100" cy="95" r="15" fill="url(#accentGrad)" opacity="0.95" filter="url(#glow)"/>
+  <circle cx="100" cy="95" r="12" fill="#ffffff" opacity="0.3"/>
+
+  <!-- En küçük merkez nokta -->
+  <circle cx="100" cy="95" r="6" fill="#ffffff" opacity="0.95"/>
 </svg>
