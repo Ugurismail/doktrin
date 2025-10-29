@@ -499,7 +499,7 @@ def user_directory(request):
                 parts.append(f"Birlik: {union.name}")
             if squad:
                 parts.append(f"Takım: {squad.name}")
-            parts.append(f"Ekip: {team.name}")
+            parts.append(f"Ekip: {team.display_name}")
 
             org_info = " → ".join(parts)
 
