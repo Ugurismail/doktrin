@@ -2006,16 +2006,34 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     text-decoration: none;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.nav-logo:hover {
+    background-color: var(--bg-secondary);
 }
 
 .nav-logo-img {
-    width: 36px;
-    height: 36px;
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+}
+
+/* Dark mode logo adaptation */
+[data-theme="dark"] .nav-logo-img {
+    filter: invert(1);
 }
 
 .nav-logo-text {
     margin: 0;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.3px;
+    color: var(--text);
+    opacity: 0.9;
 }
 
 .nav-icon-link {

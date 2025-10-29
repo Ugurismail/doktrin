@@ -1,78 +1,78 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
-  <!-- Bizlik Logo - Fractal Nested Circles -->
+  <!-- Bizlik Favicon - Black BG + White Circles -->
 
-  <!-- Light background for favicon visibility -->
-  <rect width="800" height="800" fill="#f8fafc"/>
+  <!-- Black background for contrast -->
+  <rect width="800" height="800" fill="#000000"/>
 
-  <!-- Outer Circle Z: R = 350 - BOLD -->
+  <!-- Outer Circle Z: R = 350 - WHITE EXTRA BOLD -->
   <circle cx="400" cy="400" r="350"
           fill="none"
-          stroke="#1e293b"
-          stroke-width="8"/>
+          stroke="#FFFFFF"
+          stroke-width="24"/>
 
   <!-- Group 1 - Top X (90°) -->
   <g id="grup1">
     <circle cx="400" cy="212.4" r="162.4"
             fill="none"
-            stroke="#1e293b"
-            stroke-width="5"/>
+            stroke="#FFFFFF"
+            stroke-width="16"/>
 
-    <!-- Inner Y circles - EXTRA BOLD -->
+    <!-- Inner Y circles - WHITE EXTRA BOLD -->
     <circle cx="400" cy="125.3" r="75.3"
             fill="none"
-            stroke="#1e293b"
-            stroke-width="5"/>
+            stroke="#FFFFFF"
+            stroke-width="12"/>
     <circle cx="324.65" cy="255.95" r="75.3"
             fill="none"
-            stroke="#1e293b"
-            stroke-width="5"/>
+            stroke="#FFFFFF"
+            stroke-width="12"/>
     <circle cx="475.35" cy="255.95" r="75.3"
             fill="none"
-            stroke="#1e293b"
-            stroke-width="5"/>
+            stroke="#FFFFFF"
+            stroke-width="12"/>
   </g>
 
   <!-- Group 2 - Bottom Left X (210°) -->
   <g id="grup2">
     <circle cx="237.6" cy="493.8" r="162.4"
             fill="none"
-            stroke="#1e293b"
-            stroke-width="5"/>
+            stroke="#FFFFFF"
+            stroke-width="16"/>
 
-    <!-- Inner Y circles - EXTRA BOLD -->
+    <!-- Inner Y circles - WHITE EXTRA BOLD -->
     <circle cx="237.6" cy="406.7" r="75.3"
             fill="none"
-            stroke="#1e293b"
-            stroke-width="5"/>
+            stroke="#FFFFFF"
+            stroke-width="12"/>
     <circle cx="162.25" cy="537.35" r="75.3"
             fill="none"
-            stroke="#1e293b"
-            stroke-width="5"/>
+            stroke="#FFFFFF"
+            stroke-width="12"/>
     <circle cx="312.95" cy="537.35" r="75.3"
             fill="none"
-            stroke="#1e293b"
-            stroke-width="5"/>
+            stroke="#FFFFFF"
+            stroke-width="12"/>
   </g>
 
   <!-- Group 3 - Bottom Right X (330°) -->
   <g id="grup3">
     <circle cx="562.4" cy="493.8" r="162.4"
             fill="none"
-            stroke="#1e293b"
-            stroke-width="5"/>
+            stroke="#FFFFFF"
+            stroke-width="16"/>
 
-    <!-- Inner Y circles - EXTRA BOLD -->
+    <!-- Inner Y circles - WHITE EXTRA BOLD -->
     <circle cx="562.4" cy="406.7" r="75.3"
             fill="none"
-            stroke="#1e293b"
-            stroke-width="5"/>
+            stroke="#FFFFFF"
+            stroke-width="12"/>
     <circle cx="487.05" cy="537.35" r="75.3"
             fill="none"
-            stroke="#1e293b"
-            stroke-width="5"/>
+            stroke="#FFFFFF"
+            stroke-width="12"/>
     <circle cx="637.75" cy="537.35" r="75.3"
             fill="none"
-            stroke="#1e293b"
-            stroke-width="5"/>
+            stroke="#FFFFFF"
+            stroke-width="12"/>
   </g>
 </svg>

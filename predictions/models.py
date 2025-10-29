@@ -86,12 +86,7 @@ class Prediction(models.Model):
         if self.status != 'VERIFIED' or not self.is_correct:
             return None
 
-        # TODO: İlerde %75 katılım şartı eklenecek
-        # quorum_required = self.follower_count * 0.75
-        # if self.total_votes < quorum_required:
-        #     return None  # Yeterli katılım yok
-
-        # Şimdilik basit: Doğru tahmin ettiyse +1 puan
+        # Doğru tahmin ettiyse +1 puan
         if self.is_correct:
             return 1
         else:
