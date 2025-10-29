@@ -45,7 +45,7 @@
                             <a href="{% url 'users:user_guide' %}">📖 Kılavuz</a>
                         </div>
                     </li>
-                    {% if user.team and user.team.leader == user %}
+                    {% if user.is_founder or (user.team and user.team.leader == user) %}
                     <li>
                         <a href="{% url 'organization:message_inbox' %}" class="nav-icon-link">
                             💬
