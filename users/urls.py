@@ -15,4 +15,5 @@ urlpatterns = [
     path('vote-delegation/', views.vote_delegation, name='vote_delegation'),
     path('vote-statistics/', views.vote_statistics, name='vote_statistics'),
     path('delegate-votes/', views.delegate_votes, name='delegate_votes'),
+    path('user-directory/', views.user_directory, name='user_directory'),
 ]

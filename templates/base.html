@@ -39,6 +39,9 @@
                             {% if user.is_superuser or user.is_founder %}
                             <a href="{% url 'doctrine:statistics_dashboard' %}">📈 İstatistikler</a>
                             {% endif %}
+                            {% if user.is_founder %}
+                            <a href="{% url 'users:user_directory' %}">👥 Kullanıcı Dizini</a>
+                            {% endif %}
                             <a href="{% url 'users:user_guide' %}">📖 Kılavuz</a>
                         </div>
                     </li>

@@ -450,3 +450,97 @@ def delegate_votes(request):
     }
 
     return render(request, 'users/delegate_votes.html', context)
+
+
+@login_required
+def user_directory(request):
+    """
+    Kullanıcı Dizini - Sadece kurucu görebilir
+    İl/İlçe bazında tüm kullanıcıları listeler
+    """
+    # Sadece kurucu erişebilir
+    if not request.user.is_founder:
+        messages.error(request, 'Bu sayfaya erişim yetkiniz yok.')
+        return redirect('users:home')
+
+    from django.db.models import Q, Max
+    from organization.models import Team, Squad, Union
+    from doctrine.models import Activity
+
+    # Filtreleme parametreleri
+    province_filter = request.GET.get('province', '')
+    district_filter = request.GET.get('district', '')
+
+    # Tüm kullanıcıları çek
+    users = User.objects.select_related('current_team', 'current_team__parent_squad', 'current_team__parent_squad__parent_union').all()
+
+    # Filtreleme
+    if province_filter:
+        users = users.filter(province=province_filter)
+    if district_filter:
+        users = users.filter(district=district_filter)
+
+    # Her kullanıcı için son aktivite zamanını al
+    user_data = []
+    for user in users:
+        # Son aktivite zamanı
+        last_activity = Activity.objects.filter(user=user).order_by('-created_at').first()
+        last_active = last_activity.created_at if last_activity else user.date_joined
+
+        # Organizasyon bilgisi
+        org_info = "Ekip yok"
+        if user.current_team:
+            team = user.current_team
+            squad = team.parent_squad
+            union = squad.parent_union if squad else None
+
+            parts = []
+            if union:
+                parts.append(f"Birlik: {union.name}")
+            if squad:
+                parts.append(f"Takım: {squad.name}")
+            parts.append(f"Ekip: {team.name}")
+
+            org_info = " → ".join(parts)
+
+            # Liderlik rolü
+            if team.leader == user:
+                org_info += " (Ekip Lideri)"
+            elif squad and squad.leader == user:
+                org_info += " (Takım Lideri)"
+            elif union and union.leader == user:
+                org_info += " (Birlik Lideri)"
+
+        user_data.append({
+            'user': user,
+            'last_active': last_active,
+            'org_info': org_info,
+            'province': user.province,
+            'district': user.district,
+        })
+
+    # İl/İlçe'ye göre sırala (alfabetik)
+    user_data.sort(key=lambda x: (x['province'], x['district'], x['user'].username))
+
+    # İl/İlçe grupları oluştur
+    grouped_users = {}
+    for data in user_data:
+        key = f"{data['province']} - {data['district']}"
+        if key not in grouped_users:
+            grouped_users[key] = []
+        grouped_users[key].append(data)
+
+    # Benzersiz il/ilçe listesi (filtreleme için)
+    all_provinces = User.objects.values_list('province', flat=True).distinct().order_by('province')
+    all_districts = User.objects.values_list('district', flat=True).distinct().order_by('district')
+
+    context = {
+        'grouped_users': grouped_users,
+        'total_users': len(user_data),
+        'all_provinces': all_provinces,
+        'all_districts': all_districts,
+        'province_filter': province_filter,
+        'district_filter': district_filter,
+    }
+
+    return render(request, 'users/user_directory.html', context)

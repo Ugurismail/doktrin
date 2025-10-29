@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kullanıcı Dizini - Bizlik{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>👥 Kullanıcı Dizini</h1>
+        <p class="subtitle">Toplam {{ total_users }} kullanıcı</p>
+    </div>
+
+    <!-- Filtreleme Formu -->
+    <div class="card" style="margin-bottom: 30px;">
+        <form method="get" class="filter-form" style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+                <label for="province">İl</label>
+                <select name="province" id="province" class="form-input">
+                    <option value="">Tümü</option>
+                    {% for province in all_provinces %}
+                        <option value="{{ province }}" {% if province == province_filter %}selected{% endif %}>
+                            {{ province }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="flex: 1; min-width: 200px;">
+                <label for="district">İlçe</label>
+                <select name="district" id="district" class="form-input">
+                    <option value="">Tümü</option>
+                    {% for district in all_districts %}
+                        <option value="{{ district }}" {% if district == district_filter %}selected{% endif %}>
+                            {{ district }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: flex-end;">
+                <button type="submit" class="btn btn-primary">Filtrele</button>
+                <a href="{% url 'users:user_directory' %}" class="btn btn-secondary">Temizle</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Kullanıcı Listesi - İl/İlçe Gruplu -->
+    {% for location, users in grouped_users.items %}
+    <div class="card" style="margin-bottom: 30px;">
+        <h2 style="margin-bottom: 20px; color: var(--accent); border-bottom: 2px solid var(--border); padding-bottom: 10px;">
+            📍 {{ location }}
+        </h2>
+
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Kullanıcı</th>
+                        <th>Email</th>
+                        <th>Organizasyon</th>
+                        <th>Son Aktivite</th>
+                        <th>Kayıt Tarihi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in users %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'users:user_profile' data.user.username %}" style="font-weight: 500; color: var(--accent);">
+                                {{ data.user.username }}
+                            </a>
+                            {% if data.user.is_founder %}
+                                <span style="background: #10B981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px;">
+                                    Kurucu
+                                </span>
+                            {% elif data.user.is_superuser %}
+                                <span style="background: #DC2626; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px;">
+                                    Admin
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ data.user.email }}</td>
+                        <td>{{ data.org_info }}</td>
+                        <td style="font-size: 14px; color: var(--text-secondary);">
+                            {{ data.last_active|timesince }} önce
+                        </td>
+                        <td style="font-size: 14px; color: var(--text-light);">
+                            {{ data.user.date_joined|date:"d.m.Y" }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% empty %}
+    <div class="card">
+        <p style="text-align: center; color: var(--text-secondary); padding: 40px;">
+            Seçilen filtrelere uygun kullanıcı bulunamadı.
+        </p>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+.filter-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead {
+    background: var(--bg-secondary);
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table th {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.data-table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+</style>
+{% endblock %}
