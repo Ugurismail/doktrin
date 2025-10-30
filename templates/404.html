@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sayfa Bulunamadı - Bizlik{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 60px 20px; max-width: 600px; margin: 0 auto;">
+    <div style="font-size: 120px; margin-bottom: 20px;">🔍</div>
+
+    <h1 style="font-size: 48px; color: #e74c3c; margin-bottom: 10px;">404</h1>
+    <h2 style="font-size: 24px; color: #333; margin-bottom: 20px;">Sayfa Bulunamadı</h2>
+
+    <p style="font-size: 16px; color: #666; margin-bottom: 30px;">
+        Aradığınız sayfa bulunamadı. Sayfa kaldırılmış veya taşınmış olabilir.
+    </p>
+
+    <a href="{% url 'users:home' %}" style="display: inline-block; padding: 12px 30px; background-color: #3498db; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
+        🏠 Ana Sayfaya Dön
+    </a>
+</div>
+{% endblock %}
