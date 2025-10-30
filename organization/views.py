@@ -284,7 +284,7 @@ def create_team(request):
             activity_type='TEAM_CREATED',
             user=request.user,
             description=f'yeni bir ekip oluşturdu: {team.display_name}',
-            related_url=f'/organization/my-team/'
+            related_url=f'/organization/team/'
         )
 
         messages.success(request, f'Ekip oluşturuldu: {team.display_name}')
@@ -448,7 +448,7 @@ def vote_squad_formation(request, proposal_id):
                     activity_type='SQUAD_CREATED',
                     user=squad.leader,
                     description=f'yeni bir takım kurdu: {squad.name}',
-                    related_url=f'/organization/my-team/'
+                    related_url=f'/organization/team/'
                 )
 
                 # Bildirim gönder
@@ -605,7 +605,7 @@ def vote_union_formation(request, proposal_id):
                     activity_type='UNION_CREATED',
                     user=union.leader,
                     description=f'yeni bir birlik kurdu: {union.name}',
-                    related_url=f'/organization/my-team/'
+                    related_url=f'/organization/team/'
                 )
 
                 # Bildirim gönder
