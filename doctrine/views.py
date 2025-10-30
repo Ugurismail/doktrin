@@ -352,23 +352,23 @@ def create_proposal(request):
     """Öneri oluştur - Yetki: Sadece Ekip Liderleri"""
     user_team = request.user.current_team
 
-    if not user_team:
+    # Kurucu kontrolü (en başta)
+    is_founder = hasattr(request.user, 'is_founder') and request.user.is_founder
+
+    if not user_team and not is_founder:
         messages.error(request, 'Öneri oluşturmak için bir ekibe dahil olmalısınız.')
         return redirect('doctrine:doctrine_list')
 
-    # Ekip lideri kontrolü
-    if user_team.leader != request.user:
+    # Ekip lideri kontrolü (kurucu hariç)
+    if not is_founder and user_team and user_team.leader != request.user:
         messages.error(request, 'Öneri oluşturma yetkisi sadece ekip liderlerine aittir.')
         return redirect('doctrine:doctrine_list')
-
-    # Kurucu kontrolü
-    is_founder = hasattr(request.user, 'is_founder') and request.user.is_founder
 
     # Kullanıcının seviyesini belirle
     user_level = None
     if is_founder:
         user_level = 'FOUNDER'
-    elif user_team.parent_squad:
+    elif user_team and user_team.parent_squad:
         # Birlik lideri mi kontrol et
         if user_team.parent_squad.parent_union and user_team.parent_squad.parent_union.leader == request.user:
             user_level = 'UNION'
@@ -379,7 +379,7 @@ def create_proposal(request):
             # Birlik veya takıma üye ama lider değil
             messages.error(request, 'Öneri oluşturma yetkisi sadece ekip liderlerine aittir.')
             return redirect('doctrine:doctrine_list')
-    else:
+    elif user_team:
         # Ekip seviyesinde - En az 8 kişi olmalı
         if user_team.member_count >= 8:
             user_level = 'TEAM'
