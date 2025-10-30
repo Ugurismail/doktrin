@@ -447,11 +447,11 @@ def create_proposal(request):
         entity_id = None
         if user_level == 'FOUNDER':
             entity_id = 0  # Kurucular için özel ID
-        elif user_level == 'TEAM':
+        elif user_level == 'TEAM' and user_team:
             entity_id = user_team.id  # Ekip ID'si
-        elif user_level == 'SQUAD':
+        elif user_level == 'SQUAD' and user_team and user_team.parent_squad:
             entity_id = user_team.parent_squad.id
-        elif user_level == 'UNION':
+        elif user_level == 'UNION' and user_team and user_team.parent_squad and user_team.parent_squad.parent_union:
             entity_id = user_team.parent_squad.parent_union.id
 
         # Öneriyi oluştur
