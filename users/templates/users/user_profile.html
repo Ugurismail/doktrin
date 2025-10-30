@@ -82,11 +82,11 @@
                     <div style="font-size: 14px; color: var(--text); margin-bottom: 8px;">{{ comment.comment_text|truncatewords:20 }}</div>
                     <div style="font-size: 12px; color: var(--text-secondary);">
                         {% if comment.proposal %}
-                            <a href="{% url 'doctrine:proposal_detail' comment.proposal.id %}" style="color: var(--accent);">Öneride</a>
+                            <a href="{% url 'doctrine:proposal_detail' comment.proposal.id %}" style="color: var(--accent);">Öneride</a> •
                         {% elif comment.article %}
-                            <a href="{% url 'doctrine:article_detail' comment.article.id %}" style="color: var(--accent);">Maddede</a>
+                            <a href="{% url 'doctrine:article_detail' comment.article.id %}" style="color: var(--accent);">Maddede</a> •
                         {% endif %}
-                        • {{ comment.created_at|timesince }} önce
+                        {{ comment.created_at|timesince }} önce
                     </div>
                 </div>
                 {% endfor %}
