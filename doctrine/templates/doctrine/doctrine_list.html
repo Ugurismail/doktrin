@@ -864,10 +864,12 @@ body.doctrine-page-loading {
             <p class="doctrine-hero-subtitle">
                 Halkın kuralları, halk tarafından yazılır
             </p>
-            {% if user.is_authenticated and user.current_team and user.current_team.parent_squad %}
-            <a href="{% url 'doctrine:create_proposal' %}" class="btn btn-primary btn-hero">
-                ✨ Yeni Öneri Oluştur
-            </a>
+            {% if user.is_authenticated %}
+                {% if user.is_founder or (user.current_team and user.current_team.parent_squad) or (user.current_team and user.current_team.leader == user and user.current_team.member_count >= 8) %}
+                <a href="{% url 'doctrine:create_proposal' %}" class="btn btn-primary btn-hero">
+                    ✨ Yeni Öneri Oluştur
+                </a>
+                {% endif %}
             {% endif %}
 
             <div class="doctrine-hero-stats">
