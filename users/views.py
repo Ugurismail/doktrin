@@ -122,6 +122,11 @@ def login_view(request):
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            # Email doğrulaması kontrolü (kurucu hariç)
+            if not user.is_founder and not user.is_email_verified:
+                messages.error(request, 'Email adresinizi doğrulamanız gerekiyor. Lütfen gelen kutunuzu kontrol edin.')
+                return render(request, 'users/login.html')
+
             login(request, user)
             return redirect('users:home')
         else:
